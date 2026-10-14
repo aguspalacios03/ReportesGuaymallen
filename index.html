@@ -57,30 +57,30 @@
     <div class="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
       
       <!-- Brand & Identity -->
-      <div class="flex items-center gap-2 sm:gap-3.5 shrink-0">
+      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
         <button onclick="App.navigateToView('map')" class="flex items-center gap-2 sm:gap-3 group text-left">
           <div class="flex flex-col">
             <div class="flex items-center gap-1">
-              <span class="text-[10px] sm:text-xs font-medium text-slate-500 tracking-tight">Pensando</span>
+              <span class="text-[9px] sm:text-xs font-medium text-slate-500 tracking-tight leading-none">Pensando</span>
               <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-sky-500 inline-block"></span>
             </div>
-            <span class="text-base sm:text-xl font-extrabold text-[#1A2B4C] leading-none tracking-tight">
+            <span class="text-sm sm:text-xl font-extrabold text-[#1A2B4C] leading-tight tracking-tight mt-0.5">
               Guaymallén
             </span>
-            <span class="text-[8px] sm:text-[9px] uppercase tracking-wider font-semibold text-sky-600 -mt-0.5">
+            <span class="text-[7.5px] sm:text-[9px] uppercase tracking-wider font-semibold text-sky-600 leading-none mt-0.5">
               Junto a Vos
             </span>
           </div>
 
           <!-- Divider -->
-          <div class="h-8 sm:h-9 w-px bg-slate-300"></div>
+          <div class="h-7 sm:h-9 w-px bg-slate-300"></div>
 
-          <!-- Senator Identification (Visible en desktop y móvil compacto) -->
+          <!-- Senator Identification -->
           <div class="flex flex-col">
-            <span class="text-xs sm:text-base font-extrabold text-[#1A2B4C] tracking-wide leading-tight">
+            <span class="text-[11px] sm:text-base font-extrabold text-[#1A2B4C] tracking-wide leading-tight">
               LUZ LLORENS
             </span>
-            <span class="text-[8px] sm:text-[10px] uppercase font-bold tracking-wider text-sky-700">
+            <span class="text-[7px] sm:text-[10px] uppercase font-bold tracking-wider text-sky-700 leading-none mt-0.5">
               SENADORA PROVINCIAL
             </span>
           </div>
@@ -130,22 +130,36 @@
         </button>
 
         <!-- Contenedor dinámico de Usuario / Acceso Vecinal -->
-        <div id="header-user-container" class="relative flex items-center gap-1.5 sm:gap-2">
+        <div id="header-user-container" class="relative flex items-center gap-1 sm:gap-2">
+          <!-- Desktop: botones separados -->
+          <div class="hidden md:flex items-center gap-1.5">
+            <button 
+              type="button"
+              onclick="App.openAuthModal('login')"
+              id="btn-header-login"
+              class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-[#1A2B4C] hover:bg-sky-50 border border-slate-200 hover:border-sky-300 shadow-2xs transition-all flex items-center gap-1 sm:gap-1.5">
+              <i class="fa-solid fa-right-to-bracket text-xs text-sky-600"></i>
+              <span>Ingresar</span>
+            </button>
+            <button 
+              type="button"
+              onclick="App.openAuthModal('register')"
+              id="btn-header-register"
+              class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-extrabold bg-[#1A2B4C] hover:bg-[#243B66] text-white shadow-2xs md:shadow-sm transition-all flex items-center gap-1 sm:gap-1.5">
+              <i class="fa-solid fa-user-plus text-xs text-sky-300"></i>
+              <span>Registrarse</span>
+            </button>
+          </div>
+
+          <!-- Mobile: botón único y reducido para iniciar sesión y registrarse -->
           <button 
             type="button"
             onclick="App.openAuthModal('login')"
-            id="btn-header-login"
-            class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-[#1A2B4C] hover:bg-sky-50 border border-slate-200 hover:border-sky-300 shadow-2xs transition-all flex items-center gap-1 sm:gap-1.5">
-            <i class="fa-solid fa-right-to-bracket text-xs text-sky-600"></i>
-            <span>Ingresar</span>
-          </button>
-          <button 
-            type="button"
-            onclick="App.openAuthModal('register')"
-            id="btn-header-register"
-            class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-extrabold bg-[#1A2B4C] hover:bg-[#243B66] text-white shadow-2xs md:shadow-sm transition-all flex items-center gap-1 sm:gap-1.5">
-            <i class="fa-solid fa-user-plus text-xs text-sky-300"></i>
-            <span>Registrarse</span>
+            id="btn-header-auth-mobile"
+            class="md:hidden px-2.5 py-1.5 rounded-xl text-[11px] xs:text-xs font-bold bg-[#1A2B4C] hover:bg-[#243B66] active:scale-95 text-white shadow-2xs flex items-center gap-1.5 transition-all whitespace-nowrap">
+            <i class="fa-solid fa-circle-user text-xs text-sky-300 shrink-0"></i>
+            <span class="hidden xs:inline">Ingresar / Registro</span>
+            <span class="xs:hidden">Ingresar</span>
           </button>
         </div>
 
@@ -153,9 +167,9 @@
         <button 
           id="mobile-drawer-btn"
           onclick="App.toggleMobileDrawer()"
-          class="md:hidden p-2 rounded-xl text-[#1A2B4C] hover:bg-slate-100 transition-colors flex items-center justify-center"
+          class="md:hidden p-1.5 sm:p-2 rounded-xl text-[#1A2B4C] hover:bg-slate-100 active:bg-slate-200 transition-colors flex items-center justify-center shrink-0"
           title="Menú de Navegación">
-          <i class="fa-solid fa-bars text-xl"></i>
+          <i class="fa-solid fa-bars text-lg sm:text-xl"></i>
         </button>
       </div>
 
@@ -274,19 +288,19 @@
   <div id="view-map" class="app-view active flex-1 flex flex-col overflow-hidden relative">
 
     <!-- Mobile View Switcher (Dual Pill Selector exacto al mockup) -->
-    <div class="md:hidden bg-white border-b border-slate-200/90 py-2 px-3 shrink-0 z-20">
-      <div class="flex items-center justify-center max-w-sm mx-auto bg-slate-100 p-1 rounded-full border border-slate-200/80">
+    <div class="md:hidden bg-white border-b border-slate-200/90 py-1.5 px-3 shrink-0 z-20">
+      <div class="flex items-center justify-center max-w-xs mx-auto bg-slate-100 p-0.5 rounded-full border border-slate-200/80">
         <button 
           id="tab-btn-map" 
           onclick="App.switchMobileTab('map')"
-          class="flex-1 py-1.5 px-3 rounded-full text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 bg-[#1A2B4C] text-white shadow-sm">
+          class="flex-1 py-1.5 px-2.5 rounded-full text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 bg-[#1A2B4C] text-white shadow-sm">
           <i class="fa-solid fa-map-location-dot text-[11px]"></i>
           <span>Ver Mapa</span>
         </button>
         <button 
           id="tab-btn-list" 
           onclick="App.switchMobileTab('list')"
-          class="flex-1 py-1.5 px-3 rounded-full text-xs font-bold transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900">
+          class="flex-1 py-1.5 px-2.5 rounded-full text-xs font-bold transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900">
           <i class="fa-solid fa-list-check text-[11px]"></i>
           <span>Lista de Reclamos</span>
         </button>
@@ -326,7 +340,7 @@
               id="feed-tab-all" 
               type="button"
               onclick="App.setFeedReportScope('all')" 
-              class="flex-1 py-1.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 bg-white text-[#1A2B4C] shadow-2xs font-black">
+              class="flex-1 py-1.5 px-2 sm:px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 bg-white text-[#1A2B4C] shadow-2xs font-black text-[11px] sm:text-xs">
               <i class="fa-solid fa-earth-americas text-[11px] text-sky-600"></i>
               <span>Todos los Reclamos</span>
             </button>
@@ -334,7 +348,7 @@
               id="feed-tab-mine" 
               type="button" 
               onclick="App.setFeedReportScope('mine')" 
-              class="flex-1 py-1.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-bold">
+              class="flex-1 py-1.5 px-2 sm:px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-bold text-[11px] sm:text-xs">
               <i class="fa-solid fa-user-check text-[11px] text-emerald-600"></i>
               <span>Mis Reclamos</span>
               <span id="feed-tab-mine-count" class="hidden px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-100 text-emerald-800 font-black">0</span>
@@ -460,39 +474,39 @@
         <!-- Barra Superior Flotante: Confirmación de Ubicación en el Mapa -->
         <div 
           id="map-picker-banner" 
-          class="hidden absolute top-3 sm:top-4 left-1/2 -translate-x-1/2 z-[500] bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/90 px-3.5 sm:px-4 py-2 sm:py-2.5 max-w-md sm:max-w-lg w-[95%] sm:w-auto flex items-center justify-between gap-2 sm:gap-4 pointer-events-auto">
+          class="hidden absolute top-3 sm:top-4 left-1/2 -translate-x-1/2 z-[500] bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/90 px-2.5 sm:px-4 py-1.5 sm:py-2.5 max-w-[calc(100vw-1rem)] sm:max-w-lg w-[95%] sm:w-auto flex items-center justify-between gap-1.5 sm:gap-4 pointer-events-auto">
           
-          <div class="flex items-center gap-2 min-w-0 flex-1">
-            <span class="w-2.5 h-2.5 rounded-full bg-sky-500 animate-pulse shrink-0"></span>
-            <div class="flex items-center gap-1.5 min-w-0 flex-1">
+          <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+            <span class="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-sky-500 animate-pulse shrink-0"></span>
+            <div class="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-1">
               <span class="hidden sm:inline text-xs font-bold text-slate-600 shrink-0">Distrito:</span>
-              <div class="relative min-w-0 flex-1 max-w-[160px] sm:max-w-[220px]">
+              <div class="relative min-w-0 flex-1 max-w-[140px] sm:max-w-[220px]">
                 <select 
                   id="map-picker-district-select" 
                   title="Cambiar distrito del reporte"
-                  class="w-full bg-sky-50 hover:bg-sky-100/90 text-sky-950 font-black text-xs sm:text-sm py-1.5 pl-2.5 pr-7 rounded-xl border border-sky-300 focus:ring-2 focus:ring-sky-500 focus:outline-none appearance-none cursor-pointer transition-all truncate shadow-2xs">
+                  class="w-full bg-sky-50 hover:bg-sky-100/90 text-sky-950 font-black text-[11px] sm:text-sm py-1 sm:py-1.5 pl-2 sm:pl-2.5 pr-6 sm:pr-7 rounded-xl border border-sky-300 focus:ring-2 focus:ring-sky-500 focus:outline-none appearance-none cursor-pointer transition-all truncate shadow-2xs">
                   <!-- Populated by app.js with the 21 official districts -->
                 </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-sky-700">
-                  <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1.5 sm:px-2 text-sky-700">
+                  <i class="fa-solid fa-chevron-down text-[9px] sm:text-[10px]"></i>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="flex items-center gap-2 shrink-0">
+          <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button 
               type="button" 
               onclick="App.cancelMapPicker()" 
-              class="px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 active:scale-95 text-white shadow-sm transition-all flex items-center gap-1">
-              <i class="fa-solid fa-xmark text-[11px]"></i>
+              class="px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-rose-600 hover:bg-rose-700 active:scale-95 text-white shadow-sm transition-all flex items-center gap-1">
+              <i class="fa-solid fa-xmark text-[10px] sm:text-[11px]"></i>
               <span>Cancelar</span>
             </button>
             <button 
               type="button" 
               onclick="App.confirmMapPicker()" 
-              class="px-3.5 sm:px-4 py-1.5 rounded-xl text-xs font-extrabold uppercase bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white shadow-md shadow-emerald-600/20 transition-all flex items-center gap-1.5">
-              <i class="fa-solid fa-check text-xs"></i>
+              class="px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-extrabold uppercase bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white shadow-md shadow-emerald-600/20 transition-all flex items-center gap-1 sm:gap-1.5">
+              <i class="fa-solid fa-check text-[10px] sm:text-xs"></i>
               <span>Confirmar</span>
             </button>
           </div>
@@ -577,12 +591,12 @@
     <div class="md:hidden fixed bottom-3 inset-x-3 z-30 pointer-events-auto">
       <button 
         onclick="App.openReportModal()"
-        class="w-full bg-[#1A2B4C] hover:bg-[#243B66] active:scale-[0.98] text-white py-2.5 px-4 rounded-2xl shadow-2xl flex flex-col items-center justify-center gap-0.5 transition-all border border-white/10">
-        <div class="flex items-center gap-2">
+        class="w-full bg-[#1A2B4C] hover:bg-[#243B66] active:scale-[0.98] text-white py-2 px-3 rounded-2xl shadow-2xl flex flex-col items-center justify-center gap-0.5 transition-all border border-white/10">
+        <div class="flex items-center gap-1.5">
           <i class="fa-solid fa-bullhorn text-amber-400 text-xs"></i>
-          <span class="text-xs font-black uppercase tracking-wide">REPORTAR PROBLEMA EN MI BARRIO</span>
+          <span class="text-[11px] xs:text-xs font-black uppercase tracking-wide">REPORTAR PROBLEMA EN MI BARRIO</span>
         </div>
-        <span id="mobile-sticky-counter" class="text-[10px] text-slate-300 font-medium">
+        <span id="mobile-sticky-counter" class="text-[9px] xs:text-[10px] text-slate-300 font-medium">
           0 reclamos registrados
         </span>
       </button>
@@ -912,26 +926,26 @@
       </div>
 
       <!-- Botones Principales de Contacto: WhatsApp y Correo -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         
         <!-- WhatsApp Oficial -->
         <a 
           href="https://wa.me/5492615551234?text=Hola%20Senadora%20Luz%20Llorens,%20te%20escribo%20desde%20Pensando%20Guaymall%C3%A9n"
           target="_blank"
-          class="bg-white p-7 sm:p-8 rounded-3xl border border-slate-200 hover:border-emerald-400 hover:shadow-xl transition-all flex flex-col items-center justify-between text-center gap-5 group">
-          <div class="space-y-3 flex flex-col items-center w-full">
-            <div class="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform shadow-sm">
+          class="bg-white p-5 sm:p-8 rounded-3xl border border-slate-200 hover:border-emerald-400 hover:shadow-xl transition-all flex flex-col items-center justify-between text-center gap-4 sm:gap-5 group">
+          <div class="space-y-3 flex flex-col items-center w-full min-w-0">
+            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl sm:text-3xl group-hover:scale-110 transition-transform shadow-sm">
               <i class="fa-brands fa-whatsapp"></i>
             </div>
             <div>
               <h3 class="font-extrabold text-base sm:text-lg text-slate-800">WhatsApp Oficial</h3>
-              <p class="text-sm font-semibold text-slate-500 mt-0.5">+54 9 261 555-1234</p>
+              <p class="text-xs sm:text-sm font-semibold text-slate-500 mt-0.5">+54 9 261 555-1234</p>
             </div>
           </div>
           <div class="w-full pt-1">
-            <span class="w-full py-3 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 transition-all">
-              <i class="fa-brands fa-whatsapp text-base"></i>
-              <span class="whitespace-nowrap">Iniciar Chat de WhatsApp</span>
+            <span class="w-full py-2.5 sm:py-3 px-4 sm:px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 transition-all">
+              <i class="fa-brands fa-whatsapp text-sm sm:text-base"></i>
+              <span>Iniciar Chat de WhatsApp</span>
               <i class="fa-solid fa-arrow-right text-xs"></i>
             </span>
           </div>
@@ -940,22 +954,22 @@
         <!-- Correo Electrónico Oficial -->
         <a 
           href="mailto:luz.llorens@legislaturamendoza.gov.ar"
-          class="bg-white p-7 sm:p-8 rounded-3xl border border-slate-200 hover:border-sky-400 hover:shadow-xl transition-all flex flex-col items-center justify-between text-center gap-5 group">
-          <div class="space-y-3 flex flex-col items-center w-full">
-            <div class="w-16 h-16 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform shadow-sm">
+          class="bg-white p-5 sm:p-8 rounded-3xl border border-slate-200 hover:border-sky-400 hover:shadow-xl transition-all flex flex-col items-center justify-between text-center gap-4 sm:gap-5 group">
+          <div class="space-y-3 flex flex-col items-center w-full min-w-0">
+            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center text-2xl sm:text-3xl group-hover:scale-110 transition-transform shadow-sm">
               <i class="fa-regular fa-envelope"></i>
             </div>
-            <div class="w-full">
+            <div class="w-full min-w-0">
               <h3 class="font-extrabold text-base sm:text-lg text-slate-800">Correo Electrónico</h3>
-              <p class="text-xs sm:text-sm font-semibold text-slate-600 mt-0.5 whitespace-nowrap overflow-x-auto sm:overflow-visible py-0.5">
+              <p class="text-xs sm:text-sm font-semibold text-slate-600 mt-0.5 break-all sm:break-normal py-0.5">
                 luz.llorens@legislaturamendoza.gov.ar
               </p>
             </div>
           </div>
           <div class="w-full pt-1">
-            <span class="w-full py-3 px-6 rounded-2xl bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-sky-600/20 flex items-center justify-center gap-2 transition-all">
-              <i class="fa-regular fa-envelope text-base"></i>
-              <span class="whitespace-nowrap">Enviar Correo Electrónico</span>
+            <span class="w-full py-2.5 sm:py-3 px-4 sm:px-6 rounded-2xl bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-sky-600/20 flex items-center justify-center gap-2 transition-all">
+              <i class="fa-regular fa-envelope text-sm sm:text-base"></i>
+              <span>Enviar Correo Electrónico</span>
               <i class="fa-solid fa-arrow-right text-xs"></i>
             </span>
           </div>
@@ -1176,19 +1190,19 @@
        ======================================================== -->
   <div 
     id="modal-login" 
-    class="fixed inset-0 z-[1000] bg-slate-900/60 hidden items-center justify-center p-4">
+    class="fixed inset-0 z-[1000] bg-slate-900/60 hidden items-center justify-center p-3 sm:p-4">
     
     <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden border border-slate-200">
       
       <!-- Encabezado Institucional -->
-      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-[#1A2B4C] to-[#243B66] text-white">
+      <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-[#1A2B4C] to-[#243B66] text-white">
         <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-sky-300">
-            <i class="fa-solid fa-envelope-open-text"></i>
+          <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/10 flex items-center justify-center text-sky-300">
+            <i class="fa-solid fa-envelope-open-text text-sm"></i>
           </div>
           <div>
             <h3 class="font-extrabold text-sm sm:text-base leading-tight">Portal del Vecino</h3>
-            <p class="text-[11px] text-slate-300">Pensando Guaymallén</p>
+            <p class="text-[10px] sm:text-[11px] text-slate-300">Pensando Guaymallén</p>
           </div>
         </div>
         <button onclick="App.closeAuthModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
@@ -1197,12 +1211,12 @@
       </div>
 
       <!-- Selector Fluido de Pestañas: Iniciar Sesión vs Registrarse -->
-      <div class="p-1.5 bg-slate-100 border-b border-slate-200/80 flex items-center gap-1">
+      <div class="p-1 sm:p-1.5 bg-slate-100 border-b border-slate-200/80 flex items-center gap-1">
         <button 
           type="button" 
           id="auth-tab-login"
           onclick="App.switchAuthMode('login')"
-          class="flex-1 py-2 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 bg-white text-[#1A2B4C] shadow-sm transition-colors">
+          class="flex-1 py-2 px-2 sm:px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1 sm:gap-1.5 bg-white text-[#1A2B4C] shadow-sm transition-colors">
           <i class="fa-solid fa-right-to-bracket text-sky-600 text-xs"></i>
           <span>Iniciar Sesión</span>
         </button>
@@ -1210,13 +1224,13 @@
           type="button" 
           id="auth-tab-register"
           onclick="App.switchAuthMode('register')"
-          class="flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 text-slate-500 hover:text-slate-800 bg-transparent transition-colors">
+          class="flex-1 py-2 px-2 sm:px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1 sm:gap-1.5 text-slate-500 hover:text-slate-800 bg-transparent transition-colors">
           <i class="fa-solid fa-user-plus text-sky-600 text-xs"></i>
           <span>Registrarse</span>
         </button>
       </div>
 
-      <div class="p-6 space-y-4">
+      <div class="p-4 sm:p-6 space-y-3.5 sm:space-y-4">
         <div>
           <h4 id="auth-modal-title" class="font-extrabold text-slate-800 text-sm">Ingresá a tu Cuenta Vecinal</h4>
           <p id="auth-modal-desc" class="text-xs text-slate-500 mt-0.5">Accedé con tu correo para hacer seguimiento de tus reclamos.</p>
@@ -1323,9 +1337,9 @@
             <button 
               type="submit" 
               id="auth-submit-btn"
-              class="w-full py-3 rounded-xl text-xs sm:text-sm font-extrabold uppercase tracking-wide bg-[#1A2B4C] hover:bg-sky-700 active:scale-98 text-white shadow-md flex items-center justify-center gap-2">
+              class="w-full py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-extrabold uppercase tracking-wide bg-[#1A2B4C] hover:bg-sky-700 active:scale-98 text-white shadow-md flex items-center justify-center gap-2">
               <i id="auth-submit-icon" class="fa-solid fa-right-to-bracket text-sky-300"></i>
-              <span id="auth-submit-text">Iniciar Sesión y Ver Mis Reclamos</span>
+              <span id="auth-submit-text">Iniciar Sesión y Acceder</span>
             </button>
           </div>
         </form>

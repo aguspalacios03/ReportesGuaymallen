@@ -618,24 +618,24 @@ class PensandoGuaymallenApp {
             ${report.description}
           </p>
 
-          <div class="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
+          <div class="pt-2.5 mt-2.5 border-t border-slate-100 flex items-center justify-between gap-1.5 sm:gap-2">
             <button 
               type="button"
               onclick="App.viewOnMap('${report.id}')"
-              class="flex-1 min-h-[42px] sm:min-h-[34px] flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl text-xs font-bold text-[#1A2B4C] bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all">
-              <i class="fa-solid fa-map-location-dot text-xs"></i>
+              class="flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-bold text-[#1A2B4C] bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all flex items-center justify-center gap-1">
+              <i class="fa-solid fa-map-location-dot text-[11px]"></i>
               <span>Ver en Mapa</span>
             </button>
 
             <button 
               type="button"
               onclick="App.upvoteReport('${report.id}')"
-              class="flex-1 min-h-[42px] sm:min-h-[34px] flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl text-xs font-bold active:scale-95 transition-all ${
+              class="flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-bold active:scale-95 transition-all flex items-center justify-center gap-1 ${
                 report.userUpvoted 
                   ? 'bg-sky-600 text-white shadow-sm' 
                   : 'bg-sky-50 hover:bg-sky-100 text-sky-700'
               }">
-              <i class="fa-solid fa-thumbs-up text-xs"></i>
+              <i class="fa-solid fa-thumbs-up text-[11px]"></i>
               <span>${report.upvotes || 1}</span>
               <span>${report.userUpvoted ? 'Apoyado' : 'Apoyar'}</span>
             </button>
@@ -644,16 +644,16 @@ class PensandoGuaymallenApp {
               type="button"
               onclick="App.openShareModal('${report.id}')"
               title="Compartir reporte"
-              class="w-10 sm:w-auto min-h-[42px] sm:min-h-[34px] px-3 py-2 sm:py-1.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all flex items-center justify-center">
-              <i class="fa-solid fa-share-nodes text-xs"></i>
+              class="w-8 sm:w-auto py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all flex items-center justify-center">
+              <i class="fa-solid fa-share-nodes text-[11px]"></i>
             </button>
 
             <button 
               type="button"
               onclick="App.deleteReport('${report.id}')"
               title="Eliminar este reclamo de prueba"
-              class="w-10 sm:w-auto min-h-[42px] sm:min-h-[34px] px-3 py-2 sm:py-1.5 rounded-xl text-xs font-semibold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 active:scale-95 transition-all flex items-center justify-center">
-              <i class="fa-solid fa-trash-can text-xs"></i>
+              class="w-8 sm:w-auto py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-semibold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 active:scale-95 transition-all flex items-center justify-center">
+              <i class="fa-solid fa-trash-can text-[11px]"></i>
             </button>
           </div>
         </div>
@@ -789,11 +789,11 @@ class PensandoGuaymallenApp {
     if (!tabAll || !tabMine) return;
 
     if (this.reportScope === 'mine') {
-      tabMine.className = "flex-1 py-1.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 bg-[#1A2B4C] text-white shadow-2xs font-black";
-      tabAll.className = "flex-1 py-1.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-semibold";
+      tabMine.className = "flex-1 py-1.5 px-2 sm:px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 bg-[#1A2B4C] text-white shadow-2xs font-black text-[11px] sm:text-xs";
+      tabAll.className = "flex-1 py-1.5 px-2 sm:px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-semibold text-[11px] sm:text-xs";
     } else {
-      tabAll.className = "flex-1 py-1.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 bg-white text-[#1A2B4C] shadow-2xs font-black";
-      tabMine.className = "flex-1 py-1.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-semibold";
+      tabAll.className = "flex-1 py-1.5 px-2 sm:px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 bg-white text-[#1A2B4C] shadow-2xs font-black text-[11px] sm:text-xs";
+      tabMine.className = "flex-1 py-1.5 px-2 sm:px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-semibold text-[11px] sm:text-xs";
     }
   }
 
@@ -1340,10 +1340,10 @@ class PensandoGuaymallenApp {
 
     if (this.authMode === 'register') {
       if (tabLogin) {
-        tabLogin.className = "flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 text-slate-500 hover:text-slate-800 bg-transparent transition-colors";
+        tabLogin.className = "flex-1 py-2 px-2 sm:px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1 sm:gap-1.5 text-slate-500 hover:text-slate-800 bg-transparent transition-colors";
       }
       if (tabRegister) {
-        tabRegister.className = "flex-1 py-2 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 bg-white text-[#1A2B4C] shadow-sm transition-colors";
+        tabRegister.className = "flex-1 py-2 px-2 sm:px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1 sm:gap-1.5 bg-white text-[#1A2B4C] shadow-sm transition-colors";
       }
       if (modalTitle) modalTitle.textContent = "Registrá tu Cuenta Vecinal";
       if (modalDesc) modalDesc.textContent = "Sumate al portal con tu correo y contraseña para gestionar tus reclamos.";
@@ -1356,14 +1356,14 @@ class PensandoGuaymallenApp {
       if (confirmInput) confirmInput.required = true;
     } else {
       if (tabLogin) {
-        tabLogin.className = "flex-1 py-2 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 bg-white text-[#1A2B4C] shadow-sm transition-colors";
+        tabLogin.className = "flex-1 py-2 px-2 sm:px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1 sm:gap-1.5 bg-white text-[#1A2B4C] shadow-sm transition-colors";
       }
       if (tabRegister) {
-        tabRegister.className = "flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 text-slate-500 hover:text-slate-800 bg-transparent transition-colors";
+        tabRegister.className = "flex-1 py-2 px-2 sm:px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1 sm:gap-1.5 text-slate-500 hover:text-slate-800 bg-transparent transition-colors";
       }
       if (modalTitle) modalTitle.textContent = "Ingresá a tu Cuenta Vecinal";
       if (modalDesc) modalDesc.textContent = "Accedé con tu correo y contraseña para hacer seguimiento de tus reclamos.";
-      if (submitBtnText) submitBtnText.textContent = "Iniciar Sesión y Ver Mis Reclamos";
+      if (submitBtnText) submitBtnText.textContent = "Iniciar Sesión y Acceder";
       if (submitIcon) submitIcon.className = "fa-solid fa-right-to-bracket text-sky-300";
       if (switchPrompt) {
         switchPrompt.innerHTML = `¿No registraste tu correo aún? <button type="button" onclick="App.switchAuthMode('register')" class="text-sky-700 font-bold hover:underline ml-1">Registrate acá</button>`;
@@ -1510,21 +1510,35 @@ class PensandoGuaymallenApp {
     if (headerContainer) {
       if (!this.currentUser) {
         headerContainer.innerHTML = `
+          <!-- Desktop: botones separados -->
+          <div class="hidden md:flex items-center gap-1.5">
+            <button 
+              type="button"
+              onclick="App.openAuthModal('login')"
+              id="btn-header-login"
+              class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-[#1A2B4C] hover:bg-sky-50 border border-slate-200 hover:border-sky-300 shadow-2xs transition-all flex items-center gap-1 sm:gap-1.5">
+              <i class="fa-solid fa-right-to-bracket text-xs text-sky-600"></i>
+              <span>Ingresar</span>
+            </button>
+            <button 
+              type="button"
+              onclick="App.openAuthModal('register')"
+              id="btn-header-register"
+              class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-extrabold bg-[#1A2B4C] hover:bg-[#243B66] text-white shadow-2xs md:shadow-sm transition-all flex items-center gap-1 sm:gap-1.5">
+              <i class="fa-solid fa-user-plus text-xs text-sky-300"></i>
+              <span>Registrarse</span>
+            </button>
+          </div>
+
+          <!-- Mobile: botón único y reducido para iniciar sesión y registrarse -->
           <button 
             type="button"
             onclick="App.openAuthModal('login')"
-            id="btn-header-login"
-            class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-[#1A2B4C] hover:bg-sky-50 border border-slate-200 hover:border-sky-300 shadow-2xs transition-all flex items-center gap-1.5">
-            <i class="fa-solid fa-right-to-bracket text-xs text-sky-600"></i>
-            <span>Ingresar</span>
-          </button>
-          <button 
-            type="button"
-            onclick="App.openAuthModal('register')"
-            id="btn-header-register"
-            class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-extrabold bg-[#1A2B4C] hover:bg-[#243B66] text-white shadow-2xs md:shadow-sm transition-all flex items-center gap-1.5">
-            <i class="fa-solid fa-user-plus text-xs text-sky-300"></i>
-            <span>Registrarse</span>
+            id="btn-header-auth-mobile"
+            class="md:hidden px-2.5 py-1.5 rounded-xl text-[11px] xs:text-xs font-bold bg-[#1A2B4C] hover:bg-[#243B66] active:scale-95 text-white shadow-2xs flex items-center gap-1.5 transition-all whitespace-nowrap">
+            <i class="fa-solid fa-circle-user text-xs text-sky-300 shrink-0"></i>
+            <span class="hidden xs:inline">Ingresar / Registro</span>
+            <span class="xs:hidden">Ingresar</span>
           </button>
         `;
       } else {
@@ -1534,10 +1548,10 @@ class PensandoGuaymallenApp {
             <button 
               type="button"
               onclick="App.toggleUserDropdown()"
-              class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full md:rounded-xl text-xs sm:text-sm font-extrabold bg-sky-50 md:bg-[#1A2B4C] text-sky-900 md:text-white border border-sky-200 md:border-sky-500/30 hover:bg-sky-100 md:hover:bg-[#243B66] shadow-2xs md:shadow-sm transition-all flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span class="max-w-[100px] sm:max-w-[150px] truncate" title="${this.currentUser.email}">${this.currentUser.email}</span>
-              <i class="fa-solid fa-chevron-down text-[9px] opacity-75"></i>
+              class="px-2 py-1.5 sm:px-3.5 sm:py-2 rounded-full md:rounded-xl text-[11px] sm:text-sm font-extrabold bg-sky-50 md:bg-[#1A2B4C] text-sky-900 md:text-white border border-sky-200 md:border-sky-500/30 hover:bg-sky-100 md:hover:bg-[#243B66] shadow-2xs md:shadow-sm transition-all flex items-center gap-1 sm:gap-1.5">
+              <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+              <span class="max-w-[75px] xs:max-w-[105px] sm:max-w-[150px] truncate" title="${this.currentUser.email}">${this.currentUser.email}</span>
+              <i class="fa-solid fa-chevron-down text-[8px] sm:text-[9px] opacity-75 shrink-0"></i>
             </button>
 
             <!-- Dropdown Menu de Usuario -->

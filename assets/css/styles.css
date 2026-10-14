@@ -25,6 +25,8 @@ html, body {
   color: #1e293b;
   background-color: #f8fafc;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 /* Custom Scrollbar */
