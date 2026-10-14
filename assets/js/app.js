@@ -124,14 +124,14 @@ class PensandoGuaymallenApp {
         const isActive = this.selectedCategory === cat.id;
         return `
           <button 
-            type="button"
+            type="button" 
             data-category="${cat.id}"
-            class="category-chip shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 border ${
+            class="category-chip shrink-0 px-3 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 border ${
               isActive 
-                ? 'bg-[#1A2B4C] text-white border-[#1A2B4C] shadow-sm' 
-                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300'
+                ? 'bg-[#0a2540] text-white border-[#0a2540] shadow-xs' 
+                : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50 hover:border-slate-400'
             }">
-            <i class="fa-solid ${cat.icon} text-[11px] ${isActive ? 'text-amber-400' : 'text-slate-400'}"></i>
+            <i class="fa-solid ${cat.icon} text-[11px] ${isActive ? 'text-[#c59b27]' : 'text-slate-400'}"></i>
             <span>${cat.name}</span>
           </button>
         `;
@@ -158,13 +158,13 @@ class PensandoGuaymallenApp {
     container.innerHTML = sortedDistricts.map(d => `
       <div 
         onclick="App.navigateToView('map'); App.selectDistrict('${d.id}');"
-        class="bg-white p-3.5 rounded-2xl border border-slate-200 hover:border-sky-400 hover:shadow-md transition-all cursor-pointer group flex items-center gap-3">
-        <span class="w-3.5 h-3.5 rounded-full shrink-0 shadow-sm border border-white" style="background-color: ${d.color};"></span>
+        class="bg-white p-3.5 rounded-sm border border-slate-200 border-l-4 border-l-[#0a2540] hover:border-slate-300 hover:shadow-xs transition-all cursor-pointer group flex items-center gap-3">
+        <span class="w-3 h-3 rounded-none shrink-0 shadow-2xs border border-white" style="background-color: ${d.color};"></span>
         <div class="min-w-0 flex-1 flex items-center justify-between">
-          <h4 class="font-bold text-sm text-slate-900 group-hover:text-sky-700 transition-colors">
+          <h4 class="font-serif font-bold text-sm text-[#0a2540] group-hover:text-[#0072bb] transition-colors">
             ${d.name}
           </h4>
-          <i class="fa-solid fa-arrow-right text-[10px] text-slate-300 group-hover:text-sky-600 group-hover:translate-x-0.5 transition-all"></i>
+          <i class="fa-solid fa-arrow-right text-[10px] text-slate-400 group-hover:text-[#0072bb] group-hover:translate-x-0.5 transition-all"></i>
         </div>
       </div>
     `).join('');
@@ -324,11 +324,10 @@ class PensandoGuaymallenApp {
     });
   }
 
-  // Manejo del menú lateral móvil (Drawer)
+  // Manejo del menú desplegable móvil
   toggleMobileDrawer() {
     const drawer = document.getElementById('mobile-drawer');
-    const backdrop = document.getElementById('mobile-drawer-backdrop');
-    if (!drawer || !backdrop) return;
+    if (!drawer) return;
     const isOpen = drawer.classList.contains('open');
     if (isOpen) {
       this.closeMobileDrawer();
@@ -340,26 +339,39 @@ class PensandoGuaymallenApp {
   openMobileDrawer() {
     const drawer = document.getElementById('mobile-drawer');
     const backdrop = document.getElementById('mobile-drawer-backdrop');
-    if (!drawer || !backdrop) return;
-    window.scrollTo(0, 0);
-    backdrop.classList.remove('hidden');
+    const icon = document.querySelector('#mobile-drawer-btn i');
+    if (!drawer) return;
+    drawer.classList.remove('hidden');
+    if (backdrop) backdrop.classList.remove('hidden');
+    if (icon) {
+      icon.classList.remove('fa-bars');
+      icon.classList.add('fa-xmark');
+    }
     requestAnimationFrame(() => {
-      backdrop.classList.add('open');
       drawer.classList.add('open');
+      if (backdrop) backdrop.classList.add('open');
     });
   }
 
   closeMobileDrawer() {
     const drawer = document.getElementById('mobile-drawer');
     const backdrop = document.getElementById('mobile-drawer-backdrop');
-    if (!drawer || !backdrop) return;
+    const icon = document.querySelector('#mobile-drawer-btn i');
+    if (!drawer) return;
     drawer.classList.remove('open');
-    backdrop.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('open');
+    if (icon) {
+      icon.classList.remove('fa-xmark');
+      icon.classList.add('fa-bars');
+    }
     setTimeout(() => {
-      if (!backdrop.classList.contains('open')) {
+      if (!drawer.classList.contains('open')) {
+        drawer.classList.add('hidden');
+      }
+      if (backdrop && !backdrop.classList.contains('open')) {
         backdrop.classList.add('hidden');
       }
-    }, 300);
+    }, 250);
   }
 
   // Leyenda: colapso en desktop, popover en mobile
@@ -462,10 +474,10 @@ class PensandoGuaymallenApp {
     if (countBadge) {
       if (this.reportScope === 'mine') {
         countBadge.textContent = `${filtered.length} propio${filtered.length === 1 ? '' : 's'}`;
-        countBadge.className = "px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200";
+        countBadge.className = "px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-900 border border-emerald-300";
       } else {
         countBadge.textContent = `${this.reports.length} reportes`;
-        countBadge.className = "px-2.5 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-800 border border-sky-200";
+        countBadge.className = "px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-[#0a2540] border border-slate-300";
       }
     }
 
@@ -477,12 +489,12 @@ class PensandoGuaymallenApp {
         // Estado vacío exclusivo para "Mis Reclamos"
         const userName = this.currentUser ? this.currentUser.name.split(' ')[0] : 'vecino';
         container.innerHTML = `
-          <div class="p-6 sm:p-8 text-center bg-white rounded-3xl border border-dashed border-sky-300 shadow-sm space-y-4">
-            <div class="w-16 h-16 rounded-3xl bg-sky-100 text-sky-700 mx-auto flex items-center justify-center text-2xl shadow-inner">
-              <i class="fa-solid fa-clipboard-user"></i>
+          <div class="p-6 sm:p-8 text-center bg-white rounded-sm border border-slate-300 shadow-2xs space-y-4">
+            <div class="w-14 h-14 rounded-sm bg-slate-100 text-[#0a2540] mx-auto flex items-center justify-center text-2xl border border-slate-200">
+              <i class="fa-solid fa-clipboard-user text-[#0072bb]"></i>
             </div>
             <div>
-              <h4 class="font-extrabold text-slate-900 text-base mb-1">
+              <h4 class="font-serif font-bold text-slate-900 text-base mb-1">
                 Aún no tenés reclamos registrados
               </h4>
               <p class="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
@@ -492,13 +504,13 @@ class PensandoGuaymallenApp {
             <div class="flex flex-col sm:flex-row gap-2 justify-center pt-1">
               <button 
                 onclick="App.openReportModal()"
-                class="px-5 py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider bg-sky-600 hover:bg-sky-700 text-white shadow-md hover:shadow-lg transition-all inline-flex items-center justify-center gap-2">
-                <i class="fa-solid fa-plus text-amber-300"></i>
+                class="px-5 py-2.5 rounded-sm text-xs font-bold uppercase tracking-wider bg-[#0a2540] hover:bg-[#0072bb] text-white shadow-xs border-l-2 border-[#c59b27] transition-all inline-flex items-center justify-center gap-2">
+                <i class="fa-solid fa-plus text-[#c59b27]"></i>
                 <span>Reportar Mi Primer Problema</span>
               </button>
               <button 
                 onclick="App.setFeedReportScope('all')"
-                class="px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all">
+                class="px-4 py-2.5 rounded-sm text-xs font-bold uppercase tracking-wider text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-all">
                 Ver todos los reclamos
               </button>
             </div>
@@ -506,12 +518,12 @@ class PensandoGuaymallenApp {
         `;
       } else if (this.reports.length === 0) {
         container.innerHTML = `
-          <div class="p-6 sm:p-8 text-center bg-white rounded-3xl border border-dashed border-slate-300 shadow-sm space-y-4">
-            <div class="w-16 h-16 rounded-3xl bg-sky-100 text-sky-700 mx-auto flex items-center justify-center text-2xl shadow-inner">
-              <i class="fa-solid fa-map-location-dot"></i>
+          <div class="p-6 sm:p-8 text-center bg-white rounded-sm border border-slate-200 shadow-2xs space-y-4">
+            <div class="w-14 h-14 rounded-sm bg-slate-100 text-[#0a2540] mx-auto flex items-center justify-center text-2xl border border-slate-200">
+              <i class="fa-solid fa-map-location-dot text-[#0072bb]"></i>
             </div>
             <div>
-              <h4 class="font-extrabold text-slate-900 text-base mb-1">
+              <h4 class="font-serif font-bold text-slate-900 text-base mb-1">
                 Aún no hay reclamos registrados
               </h4>
               <p class="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
@@ -520,23 +532,23 @@ class PensandoGuaymallenApp {
             </div>
             <button 
               onclick="App.openReportModal()"
-              class="px-5 py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider bg-[#1A2B4C] hover:bg-sky-700 text-white shadow-md hover:shadow-lg transition-all inline-flex items-center gap-2">
-              <i class="fa-solid fa-plus text-amber-400"></i>
+              class="px-5 py-2.5 rounded-sm text-xs font-bold uppercase tracking-wider bg-[#0a2540] hover:bg-[#0072bb] text-white shadow-xs border-l-2 border-[#c59b27] transition-all inline-flex items-center gap-2">
+              <i class="fa-solid fa-plus text-[#c59b27]"></i>
               <span>Reportar Problema en mi Barrio</span>
             </button>
           </div>
         `;
       } else {
         container.innerHTML = `
-          <div class="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-300">
-            <div class="w-12 h-12 rounded-full bg-slate-200 text-slate-500 mx-auto flex items-center justify-center text-xl mb-3">
+          <div class="p-8 text-center bg-slate-50 rounded-sm border border-slate-200 shadow-2xs space-y-3">
+            <div class="w-12 h-12 rounded-sm bg-white text-slate-500 mx-auto flex items-center justify-center text-xl border border-slate-200">
               <i class="fa-solid fa-magnifying-glass"></i>
             </div>
-            <h4 class="font-bold text-slate-800 text-sm mb-1">No se encontraron reclamos</h4>
+            <h4 class="font-serif font-bold text-slate-800 text-sm mb-1">No se encontraron reclamos</h4>
             <p class="text-xs text-slate-500 mb-4">No hay reportes que coincidan con los filtros seleccionados.</p>
             <button 
               onclick="App.clearFilters()"
-              class="px-4 py-2 rounded-xl text-xs font-semibold bg-[#1A2B4C] text-white hover:bg-[#243b66] transition-all">
+              class="px-4 py-2 rounded-sm text-xs font-bold uppercase tracking-wider bg-[#0a2540] text-white hover:bg-[#0072bb] transition-all border-l-2 border-[#c59b27]">
               Limpiar Filtros
             </button>
           </div>
@@ -546,16 +558,16 @@ class PensandoGuaymallenApp {
     }
 
     const mineBannerHtml = this.reportScope === 'mine' ? `
-      <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-2.5 flex items-center justify-between gap-2 text-xs mb-3">
+      <div class="bg-emerald-50/90 border border-emerald-300 rounded-sm p-2.5 flex items-center justify-between gap-2 text-xs mb-3 shadow-2xs">
         <div class="flex items-center gap-2 min-w-0">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
-          <span class="text-[11px] font-bold text-emerald-950 truncate">
+          <span class="w-2 h-2 rounded-none bg-emerald-600 shrink-0"></span>
+          <span class="text-[11px] font-bold text-emerald-950 truncate uppercase tracking-wider">
             Mostrando tus reclamos personales (${filtered.length})
           </span>
         </div>
         <button 
           onclick="App.setFeedReportScope('all')" 
-          class="text-[10px] font-extrabold text-sky-700 hover:text-sky-900 bg-white px-2 py-1 rounded-lg border border-sky-200 shadow-2xs shrink-0">
+          class="text-[10px] font-bold uppercase tracking-wider text-slate-700 hover:text-black bg-white px-2 py-1 rounded-sm border border-slate-300 shrink-0">
           Ver todos &rarr;
         </button>
       </div>
@@ -568,21 +580,21 @@ class PensandoGuaymallenApp {
       return `
         <div 
           id="report-card-${report.id}"
-          class="report-card group bg-white rounded-2xl p-4 border transition-all duration-200 hover:shadow-md ${
+          class="report-card group bg-white rounded-sm p-4 border transition-all duration-150 hover:shadow-xs ${
             isSelected 
-              ? 'border-sky-500 ring-2 ring-sky-100 shadow-md bg-sky-50/20' 
-              : 'border-slate-200/80 hover:border-slate-300'
+              ? 'border-[#0072bb] border-l-4 border-l-[#0072bb] shadow-xs bg-sky-50/20' 
+              : 'border-slate-200 border-l-4 border-l-[#0a2540] hover:border-slate-300'
           }">
           
           <div class="flex items-start gap-3">
-            <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-base shrink-0 shadow-xs border border-slate-100" style="color: ${cat.color || '#1A2B4C'};">
+            <div class="w-10 h-10 rounded-sm bg-slate-100 flex items-center justify-center text-base shrink-0 border border-slate-200" style="color: ${cat.color || '#0a2540'};">
               <i class="fa-solid ${cat.icon || 'fa-triangle-exclamation'}"></i>
             </div>
 
             <div class="flex-1 min-w-0">
               <div class="flex items-center justify-between gap-1 mb-1">
                 <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200">
                     <i class="fa-solid fa-location-dot text-slate-400 text-[9px]"></i>
                     ${report.districtName}
                   </span>
@@ -591,7 +603,7 @@ class PensandoGuaymallenApp {
                     (report.userEmail && report.userEmail.toLowerCase() === this.currentUser.email.toLowerCase()) ||
                     (report.citizen && report.citizen.toLowerCase() === this.currentUser.email.toLowerCase())
                   ))) ? `
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-900 border border-emerald-300">
                       <i class="fa-solid fa-circle-check text-emerald-600 text-[9px]"></i>
                       Tu Reclamo
                     </span>
@@ -602,7 +614,7 @@ class PensandoGuaymallenApp {
                 </span>
               </div>
 
-              <h3 class="font-bold text-slate-900 text-sm leading-snug line-clamp-2 mb-1 group-hover:text-sky-700 transition-colors">
+              <h3 class="font-serif font-bold text-slate-900 text-sm leading-snug line-clamp-2 mb-1 group-hover:text-[#0072bb] transition-colors">
                 ${report.title}
               </h3>
 
@@ -612,15 +624,15 @@ class PensandoGuaymallenApp {
               </p>
 
               <div class="flex items-center gap-2 mb-2">
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold border ${report.statusColor || 'bg-sky-50 text-sky-700 border-sky-200'}">
-                  <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider border ${report.statusColor || 'bg-sky-50 text-[#005596] border-sky-200'}">
+                  <span class="w-1.5 h-1.5 rounded-none bg-current"></span>
                   ${report.status || 'Registrado'}
                 </span>
               </div>
             </div>
           </div>
 
-          <p class="text-xs text-slate-600 line-clamp-3 mt-2 leading-relaxed bg-slate-50/70 p-2.5 rounded-xl">
+          <p class="text-xs text-slate-600 line-clamp-3 mt-2 leading-relaxed bg-slate-50 p-2.5 rounded-sm border border-slate-200/80">
             ${report.description}
           </p>
 
@@ -628,18 +640,18 @@ class PensandoGuaymallenApp {
             <button 
               type="button"
               onclick="App.viewOnMap('${report.id}')"
-              class="flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-bold text-[#1A2B4C] bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all flex items-center justify-center gap-1">
-              <i class="fa-solid fa-map-location-dot text-[11px]"></i>
+              class="flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-sm text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#0a2540] bg-slate-100 hover:bg-slate-200 border border-slate-200 active:scale-95 transition-all flex items-center justify-center gap-1">
+              <i class="fa-solid fa-map-location-dot text-[11px] text-[#0072bb]"></i>
               <span>Ver en Mapa</span>
             </button>
 
             <button 
               type="button"
               onclick="App.upvoteReport('${report.id}')"
-              class="flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-bold active:scale-95 transition-all flex items-center justify-center gap-1 ${
+              class="flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-sm text-[11px] sm:text-xs font-bold uppercase tracking-wider border active:scale-95 transition-all flex items-center justify-center gap-1 ${
                 report.userUpvoted 
-                  ? 'bg-sky-600 text-white shadow-sm' 
-                  : 'bg-sky-50 hover:bg-sky-100 text-sky-700'
+                  ? 'bg-[#0072bb] text-white border-[#0072bb] shadow-2xs' 
+                  : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
               }">
               <i class="fa-solid fa-thumbs-up text-[11px]"></i>
               <span>${report.upvotes || 1}</span>
@@ -650,7 +662,7 @@ class PensandoGuaymallenApp {
               type="button"
               onclick="App.openShareModal('${report.id}')"
               title="Compartir reporte"
-              class="w-8 sm:w-auto py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all flex items-center justify-center">
+              class="w-8 sm:w-auto py-1.5 sm:py-2 px-2 sm:px-3 rounded-sm text-[11px] sm:text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 active:scale-95 transition-all flex items-center justify-center">
               <i class="fa-solid fa-share-nodes text-[11px]"></i>
             </button>
 
@@ -658,7 +670,7 @@ class PensandoGuaymallenApp {
               type="button"
               onclick="App.deleteReport('${report.id}')"
               title="Eliminar este reclamo de prueba"
-              class="w-8 sm:w-auto py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-semibold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 active:scale-95 transition-all flex items-center justify-center">
+              class="w-8 sm:w-auto py-1.5 sm:py-2 px-2 sm:px-3 rounded-sm text-[11px] sm:text-xs font-semibold text-rose-700 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 border border-rose-200 active:scale-95 transition-all flex items-center justify-center">
               <i class="fa-solid fa-trash-can text-[11px]"></i>
             </button>
           </div>
@@ -795,11 +807,11 @@ class PensandoGuaymallenApp {
     if (!tabAll || !tabMine) return;
 
     if (this.reportScope === 'mine') {
-      tabMine.className = "flex-1 py-1.5 px-2 sm:px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 bg-[#1A2B4C] text-white shadow-2xs font-black text-[11px] sm:text-xs";
-      tabAll.className = "flex-1 py-1.5 px-2 sm:px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-semibold text-[11px] sm:text-xs";
+      tabMine.className = "flex-1 py-1.5 px-2 sm:px-3 rounded-sm transition-all flex items-center justify-center gap-1.5 bg-[#0a2540] text-white shadow-xs font-bold text-[11px] sm:text-xs uppercase tracking-wider";
+      tabAll.className = "flex-1 py-1.5 px-2 sm:px-3 rounded-sm transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-semibold text-[11px] sm:text-xs uppercase tracking-wider";
     } else {
-      tabAll.className = "flex-1 py-1.5 px-2 sm:px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 bg-white text-[#1A2B4C] shadow-2xs font-black text-[11px] sm:text-xs";
-      tabMine.className = "flex-1 py-1.5 px-2 sm:px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-semibold text-[11px] sm:text-xs";
+      tabAll.className = "flex-1 py-1.5 px-2 sm:px-3 rounded-sm transition-all flex items-center justify-center gap-1.5 bg-white text-[#0a2540] border-b-2 border-b-[#0072bb] shadow-xs font-bold text-[11px] sm:text-xs uppercase tracking-wider";
+      tabMine.className = "flex-1 py-1.5 px-2 sm:px-3 rounded-sm transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-semibold text-[11px] sm:text-xs uppercase tracking-wider";
     }
   }
 
@@ -816,20 +828,20 @@ class PensandoGuaymallenApp {
     const resetBtn = document.getElementById('btn-reset-map');
 
     if (tab === 'list') {
-      tabListBtn.classList.add('bg-[#1A2B4C]', 'text-white', 'shadow-sm', 'font-extrabold');
-      tabListBtn.classList.remove('text-slate-600', 'font-bold');
-      tabMapBtn.classList.remove('bg-[#1A2B4C]', 'text-white', 'shadow-sm', 'font-extrabold');
-      tabMapBtn.classList.add('text-slate-600', 'font-bold');
+      tabListBtn.classList.add('bg-[#0a2540]', 'text-white', 'shadow-xs', 'font-bold');
+      tabListBtn.classList.remove('text-slate-600', 'font-semibold');
+      tabMapBtn.classList.remove('bg-[#0a2540]', 'text-white', 'shadow-xs', 'font-bold');
+      tabMapBtn.classList.add('text-slate-600', 'font-semibold');
       listCol.style.display = 'flex';
       mapCol.style.display = 'none';
       if (legendBox) legendBox.style.display = 'none';
       if (resetBtn) resetBtn.style.display = 'none';
       this.closeMobileLegend();
     } else {
-      tabMapBtn.classList.add('bg-[#1A2B4C]', 'text-white', 'shadow-sm', 'font-extrabold');
-      tabMapBtn.classList.remove('text-slate-600', 'font-bold');
-      tabListBtn.classList.remove('bg-[#1A2B4C]', 'text-white', 'shadow-sm', 'font-extrabold');
-      tabListBtn.classList.add('text-slate-600', 'font-bold');
+      tabMapBtn.classList.add('bg-[#0a2540]', 'text-white', 'shadow-xs', 'font-bold');
+      tabMapBtn.classList.remove('text-slate-600', 'font-semibold');
+      tabListBtn.classList.remove('bg-[#0a2540]', 'text-white', 'shadow-xs', 'font-bold');
+      tabListBtn.classList.add('text-slate-600', 'font-semibold');
       listCol.style.display = 'none';
       mapCol.style.display = 'block';
       if (legendBox) legendBox.style.display = '';
@@ -1354,33 +1366,33 @@ class PensandoGuaymallenApp {
 
     if (this.authMode === 'register') {
       if (tabLogin) {
-        tabLogin.className = "flex-1 py-2 px-2 sm:px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1 sm:gap-1.5 text-slate-500 hover:text-slate-800 bg-transparent transition-colors";
+        tabLogin.className = "flex-1 py-2 px-2 sm:px-3 rounded-sm text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 text-slate-500 hover:text-slate-800 bg-transparent transition-colors";
       }
       if (tabRegister) {
-        tabRegister.className = "flex-1 py-2 px-2 sm:px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1 sm:gap-1.5 bg-white text-[#1A2B4C] shadow-sm transition-colors";
+        tabRegister.className = "flex-1 py-2 px-2 sm:px-3 rounded-sm text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 bg-white text-[#0a2540] border-b-2 border-b-[#0072bb] shadow-2xs transition-colors";
       }
       if (modalTitle) modalTitle.textContent = "Registrá tu Cuenta Vecinal";
       if (modalDesc) modalDesc.textContent = "Sumate al portal con tu correo y contraseña para gestionar tus reclamos.";
       if (submitBtnText) submitBtnText.textContent = "Registrarme y Acceder";
-      if (submitIcon) submitIcon.className = "fa-solid fa-user-plus text-sky-300";
+      if (submitIcon) submitIcon.className = "fa-solid fa-user-plus text-[#c59b27]";
       if (switchPrompt) {
-        switchPrompt.innerHTML = `¿Ya tenés una cuenta registrada? <button type="button" onclick="App.switchAuthMode('login')" class="text-sky-700 font-bold hover:underline ml-1">Iniciá sesión acá</button>`;
+        switchPrompt.innerHTML = `¿Ya tenés una cuenta registrada? <button type="button" onclick="App.switchAuthMode('login')" class="text-[#0072bb] font-bold hover:underline ml-1">Iniciá sesión acá</button>`;
       }
       if (confirmContainer) confirmContainer.classList.remove('hidden');
       if (confirmInput) confirmInput.required = true;
     } else {
       if (tabLogin) {
-        tabLogin.className = "flex-1 py-2 px-2 sm:px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1 sm:gap-1.5 bg-white text-[#1A2B4C] shadow-sm transition-colors";
+        tabLogin.className = "flex-1 py-2 px-2 sm:px-3 rounded-sm text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 bg-white text-[#0a2540] border-b-2 border-b-[#0072bb] shadow-2xs transition-colors";
       }
       if (tabRegister) {
-        tabRegister.className = "flex-1 py-2 px-2 sm:px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1 sm:gap-1.5 text-slate-500 hover:text-slate-800 bg-transparent transition-colors";
+        tabRegister.className = "flex-1 py-2 px-2 sm:px-3 rounded-sm text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 text-slate-500 hover:text-slate-800 bg-transparent transition-colors";
       }
       if (modalTitle) modalTitle.textContent = "Ingresá a tu Cuenta Vecinal";
       if (modalDesc) modalDesc.textContent = "Accedé con tu correo y contraseña para hacer seguimiento de tus reclamos.";
       if (submitBtnText) submitBtnText.textContent = "Iniciar Sesión y Acceder";
-      if (submitIcon) submitIcon.className = "fa-solid fa-right-to-bracket text-sky-300";
+      if (submitIcon) submitIcon.className = "fa-solid fa-right-to-bracket text-[#c59b27]";
       if (switchPrompt) {
-        switchPrompt.innerHTML = `¿No registraste tu correo aún? <button type="button" onclick="App.switchAuthMode('register')" class="text-sky-700 font-bold hover:underline ml-1">Registrate acá</button>`;
+        switchPrompt.innerHTML = `¿No registraste tu correo aún? <button type="button" onclick="App.switchAuthMode('register')" class="text-[#0072bb] font-bold hover:underline ml-1">Registrate acá</button>`;
       }
       if (confirmContainer) confirmContainer.classList.add('hidden');
       if (confirmInput) {
@@ -1530,16 +1542,16 @@ class PensandoGuaymallenApp {
               type="button"
               onclick="App.openAuthModal('login')"
               id="btn-header-login"
-              class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-[#1A2B4C] hover:bg-sky-50 border border-slate-200 hover:border-sky-300 shadow-2xs transition-all flex items-center gap-1 sm:gap-1.5">
-              <i class="fa-solid fa-right-to-bracket text-xs text-sky-600"></i>
+              class="px-3 py-1.5 rounded-sm text-xs font-bold uppercase tracking-wider bg-white text-[#0a2540] hover:bg-slate-50 border border-slate-300 shadow-2xs transition-all flex items-center gap-1.5">
+              <i class="fa-solid fa-right-to-bracket text-xs text-[#0072bb]"></i>
               <span>Ingresar</span>
             </button>
             <button 
               type="button"
               onclick="App.openAuthModal('register')"
               id="btn-header-register"
-              class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-extrabold bg-[#1A2B4C] hover:bg-[#243B66] text-white shadow-2xs md:shadow-sm transition-all flex items-center gap-1 sm:gap-1.5">
-              <i class="fa-solid fa-user-plus text-xs text-sky-300"></i>
+              class="px-3 py-1.5 rounded-sm text-xs font-bold uppercase tracking-wider bg-[#0a2540] hover:bg-[#0072bb] text-white shadow-2xs transition-all flex items-center gap-1.5 border-l-2 border-[#c59b27]">
+              <i class="fa-solid fa-user-plus text-xs text-[#c59b27]"></i>
               <span>Registrarse</span>
             </button>
           </div>
@@ -1549,10 +1561,10 @@ class PensandoGuaymallenApp {
             type="button"
             onclick="App.openAuthModal('login')"
             id="btn-header-auth-mobile"
-            class="md:hidden px-2.5 py-1.5 rounded-xl text-[11px] xs:text-xs font-bold bg-[#1A2B4C] hover:bg-[#243B66] active:scale-95 text-white shadow-2xs flex items-center gap-1.5 transition-all whitespace-nowrap">
-            <i class="fa-solid fa-circle-user text-xs text-sky-300 shrink-0"></i>
-            <span class="hidden xs:inline">Ingresar / Registro</span>
-            <span class="xs:hidden">Ingresar</span>
+            class="md:hidden px-2.5 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider bg-[#0a2540] hover:bg-[#0072bb] active:scale-95 text-white shadow-2xs flex items-center gap-1.5 transition-all whitespace-nowrap border-l-2 border-[#c59b27]">
+            <i class="fa-solid fa-circle-user text-xs text-[#c59b27] shrink-0"></i>
+            <span class="hidden xs:inline">Acceso Vecinal</span>
+            <span class="xs:hidden">Acceso</span>
           </button>
         `;
       } else {
@@ -1562,26 +1574,26 @@ class PensandoGuaymallenApp {
             <button 
               type="button"
               onclick="App.toggleUserDropdown()"
-              class="px-2 py-1.5 sm:px-3.5 sm:py-2 rounded-full md:rounded-xl text-[11px] sm:text-sm font-extrabold bg-sky-50 md:bg-[#1A2B4C] text-sky-900 md:text-white border border-sky-200 md:border-sky-500/30 hover:bg-sky-100 md:hover:bg-[#243B66] shadow-2xs md:shadow-sm transition-all flex items-center gap-1 sm:gap-1.5">
-              <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+              class="px-2.5 py-1.5 rounded-sm text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-white text-[#0a2540] border border-slate-300 hover:bg-slate-50 shadow-2xs transition-all flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-none bg-emerald-600 shrink-0"></span>
               <span class="max-w-[75px] xs:max-w-[105px] sm:max-w-[150px] truncate" title="${this.currentUser.email}">${this.currentUser.email}</span>
-              <i class="fa-solid fa-chevron-down text-[8px] sm:text-[9px] opacity-75 shrink-0"></i>
+              <i class="fa-solid fa-chevron-down text-[8px] sm:text-[9px] text-slate-400 shrink-0"></i>
             </button>
 
             <!-- Dropdown Menu de Usuario -->
             <div 
               id="user-profile-dropdown" 
-              class="hidden absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-2 z-[600] space-y-1">
+              class="hidden absolute right-0 mt-2 w-64 bg-white rounded-sm shadow-2xl border border-slate-300 p-2 z-[600] space-y-1">
               
-              <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-100 mb-1">
+              <div class="p-2.5 bg-slate-50 rounded-sm border border-slate-200 mb-1">
                 <div class="flex items-center gap-2">
-                  <div class="w-8 h-8 rounded-full bg-sky-600 text-white font-black text-xs flex items-center justify-center shrink-0">
-                    <i class="fa-solid fa-envelope text-xs"></i>
+                  <div class="w-8 h-8 rounded-sm bg-[#0a2540] text-white font-bold text-xs flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-envelope text-xs text-[#c59b27]"></i>
                   </div>
                   <div class="min-w-0">
-                    <p class="font-extrabold text-xs text-slate-900 truncate" title="${this.currentUser.email}">${this.currentUser.email}</p>
-                    <p class="text-[10px] text-emerald-700 font-bold flex items-center gap-1">
-                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <p class="font-bold text-xs text-[#0a2540] truncate" title="${this.currentUser.email}">${this.currentUser.email}</p>
+                    <p class="text-[10px] text-emerald-800 font-bold uppercase tracking-wider flex items-center gap-1">
+                      <span class="w-1.5 h-1.5 rounded-none bg-emerald-600"></span>
                       Vecino Conectado
                     </p>
                   </div>
@@ -1591,27 +1603,27 @@ class PensandoGuaymallenApp {
               <button 
                 type="button"
                 onclick="App.setFeedReportScope('mine'); App.closeUserDropdown();" 
-                class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-[#1A2B4C] hover:bg-sky-50 hover:text-sky-700 transition-colors flex items-center justify-between">
+                class="w-full text-left px-3 py-2 rounded-sm text-xs font-bold uppercase tracking-wider text-[#0a2540] hover:bg-slate-100 transition-colors flex items-center justify-between">
                 <span class="flex items-center gap-2">
-                  <i class="fa-solid fa-user-check text-emerald-600 text-xs"></i>
+                  <i class="fa-solid fa-user-check text-[#0072bb] text-xs"></i>
                   <span>Ver Mis Reclamos</span>
                 </span>
-                <span class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-100 text-emerald-800 font-black">${myCount}</span>
+                <span class="px-2 py-0.5 rounded-none text-[10px] bg-slate-200 text-[#0a2540] font-bold">${myCount}</span>
               </button>
 
               <button 
                 type="button"
                 onclick="App.openReportModal(); App.closeUserDropdown();" 
-                class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors flex items-center gap-2">
-                <i class="fa-solid fa-plus text-amber-500 text-xs"></i>
+                class="w-full text-left px-3 py-2 rounded-sm text-xs font-bold uppercase tracking-wider text-slate-700 hover:bg-slate-100 transition-colors flex items-center gap-2">
+                <i class="fa-solid fa-plus text-[#0072bb] text-xs"></i>
                 <span>Nuevo Reclamo</span>
               </button>
 
-              <div class="pt-1 border-t border-slate-100">
+              <div class="pt-1 border-t border-slate-200">
                 <button 
                   type="button"
                   onclick="App.handleLogout(); App.closeUserDropdown();" 
-                  class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2">
+                  class="w-full text-left px-3 py-2 rounded-sm text-xs font-bold uppercase tracking-wider text-rose-700 hover:bg-rose-50 transition-colors flex items-center gap-2">
                   <i class="fa-solid fa-right-from-bracket text-xs"></i>
                   <span>Cerrar Sesión</span>
                 </button>
@@ -1630,15 +1642,15 @@ class PensandoGuaymallenApp {
             <button 
               type="button"
               onclick="App.openAuthModal('login'); App.closeMobileDrawer();" 
-              class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-white text-[#1A2B4C] border border-slate-200 hover:bg-slate-50 shadow-2xs flex items-center justify-center gap-2 transition-all">
-              <i class="fa-solid fa-right-to-bracket text-sky-600 text-xs"></i>
+              class="w-full py-2.5 px-4 rounded-sm text-xs font-bold uppercase tracking-wider bg-white text-[#0a2540] border border-slate-300 hover:bg-slate-50 shadow-2xs flex items-center justify-center gap-2 transition-all">
+              <i class="fa-solid fa-right-to-bracket text-[#0072bb] text-xs"></i>
               <span>Ingresar con mi Correo</span>
             </button>
             <button 
               type="button"
               onclick="App.openAuthModal('register'); App.closeMobileDrawer();" 
-              class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-[#1A2B4C] hover:bg-[#243B66] text-white shadow-sm flex items-center justify-center gap-2 transition-all">
-              <i class="fa-solid fa-user-plus text-sky-300 text-xs"></i>
+              class="w-full py-2.5 px-4 rounded-sm text-xs font-bold uppercase tracking-wider bg-[#0a2540] hover:bg-[#0072bb] text-white shadow-xs border-l-2 border-[#c59b27] flex items-center justify-center gap-2 transition-all">
+              <i class="fa-solid fa-user-plus text-[#c59b27] text-xs"></i>
               <span>Registrarse con mi Correo</span>
             </button>
           </div>
@@ -1646,25 +1658,25 @@ class PensandoGuaymallenApp {
       } else {
         const myCount = this.getMyReports().length;
         drawerContainer.innerHTML = `
-          <div class="p-3 bg-sky-50 rounded-2xl border border-sky-200/80 space-y-2">
+          <div class="p-3 bg-slate-50 rounded-sm border border-slate-200 space-y-2">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2 min-w-0">
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
-                <span class="text-xs font-black text-sky-950 truncate" title="${this.currentUser.email}">${this.currentUser.email}</span>
+                <span class="w-2 h-2 rounded-none bg-emerald-600 shrink-0"></span>
+                <span class="text-xs font-bold text-[#0a2540] truncate uppercase tracking-wider" title="${this.currentUser.email}">${this.currentUser.email}</span>
               </div>
-              <span class="text-[10px] font-bold text-sky-700 bg-white px-2 py-0.5 rounded-full border border-sky-200 shrink-0">${myCount} reclamos</span>
+              <span class="text-[10px] font-bold text-slate-700 bg-white px-2 py-0.5 rounded-none border border-slate-200 shrink-0">${myCount} reclamos</span>
             </div>
             <button 
               type="button"
               onclick="App.setFeedReportScope('mine'); App.switchMobileTab('list'); App.closeMobileDrawer();" 
-              class="w-full py-2 px-3 rounded-xl text-xs font-extrabold bg-[#1A2B4C] text-white shadow-xs flex items-center justify-center gap-2">
-              <i class="fa-solid fa-user-check text-emerald-400 text-xs"></i>
+              class="w-full py-2 px-3 rounded-sm text-xs font-bold uppercase tracking-wider bg-[#0a2540] text-white shadow-xs border-l-2 border-[#c59b27] flex items-center justify-center gap-2">
+              <i class="fa-solid fa-user-check text-[#c59b27] text-xs"></i>
               <span>Ver Mis Reclamos</span>
             </button>
             <button 
               type="button"
               onclick="App.handleLogout(); App.closeMobileDrawer();" 
-              class="w-full py-1 text-center text-xs font-bold text-red-600 hover:underline">
+              class="w-full py-1 text-center text-xs font-bold text-rose-700 uppercase tracking-wider hover:underline">
               Cerrar Sesión
             </button>
           </div>
@@ -1735,9 +1747,9 @@ class PensandoGuaymallenApp {
 
     const toast = document.createElement('div');
     const bgColors = {
-      success: 'bg-emerald-600 text-white',
-      error: 'bg-red-600 text-white',
-      info: 'bg-[#1A2B4C] text-white'
+      success: 'bg-emerald-800 text-white border-l-4 border-emerald-400',
+      error: 'bg-rose-900 text-white border-l-4 border-rose-400',
+      info: 'bg-[#0a2540] text-white border-l-4 border-[#c59b27]'
     };
     const icons = {
       success: 'fa-circle-check',
@@ -1745,7 +1757,7 @@ class PensandoGuaymallenApp {
       info: 'fa-circle-info'
     };
 
-    toast.className = `flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl text-xs font-semibold transform transition-all duration-300 translate-y-2 opacity-0 ${bgColors[type] || bgColors.info}`;
+    toast.className = `flex items-center gap-2.5 px-4 py-3 rounded-sm shadow-xl text-xs font-bold uppercase tracking-wider transform transition-all duration-300 translate-y-2 opacity-0 ${bgColors[type] || bgColors.info}`;
     toast.innerHTML = `
       <i class="fa-solid ${icons[type] || icons.info} text-sm"></i>
       <span>${message}</span>

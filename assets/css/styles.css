@@ -3,18 +3,20 @@
    Senadora Provincial Luz Llorens | Guaymallén, Mendoza
    ======================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700&family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap');
 
 :root {
-  --navy-primary: #1A2B4C;
-  --navy-dark: #0F1A2E;
-  --navy-light: #243B66;
-  --celeste-brand: #0EA5E9;
-  --celeste-dark: #0284C7;
-  --celeste-light: #BAE6FD;
-  --gold-accent: #F59E0B;
-  --green-accent: #10B981;
-  --red-accent: #EF4444;
+  --navy-primary: #0a2540;
+  --navy-dark: #061727;
+  --navy-light: #0f3460;
+  --celeste-brand: #0072bb;
+  --celeste-dark: #005596;
+  --celeste-light: #3898ec;
+  --gold-accent: #c59b27;
+  --gold-light: #d4af37;
+  --bg-stone: #f4f6f8;
+  --green-accent: #059669;
+  --red-accent: #dc2626;
 }
 
 html {
@@ -28,22 +30,28 @@ body {
   height: 100dvh;
   margin: 0;
   padding: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: #1e293b;
-  background-color: #f8fafc;
+  background-color: var(--bg-stone);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
   max-width: 100%;
   overscroll-behavior: none;
 }
 
-/* Header Sticky Permanente en Desktop y Mobile */
+/* Tipografía Editorial Institucional */
+.font-serif, h1, h2 {
+  font-family: 'Merriweather', Georgia, serif;
+}
+
+/* Header Sticky Permanente en Desktop y Mobile con z-index superior */
 header {
   position: sticky !important;
   top: 0 !important;
-  z-index: 40 !important;
+  z-index: 50 !important;
   padding-top: env(safe-area-inset-top, 0px) !important;
   background-color: #ffffff !important;
+  border-bottom: 1px solid #cbd5e1 !important;
 }
 
 /* Custom Scrollbar */
@@ -98,7 +106,7 @@ header {
 }
 
 .leaflet-container {
-  font-family: 'Inter', sans-serif !important;
+  font-family: 'Public Sans', -apple-system, sans-serif !important;
   width: 100% !important;
   height: 100% !important;
   background-color: #f1f5f9 !important;
@@ -107,10 +115,10 @@ header {
 /* Custom Leaflet Popup */
 .custom-leaflet-popup .leaflet-popup-content-wrapper {
   padding: 0 !important;
-  border-radius: 1rem !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !important;
   overflow: hidden;
-  border: 1px solid rgba(226, 232, 240, 0.9);
+  border: 1px solid #cbd5e1 !important;
 }
 
 .custom-leaflet-popup .leaflet-popup-content {
@@ -126,10 +134,10 @@ header {
   top: 8px !important;
   right: 8px !important;
   color: #ffffff !important;
-  background: rgba(15, 23, 42, 0.6) !important;
+  background: rgba(10, 37, 64, 0.75) !important;
   width: 24px !important;
   height: 24px !important;
-  border-radius: 9999px !important;
+  border-radius: 2px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -140,20 +148,20 @@ header {
   z-index: 30;
 }
 .custom-leaflet-popup a.leaflet-popup-close-button:hover {
-  background: rgba(15, 23, 42, 0.9) !important;
+  background: rgba(10, 37, 64, 1) !important;
   color: #fff !important;
 }
 
 /* Custom Tooltip for Districts */
 .custom-district-tooltip {
-  background-color: rgba(255, 255, 255, 0.95) !important;
-  border: 1px solid #e2e8f0 !important;
+  background-color: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid #cbd5e1 !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
-  border-radius: 0.5rem !important;
+  border-radius: 2px !important;
   padding: 0 !important;
 }
 .custom-district-tooltip:before {
-  border-top-color: rgba(255, 255, 255, 0.95) !important;
+  border-top-color: rgba(255, 255, 255, 0.98) !important;
 }
 
 /* Map Zoom Controls */
@@ -162,15 +170,15 @@ header {
   margin-right: 1rem !important;
 }
 .leaflet-bar {
-  border: 1px solid rgba(226, 232, 240, 0.9) !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1) !important;
-  border-radius: 0.75rem !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 2px !important;
   overflow: hidden;
 }
 .leaflet-bar a {
   background-color: #ffffff !important;
-  color: #1e293b !important;
-  border-bottom: 1px solid #f1f5f9 !important;
+  color: #0a2540 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
   width: 36px !important;
   height: 36px !important;
   line-height: 36px !important;
@@ -178,19 +186,20 @@ header {
 }
 .leaflet-bar a:hover {
   background-color: #f8fafc !important;
-  color: #0284C7 !important;
+  color: #0072bb !important;
 }
 
 /* Senator Floating Card on Map */
 #senator-floating-card {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 2px !important;
 }
 #senator-floating-card.minimized {
   width: auto !important;
   max-width: 56px !important;
   padding: 6px !important;
   background: white !important;
-  border-radius: 9999px !important;
+  border-radius: 2px !important;
 }
 #senator-floating-card.minimized .senator-card-expanded {
   display: none !important;
@@ -202,6 +211,7 @@ header {
 /* Legend Box */
 #map-legend-box {
   transition: all 0.25s ease-in-out;
+  border-radius: 2px !important;
 }
 #map-legend-box.collapsed .legend-items {
   display: none !important;
@@ -240,26 +250,50 @@ header {
     left: 0;
     margin-bottom: 8px;
     z-index: 500;
-    width: 195px;
+    width: 210px;
+    border-radius: 2px !important;
   }
 }
 
-/* Mobile Drawer (Menú Hamburguesa) */
+/* Mobile Switcher (Ver Mapa / Lista de Reclamos) - Sticky permanente bajo el Header */
+#mobile-view-switcher {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: calc(3.5rem + env(safe-area-inset-top, 0px)) !important;
+  z-index: 30 !important;
+  background-color: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border-bottom: 1px solid #cbd5e1 !important;
+}
+
+/* Mobile Dropdown Menu (Menú Institucional Desplegable Oficial) */
 #mobile-drawer {
   position: fixed !important;
-  top: 0 !important;
-  bottom: 0 !important;
+  top: calc(3.5rem + env(safe-area-inset-top, 0px)) !important;
+  left: 0 !important;
   right: 0 !important;
-  height: 100% !important;
-  height: 100dvh !important;
-  max-height: 100dvh !important;
-  overflow: hidden !important;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform;
+  bottom: 0 !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+  height: auto !important;
+  background-color: #ffffff !important;
+  z-index: 9999 !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  border-top: 1px solid #cbd5e1 !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2) !important;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease !important;
+  transform: translateY(-8px);
+  opacity: 0;
+  pointer-events: none;
 }
 #mobile-drawer.open {
-  transform: translateX(0) !important;
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
+
 #mobile-drawer-backdrop {
   position: fixed !important;
   top: 0 !important;
@@ -268,9 +302,11 @@ header {
   bottom: 0 !important;
   width: 100vw !important;
   height: 100% !important;
-  height: 100dvh !important;
-  overscroll-behavior: contain !important;
-  transition: opacity 0.3s ease-in-out;
+  z-index: 9998 !important;
+  background-color: rgba(10, 37, 64, 0.6) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  transition: opacity 0.25s ease !important;
 }
 #mobile-drawer-backdrop.open {
   display: block !important;
@@ -386,19 +422,20 @@ header {
 }
 
 .draggable-pin-tooltip {
-  background-color: #1A2B4C !important;
+  background-color: #0a2540 !important;
   color: #ffffff !important;
-  font-weight: 800 !important;
+  font-weight: 700 !important;
   font-size: 11px !important;
   padding: 5px 10px !important;
-  border-radius: 10px !important;
+  border-radius: 2px !important;
   border: 1px solid rgba(255, 255, 255, 0.25) !important;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25) !important;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .draggable-pin-tooltip:before {
-  border-top-color: #1A2B4C !important;
+  border-top-color: #0a2540 !important;
 }
 
 /* Animación corta para el banner del picker */

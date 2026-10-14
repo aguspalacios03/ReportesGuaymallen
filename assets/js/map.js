@@ -131,8 +131,8 @@ class GuaymallenMap {
 
       // Tooltip informativo al pasar el cursor
       polygon.bindTooltip(`
-        <div class="px-2.5 py-1 text-xs font-bold text-slate-800 flex items-center gap-2 shadow-sm rounded-lg bg-white/95">
-          <span class="w-2.5 h-2.5 rounded-full inline-block border border-white shrink-0" style="background-color: ${distColor};"></span>
+        <div class="px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2 shadow-sm rounded-sm bg-white/95 border border-slate-300">
+          <span class="w-2.5 h-2.5 rounded-none inline-block border border-white shrink-0" style="background-color: ${distColor};"></span>
           <span>Distrito ${dist.name}</span>
         </div>
       `, {
@@ -288,10 +288,10 @@ class GuaymallenMap {
       });
 
       const popupContent = `
-        <div class="w-72 bg-white rounded-xl shadow-xl overflow-hidden font-sans border border-slate-100">
+        <div class="w-72 bg-white rounded-sm shadow-2xl overflow-hidden font-sans border border-slate-300 border-l-4 border-l-[#0072bb]">
           <div class="p-3.5 space-y-2">
             <div class="flex items-center justify-between gap-1">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-sky-100 text-sky-800">
+              <span class="px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-[#0a2540] border border-slate-200">
                 ${report.districtName}
               </span>
               <span class="text-[10px] text-slate-400 font-medium">
@@ -299,7 +299,7 @@ class GuaymallenMap {
               </span>
             </div>
 
-            <h4 class="font-bold text-slate-900 text-sm leading-snug">
+            <h4 class="font-serif font-bold text-slate-900 text-sm leading-snug">
               ${report.title}
             </h4>
             
@@ -308,14 +308,14 @@ class GuaymallenMap {
               <span>${report.address}</span>
             </p>
 
-            <p class="text-xs text-slate-600 line-clamp-3 leading-relaxed bg-slate-50 p-2 rounded-lg">
+            <p class="text-xs text-slate-600 line-clamp-3 leading-relaxed bg-slate-50 p-2 rounded-sm border border-slate-200/80">
               ${report.description}
             </p>
 
             <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
               <button 
                 onclick="window.App.upvoteReport('${report.id}')"
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ${report.userUpvoted ? 'bg-sky-600 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'} transition-all shadow-sm">
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-bold uppercase tracking-wider ${report.userUpvoted ? 'bg-[#0072bb] text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'} transition-all shadow-xs border border-slate-200">
                 <svg class="w-3.5 h-3.5 ${report.userUpvoted ? 'fill-current' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/></svg>
                 <span>${report.upvotes || 1}</span>
                 <span>${report.userUpvoted ? 'Apoyado' : 'Apoyar'}</span>
@@ -323,7 +323,7 @@ class GuaymallenMap {
 
               <button 
                 onclick="window.App.focusReportCard('${report.id}')"
-                class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#1A2B4C] hover:bg-[#243b66] text-white transition-all shadow-sm">
+                class="px-3 py-1.5 rounded-sm text-xs font-bold uppercase tracking-wider bg-[#0a2540] hover:bg-[#0072bb] text-white transition-all shadow-xs border-l-2 border-[#c59b27]">
                 Ver en Lista
               </button>
             </div>
