@@ -1,0 +1,20 @@
+{
+  "name": "pensando-guaymallen",
+  "version": "1.0.0",
+  "description": "Plataforma Ciudadana y Mapa Participativo - Senadora Provincial Luz Llorens",
+  "main": "serve.js",
+  "scripts": {
+    "start": "node serve.js",
+    "server": "node serve.js",
+    "dev": "node serve.js",
+    "build": "node build.js",
+    "preview": "node serve.js"
+  },
+  "keywords": [
+    "guaymallen",
+    "mendoza",
+    "luz-llorens"
+  ],
+  "author": "",
+  "license": "ISC"
+}

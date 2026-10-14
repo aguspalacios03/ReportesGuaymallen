@@ -1,0 +1,1394 @@
+/**
+ * Pensando Guaymallén - Lógica Principal de la Aplicación
+ * Senadora Provincial Luz Llorens
+ */
+
+class PensandoGuaymallenApp {
+  constructor() {
+    this.currentView = 'map'; // 'map' | 'conoce' | 'propuestas' | 'contacto'
+    this.reports = this.loadReports();
+    this.currentUser = null; // Usuario autenticado { id, name, email }
+    this.reportScope = 'all'; // 'all' | 'mine'
+    this.selectedDistrict = 'all';
+    this.selectedCategory = 'all';
+    this.searchQuery = '';
+    this.activeReportId = null;
+    this.mapInstance = null;
+    this.activeTab = 'map'; // for mobile view: 'map' | 'list' (en mobile arranca en 'map' como en el mockup)
+    this.isPickingLocation = false;
+    this.pendingLocation = null;
+
+    this.init();
+  }
+
+  loadReports() {
+    // Modo de prueba interactivo: No se persiste en el almacenamiento permanente.
+    // Al recargar la página (F5), la plataforma vuelve automáticamente a 0 reclamos.
+    try {
+      localStorage.removeItem('pensando_guaymallen_reports');
+      localStorage.removeItem('pensando_guaymallen_reports_v2');
+      sessionStorage.removeItem('pensando_guaymallen_reports_v2');
+    } catch (e) {}
+    return [];
+  }
+
+  saveReports() {
+    // No se guarda en localStorage: los reclamos solo viven mientras la pestaña esté abierta
+  }
+
+  init() {
+    // Inicializar mapa de Guaymallén
+    this.mapInstance = new GuaymallenMap('map-container');
+
+    // Cargar selectores de distritos y categorías
+    this.populateDistrictSelects();
+    this.populateCategoryFilters();
+
+    // Renderizar lista de distritos en la página "Conocé Guaymallén"
+    this.renderConoceDistricts();
+
+    // Renderizar estado de usuario en Header y Drawer
+    this.renderUserHeader();
+    this.updateScopeTabs();
+
+    // Renderizar tarjetas de reportes
+    this.renderReports();
+
+    // Actualizar marcadores en el mapa
+    this.updateMapMarkers();
+
+    // Actualizar contador
+    this.updateStats();
+
+    // Inicializar pestaña móvil si estamos en pantalla chica
+    if (window.innerWidth < 768) {
+      this.switchMobileTab('map');
+    }
+
+    // Eventos
+    this.attachEvents();
+  }
+
+  populateDistrictSelects() {
+    const mainSelect = document.getElementById('filter-district-select');
+    const bannerSelect = document.getElementById('banner-district-select');
+    const step1Select = document.getElementById('step1-district-select');
+    const propuestaSelect = document.getElementById('propuesta-district-select');
+
+    // Ordenamiento alfabético de la A a la Z respetando acentos en español
+    const sortedDistricts = [...APP_DATA.districts].sort((a, b) => 
+      a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })
+    );
+
+    const options = [
+      { id: 'all', name: `Todos los Barrios / Distritos (${sortedDistricts.length})` },
+      ...sortedDistricts
+    ];
+
+    const generateHtml = (includeAll = true) => {
+      return (includeAll ? options : sortedDistricts)
+        .map(d => `<option value="${d.id}">${d.name}</option>`)
+        .join('');
+    };
+
+    if (mainSelect) mainSelect.innerHTML = generateHtml(true);
+    if (bannerSelect) bannerSelect.innerHTML = generateHtml(true);
+    if (step1Select) step1Select.innerHTML = generateHtml(false);
+
+    const pickerSelect = document.getElementById('map-picker-district-select');
+    if (pickerSelect) pickerSelect.innerHTML = generateHtml(false);
+
+    if (propuestaSelect) {
+      propuestaSelect.innerHTML = `
+        <option value="" disabled selected>Seleccioná tu distrito...</option>
+        ${sortedDistricts.map(d => `<option value="${d.id}">${d.name}</option>`).join('')}
+      `;
+    }
+  }
+
+  populateCategoryFilters() {
+    const categoryBar = document.getElementById('category-filter-bar');
+    const modalCategorySelect = document.getElementById('modal-category-select');
+
+    if (categoryBar) {
+      categoryBar.innerHTML = APP_DATA.categories.map(cat => {
+        const isActive = this.selectedCategory === cat.id;
+        return `
+          <button 
+            type="button"
+            data-category="${cat.id}"
+            class="category-chip shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 border ${
+              isActive 
+                ? 'bg-[#1A2B4C] text-white border-[#1A2B4C] shadow-sm' 
+                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300'
+            }">
+            <i class="fa-solid ${cat.icon} text-[11px] ${isActive ? 'text-amber-400' : 'text-slate-400'}"></i>
+            <span>${cat.name}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    if (modalCategorySelect) {
+      modalCategorySelect.innerHTML = APP_DATA.categories
+        .filter(c => c.id !== 'all')
+        .map(c => `<option value="${c.id}">${c.name}</option>`)
+        .join('');
+    }
+  }
+
+  renderConoceDistricts() {
+    const container = document.getElementById('conoce-districts-grid');
+    if (!container) return;
+
+    // Ordenamiento alfabético A-Z
+    const sortedDistricts = [...APP_DATA.districts].sort((a, b) => 
+      a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })
+    );
+
+    container.innerHTML = sortedDistricts.map(d => `
+      <div 
+        onclick="App.navigateToView('map'); App.selectDistrict('${d.id}');"
+        class="bg-white p-3.5 rounded-2xl border border-slate-200 hover:border-sky-400 hover:shadow-md transition-all cursor-pointer group flex items-center gap-3">
+        <span class="w-3.5 h-3.5 rounded-full shrink-0 shadow-sm border border-white" style="background-color: ${d.color};"></span>
+        <div class="min-w-0 flex-1 flex items-center justify-between">
+          <h4 class="font-bold text-sm text-slate-900 group-hover:text-sky-700 transition-colors">
+            ${d.name}
+          </h4>
+          <i class="fa-solid fa-arrow-right text-[10px] text-slate-300 group-hover:text-sky-600 group-hover:translate-x-0.5 transition-all"></i>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  attachEvents() {
+    // Select de distritos panel izquierdo
+    const mainSelect = document.getElementById('filter-district-select');
+    if (mainSelect) {
+      mainSelect.addEventListener('change', (e) => this.selectDistrict(e.target.value));
+    }
+
+    // Select de distritos banner inferior
+    const bannerSelect = document.getElementById('banner-district-select');
+    if (bannerSelect) {
+      bannerSelect.addEventListener('change', (e) => this.selectDistrict(e.target.value));
+    }
+
+    // Select de distrito en el banner del selector de ubicación en el mapa
+    const pickerSelect = document.getElementById('map-picker-district-select');
+    if (pickerSelect) {
+      pickerSelect.addEventListener('change', (e) => this.changePickerDistrict(e.target.value));
+    }
+
+    // Buscador
+    const searchInput = document.getElementById('search-reports-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        this.searchQuery = e.target.value.toLowerCase().trim();
+        this.renderReports();
+        this.updateMapMarkers();
+      });
+    }
+
+    // Chips de categorías
+    const categoryBar = document.getElementById('category-filter-bar');
+    if (categoryBar) {
+      categoryBar.addEventListener('click', (e) => {
+        const btn = e.target.closest('.category-chip');
+        if (!btn) return;
+        this.selectCategory(btn.getAttribute('data-category'));
+      });
+    }
+
+    // Centrar mapa
+    const btnResetMap = document.getElementById('btn-reset-map');
+    if (btnResetMap) {
+      btnResetMap.addEventListener('click', () => this.selectDistrict('all'));
+    }
+
+    // Minimizar / expandir tarjeta de la Senadora
+    const toggleSenatorBtn = document.getElementById('toggle-senator-card');
+    const senatorCard = document.getElementById('senator-floating-card');
+    if (toggleSenatorBtn && senatorCard) {
+      toggleSenatorBtn.addEventListener('click', () => {
+        senatorCard.classList.toggle('minimized');
+      });
+    }
+
+    // Tabs móvil (Feed vs Mapa)
+    const tabListBtn = document.getElementById('tab-btn-list');
+    const tabMapBtn = document.getElementById('tab-btn-map');
+    if (tabListBtn && tabMapBtn) {
+      tabListBtn.addEventListener('click', () => this.switchMobileTab('list'));
+      tabMapBtn.addEventListener('click', () => this.switchMobileTab('map'));
+    }
+
+    // Formulario de nuevo reporte
+    const newReportForm = document.getElementById('new-report-form');
+    if (newReportForm) {
+      newReportForm.addEventListener('submit', (e) => this.handleNewReportSubmit(e));
+    }
+
+    // Botón para fijar ubicación en el mapa
+    const btnPickLocation = document.getElementById('btn-pick-map-location');
+    if (btnPickLocation) {
+      btnPickLocation.addEventListener('click', () => this.enableMapLocationPicker());
+    }
+
+    // Manejo de resize para mantener layout en desktop y sincronizar en mobile
+    window.addEventListener('resize', () => {
+      const listCol = document.getElementById('left-feed-panel');
+      const mapCol = document.getElementById('right-map-panel');
+      if (window.innerWidth >= 768) {
+        if (listCol) listCol.style.display = '';
+        if (mapCol) mapCol.style.display = '';
+      } else {
+        this.switchMobileTab(this.activeTab || 'map');
+      }
+      if (this.mapInstance && this.mapInstance.map) {
+        this.mapInstance.map.invalidateSize();
+      }
+    });
+
+    // Cerrar dropdown de usuario al hacer clic fuera
+    document.addEventListener('click', (e) => {
+      const userContainer = document.getElementById('header-user-container');
+      if (userContainer && !userContainer.contains(e.target)) {
+        this.closeUserDropdown();
+      }
+    });
+  }
+
+  // Navegación entre vistas completas (Salir completamente del mapa a otra página)
+  navigateToView(viewName) {
+    this.currentView = viewName;
+
+    const views = document.querySelectorAll('.app-view');
+    views.forEach(v => {
+      v.classList.remove('active');
+      v.style.display = 'none';
+    });
+
+    const target = document.getElementById(`view-${viewName}`);
+    if (target) {
+      target.classList.add('active');
+      target.style.display = viewName === 'map' ? 'flex' : 'block';
+    }
+
+    // Modo Pantalla Completa:
+    // Si estamos en el mapa: body con h-screen y overflow-hidden para layout de app
+    // Si estamos en Conocé, Propuestas o Contacto: body con min-h-screen y overflow-y-auto para scroll web natural
+    if (viewName === 'map') {
+      document.body.classList.add('h-screen', 'overflow-hidden');
+      document.body.classList.remove('min-h-screen', 'overflow-y-auto');
+
+      if (this.mapInstance && this.mapInstance.map) {
+        setTimeout(() => {
+          this.mapInstance.map.invalidateSize();
+        }, 100);
+        setTimeout(() => {
+          this.mapInstance.map.invalidateSize();
+        }, 300);
+      }
+    } else {
+      document.body.classList.remove('h-screen', 'overflow-hidden');
+      document.body.classList.add('min-h-screen', 'overflow-y-auto');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Actualizar botones de navegación en el header
+    const navButtons = document.querySelectorAll('.nav-tab-btn');
+    navButtons.forEach(btn => {
+      const targetView = btn.getAttribute('data-nav-view');
+      if (targetView === viewName) {
+        btn.classList.add('text-sky-950', 'border-sky-600', 'bg-sky-50');
+        btn.classList.remove('text-slate-600');
+      } else {
+        btn.classList.remove('text-sky-950', 'border-sky-600', 'bg-sky-50');
+        btn.classList.add('text-slate-600');
+      }
+    });
+  }
+
+  // Manejo del menú lateral móvil (Drawer)
+  toggleMobileDrawer() {
+    const drawer = document.getElementById('mobile-drawer');
+    const backdrop = document.getElementById('mobile-drawer-backdrop');
+    if (!drawer || !backdrop) return;
+    const isOpen = drawer.classList.contains('open');
+    if (isOpen) {
+      this.closeMobileDrawer();
+    } else {
+      this.openMobileDrawer();
+    }
+  }
+
+  openMobileDrawer() {
+    const drawer = document.getElementById('mobile-drawer');
+    const backdrop = document.getElementById('mobile-drawer-backdrop');
+    if (!drawer || !backdrop) return;
+    backdrop.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      backdrop.classList.add('open');
+      drawer.classList.add('open');
+    });
+  }
+
+  closeMobileDrawer() {
+    const drawer = document.getElementById('mobile-drawer');
+    const backdrop = document.getElementById('mobile-drawer-backdrop');
+    if (!drawer || !backdrop) return;
+    drawer.classList.remove('open');
+    backdrop.classList.remove('open');
+    setTimeout(() => {
+      if (!backdrop.classList.contains('open')) {
+        backdrop.classList.add('hidden');
+      }
+    }, 300);
+  }
+
+  // Leyenda: colapso en desktop, popover en mobile
+  toggleLegend() {
+    const legendBox = document.getElementById('map-legend-box');
+    const contentPanel = document.getElementById('legend-content-panel');
+    if (window.innerWidth < 768) {
+      if (contentPanel) {
+        contentPanel.classList.toggle('hidden');
+      }
+    } else {
+      if (legendBox) {
+        legendBox.classList.toggle('collapsed');
+      }
+    }
+  }
+
+  closeMobileLegend() {
+    if (window.innerWidth < 768) {
+      const contentPanel = document.getElementById('legend-content-panel');
+      if (contentPanel) {
+        contentPanel.classList.add('hidden');
+      }
+    }
+  }
+
+  selectDistrict(districtId) {
+    this.selectedDistrict = districtId;
+
+    const mainSelect = document.getElementById('filter-district-select');
+    const bannerSelect = document.getElementById('banner-district-select');
+    if (mainSelect) mainSelect.value = districtId;
+    if (bannerSelect) bannerSelect.value = districtId;
+
+    this.mapInstance.highlightDistrict(districtId);
+    this.renderReports();
+    this.updateMapMarkers();
+
+    const distObj = APP_DATA.districts.find(d => d.id === districtId);
+    if (distObj) {
+      this.showToast(`Distrito: ${distObj.name}`, 'info');
+    } else if (districtId === 'all') {
+      this.showToast('Vista general: Todos los distritos', 'info');
+    }
+  }
+
+  selectCategory(categoryId) {
+    this.selectedCategory = categoryId;
+    this.populateCategoryFilters();
+    this.renderReports();
+    this.updateMapMarkers();
+  }
+
+  getMyReports() {
+    return this.reports.filter(rep => {
+      if (rep.isMyReport) return true;
+      if (this.currentUser && rep.userId && rep.userId === this.currentUser.id) return true;
+      if (this.currentUser && rep.citizen && rep.citizen.toLowerCase() === this.currentUser.name.toLowerCase()) return true;
+      return false;
+    });
+  }
+
+  getFilteredReports() {
+    return this.reports.filter(rep => {
+      // Filtrar por Mis Reclamos si el scope está en 'mine'
+      if (this.reportScope === 'mine') {
+        const isMine = rep.isMyReport ||
+          (this.currentUser && rep.userId && rep.userId === this.currentUser.id) ||
+          (this.currentUser && rep.citizen && rep.citizen.toLowerCase() === this.currentUser.name.toLowerCase());
+        if (!isMine) return false;
+      }
+
+      if (this.selectedDistrict !== 'all' && rep.district !== this.selectedDistrict) {
+        return false;
+      }
+      if (this.selectedCategory !== 'all' && rep.category !== this.selectedCategory) {
+        return false;
+      }
+      if (this.searchQuery) {
+        const matchTitle = (rep.title || '').toLowerCase().includes(this.searchQuery);
+        const matchDesc = (rep.description || '').toLowerCase().includes(this.searchQuery);
+        const matchAddr = (rep.address || '').toLowerCase().includes(this.searchQuery);
+        const matchDist = (rep.districtName || '').toLowerCase().includes(this.searchQuery);
+        if (!matchTitle && !matchDesc && !matchAddr && !matchDist) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }
+
+  renderReports() {
+    const container = document.getElementById('reports-feed-container');
+    const countBadge = document.getElementById('reports-count-badge');
+    const filtered = this.getFilteredReports();
+
+    // Actualizar badge de conteo según el scope
+    if (countBadge) {
+      if (this.reportScope === 'mine') {
+        countBadge.textContent = `${filtered.length} propio${filtered.length === 1 ? '' : 's'}`;
+        countBadge.className = "px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200";
+      } else {
+        countBadge.textContent = `${this.reports.length} reportes`;
+        countBadge.className = "px-2.5 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-800 border border-sky-200";
+      }
+    }
+
+    if (!container) return;
+
+    // Estado vacío
+    if (filtered.length === 0) {
+      if (this.reportScope === 'mine') {
+        // Estado vacío exclusivo para "Mis Reclamos"
+        const userName = this.currentUser ? this.currentUser.name.split(' ')[0] : 'vecino';
+        container.innerHTML = `
+          <div class="p-6 sm:p-8 text-center bg-white rounded-3xl border border-dashed border-sky-300 shadow-sm space-y-4">
+            <div class="w-16 h-16 rounded-3xl bg-sky-100 text-sky-700 mx-auto flex items-center justify-center text-2xl shadow-inner">
+              <i class="fa-solid fa-clipboard-user"></i>
+            </div>
+            <div>
+              <h4 class="font-extrabold text-slate-900 text-base mb-1">
+                Aún no tenés reclamos registrados
+              </h4>
+              <p class="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
+                ¡Hola, ${userName}! Cada reclamo que publiques en tu barrio quedará registrado acá para hacerle seguimiento formal con la <strong>Senadora Luz Llorens</strong>.
+              </p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2 justify-center pt-1">
+              <button 
+                onclick="App.openReportModal()"
+                class="px-5 py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider bg-sky-600 hover:bg-sky-700 text-white shadow-md hover:shadow-lg transition-all inline-flex items-center justify-center gap-2">
+                <i class="fa-solid fa-plus text-amber-300"></i>
+                <span>Reportar Mi Primer Problema</span>
+              </button>
+              <button 
+                onclick="App.setFeedReportScope('all')"
+                class="px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all">
+                Ver todos los reclamos
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (this.reports.length === 0) {
+        container.innerHTML = `
+          <div class="p-6 sm:p-8 text-center bg-white rounded-3xl border border-dashed border-slate-300 shadow-sm space-y-4">
+            <div class="w-16 h-16 rounded-3xl bg-sky-100 text-sky-700 mx-auto flex items-center justify-center text-2xl shadow-inner">
+              <i class="fa-solid fa-map-location-dot"></i>
+            </div>
+            <div>
+              <h4 class="font-extrabold text-slate-900 text-base mb-1">
+                Aún no hay reclamos registrados
+              </h4>
+              <p class="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
+                Sé el primer vecino en reportar un bache, luminaria rota o microbasural en tu distrito para que la <strong>Senadora Luz Llorens</strong> lo eleve a la Legislatura.
+              </p>
+            </div>
+            <button 
+              onclick="App.openReportModal()"
+              class="px-5 py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider bg-[#1A2B4C] hover:bg-sky-700 text-white shadow-md hover:shadow-lg transition-all inline-flex items-center gap-2">
+              <i class="fa-solid fa-plus text-amber-400"></i>
+              <span>Reportar Problema en mi Barrio</span>
+            </button>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-300">
+            <div class="w-12 h-12 rounded-full bg-slate-200 text-slate-500 mx-auto flex items-center justify-center text-xl mb-3">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <h4 class="font-bold text-slate-800 text-sm mb-1">No se encontraron reclamos</h4>
+            <p class="text-xs text-slate-500 mb-4">No hay reportes que coincidan con los filtros seleccionados.</p>
+            <button 
+              onclick="App.clearFilters()"
+              class="px-4 py-2 rounded-xl text-xs font-semibold bg-[#1A2B4C] text-white hover:bg-[#243b66] transition-all">
+              Limpiar Filtros
+            </button>
+          </div>
+        `;
+      }
+      return;
+    }
+
+    const mineBannerHtml = this.reportScope === 'mine' ? `
+      <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-2.5 flex items-center justify-between gap-2 text-xs mb-3">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+          <span class="text-[11px] font-bold text-emerald-950 truncate">
+            Mostrando tus reclamos personales (${filtered.length})
+          </span>
+        </div>
+        <button 
+          onclick="App.setFeedReportScope('all')" 
+          class="text-[10px] font-extrabold text-sky-700 hover:text-sky-900 bg-white px-2 py-1 rounded-lg border border-sky-200 shadow-2xs shrink-0">
+          Ver todos &rarr;
+        </button>
+      </div>
+    ` : '';
+
+    const cardsHtml = filtered.map(report => {
+      const cat = APP_DATA.categories.find(c => c.id === report.category) || {};
+      const isSelected = report.id === this.activeReportId;
+
+      return `
+        <div 
+          id="report-card-${report.id}"
+          class="report-card group bg-white rounded-2xl p-4 border transition-all duration-200 hover:shadow-md ${
+            isSelected 
+              ? 'border-sky-500 ring-2 ring-sky-100 shadow-md bg-sky-50/20' 
+              : 'border-slate-200/80 hover:border-slate-300'
+          }">
+          
+          <div class="flex items-start gap-3">
+            <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-base shrink-0 shadow-xs border border-slate-100" style="color: ${cat.color || '#1A2B4C'};">
+              <i class="fa-solid ${cat.icon || 'fa-triangle-exclamation'}"></i>
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-1 mb-1">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700">
+                    <i class="fa-solid fa-location-dot text-slate-400 text-[9px]"></i>
+                    ${report.districtName}
+                  </span>
+                  ${(report.isMyReport || (this.currentUser && (report.userId === this.currentUser.id || (report.citizen && report.citizen.toLowerCase() === this.currentUser.name.toLowerCase())))) ? `
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      <i class="fa-solid fa-circle-check text-emerald-600 text-[9px]"></i>
+                      Tu Reclamo
+                    </span>
+                  ` : ''}
+                </div>
+                <span class="text-[11px] text-slate-400 font-medium shrink-0">
+                  ${report.date || 'Reciente'}
+                </span>
+              </div>
+
+              <h3 class="font-bold text-slate-900 text-sm leading-snug line-clamp-2 mb-1 group-hover:text-sky-700 transition-colors">
+                ${report.title}
+              </h3>
+
+              <p class="text-[11px] text-slate-500 flex items-center gap-1 mb-1.5 truncate">
+                <i class="fa-solid fa-road text-slate-400 text-[10px]"></i>
+                <span>${report.address}</span>
+              </p>
+
+              <div class="flex items-center gap-2 mb-2">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold border ${report.statusColor || 'bg-sky-50 text-sky-700 border-sky-200'}">
+                  <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+                  ${report.status || 'Registrado'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-xs text-slate-600 line-clamp-3 mt-2 leading-relaxed bg-slate-50/70 p-2.5 rounded-xl">
+            ${report.description}
+          </p>
+
+          <div class="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
+            <button 
+              type="button"
+              onclick="App.viewOnMap('${report.id}')"
+              class="flex-1 min-h-[42px] sm:min-h-[34px] flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl text-xs font-bold text-[#1A2B4C] bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all">
+              <i class="fa-solid fa-map-location-dot text-xs"></i>
+              <span>Ver en Mapa</span>
+            </button>
+
+            <button 
+              type="button"
+              onclick="App.upvoteReport('${report.id}')"
+              class="flex-1 min-h-[42px] sm:min-h-[34px] flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl text-xs font-bold active:scale-95 transition-all ${
+                report.userUpvoted 
+                  ? 'bg-sky-600 text-white shadow-sm' 
+                  : 'bg-sky-50 hover:bg-sky-100 text-sky-700'
+              }">
+              <i class="fa-solid fa-thumbs-up text-xs"></i>
+              <span>${report.upvotes || 1}</span>
+              <span>${report.userUpvoted ? 'Apoyado' : 'Apoyar'}</span>
+            </button>
+
+            <button 
+              type="button"
+              onclick="App.openShareModal('${report.id}')"
+              title="Compartir reporte"
+              class="w-10 sm:w-auto min-h-[42px] sm:min-h-[34px] px-3 py-2 sm:py-1.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all flex items-center justify-center">
+              <i class="fa-solid fa-share-nodes text-xs"></i>
+            </button>
+
+            <button 
+              type="button"
+              onclick="App.deleteReport('${report.id}')"
+              title="Eliminar este reclamo de prueba"
+              class="w-10 sm:w-auto min-h-[42px] sm:min-h-[34px] px-3 py-2 sm:py-1.5 rounded-xl text-xs font-semibold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 active:scale-95 transition-all flex items-center justify-center">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    container.innerHTML = mineBannerHtml + cardsHtml;
+  }
+
+  updateMapMarkers() {
+    const filtered = this.getFilteredReports();
+    this.mapInstance.renderMarkers(filtered, this.activeReportId);
+  }
+
+  clearFilters() {
+    this.selectedDistrict = 'all';
+    this.selectedCategory = 'all';
+    this.searchQuery = '';
+    const searchInput = document.getElementById('search-reports-input');
+    if (searchInput) searchInput.value = '';
+    this.populateDistrictSelects();
+    this.populateCategoryFilters();
+    this.mapInstance.highlightDistrict('all');
+    this.renderReports();
+    this.updateMapMarkers();
+  }
+
+  viewOnMap(reportId) {
+    this.navigateToView('map');
+    this.activeReportId = reportId;
+    this.renderReports();
+    this.updateMapMarkers();
+
+    if (window.innerWidth < 768) {
+      this.switchMobileTab('map');
+    }
+
+    this.mapInstance.focusReport(reportId);
+
+    const card = document.getElementById(`report-card-${reportId}`);
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+
+  onMarkerClick(reportId) {
+    this.activeReportId = reportId;
+    this.renderReports();
+
+    const card = document.getElementById(`report-card-${reportId}`);
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      card.classList.add('ring-4', 'ring-sky-300');
+      setTimeout(() => {
+        card.classList.remove('ring-4', 'ring-sky-300');
+      }, 1500);
+    }
+  }
+
+  focusReportCard(reportId) {
+    this.onMarkerClick(reportId);
+    if (window.innerWidth < 768) {
+      this.switchMobileTab('list');
+    }
+  }
+
+  upvoteReport(reportId) {
+    const rep = this.reports.find(r => r.id === reportId);
+    if (!rep) return;
+
+    if (rep.userUpvoted) {
+      rep.upvotes = Math.max(1, (rep.upvotes || 1) - 1);
+      rep.userUpvoted = false;
+      this.showToast('Voto retirado', 'info');
+    } else {
+      rep.upvotes = (rep.upvotes || 1) + 1;
+      rep.userUpvoted = true;
+      this.showToast('¡Apoyo sumado al reclamo!', 'success');
+    }
+
+    this.saveReports();
+    this.renderReports();
+    this.updateMapMarkers();
+  }
+
+  deleteReport(reportId) {
+    this.reports = this.reports.filter(r => r.id !== reportId);
+    if (this.activeReportId === reportId) {
+      this.activeReportId = null;
+    }
+    this.renderReports();
+    this.updateMapMarkers();
+    this.updateStats();
+    this.updateScopeTabs();
+    this.renderUserHeader();
+    this.showToast('Reclamo de prueba eliminado', 'info');
+  }
+
+  // Filtrado por alcance: Todos los Reclamos vs Mis Reclamos
+  setFeedReportScope(scope) {
+    if (scope === 'mine' && !this.currentUser) {
+      this.openLoginModal();
+      this.showToast('Iniciá sesión en el Portal Vecinal para ver tus propios reclamos', 'info');
+      return;
+    }
+
+    this.reportScope = scope;
+    this.updateScopeTabs();
+    this.renderReports();
+    this.updateMapMarkers();
+
+    // En pantallas chicas, si el usuario elige "Mis Reclamos", conmutar a la vista de lista
+    if (scope === 'mine' && window.innerWidth < 768) {
+      this.switchMobileTab('list');
+    }
+  }
+
+  updateScopeTabs() {
+    const tabAll = document.getElementById('feed-tab-all');
+    const tabMine = document.getElementById('feed-tab-mine');
+    const mineCountBadge = document.getElementById('feed-tab-mine-count');
+    const myCount = this.getMyReports().length;
+
+    if (mineCountBadge) {
+      mineCountBadge.textContent = myCount;
+      if (myCount > 0) {
+        mineCountBadge.classList.remove('hidden');
+      } else {
+        mineCountBadge.classList.add('hidden');
+      }
+    }
+
+    if (!tabAll || !tabMine) return;
+
+    if (this.reportScope === 'mine') {
+      tabMine.className = "flex-1 py-1.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 bg-[#1A2B4C] text-white shadow-2xs font-black";
+      tabAll.className = "flex-1 py-1.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-semibold";
+    } else {
+      tabAll.className = "flex-1 py-1.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 bg-white text-[#1A2B4C] shadow-2xs font-black";
+      tabMine.className = "flex-1 py-1.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-semibold";
+    }
+  }
+
+  switchMobileTab(tab) {
+    this.activeTab = tab;
+    const tabListBtn = document.getElementById('tab-btn-list');
+    const tabMapBtn = document.getElementById('tab-btn-map');
+    const listCol = document.getElementById('left-feed-panel');
+    const mapCol = document.getElementById('right-map-panel');
+
+    if (!tabListBtn || !tabMapBtn || !listCol || !mapCol) return;
+
+    if (tab === 'list') {
+      tabListBtn.classList.add('bg-[#1A2B4C]', 'text-white', 'shadow-sm', 'font-extrabold');
+      tabListBtn.classList.remove('text-slate-600', 'font-bold');
+      tabMapBtn.classList.remove('bg-[#1A2B4C]', 'text-white', 'shadow-sm', 'font-extrabold');
+      tabMapBtn.classList.add('text-slate-600', 'font-bold');
+      listCol.style.display = 'flex';
+      mapCol.style.display = 'none';
+    } else {
+      tabMapBtn.classList.add('bg-[#1A2B4C]', 'text-white', 'shadow-sm', 'font-extrabold');
+      tabMapBtn.classList.remove('text-slate-600', 'font-bold');
+      tabListBtn.classList.remove('bg-[#1A2B4C]', 'text-white', 'shadow-sm', 'font-extrabold');
+      tabListBtn.classList.add('text-slate-600', 'font-bold');
+      listCol.style.display = 'none';
+      mapCol.style.display = 'block';
+
+      setTimeout(() => {
+        if (this.mapInstance && this.mapInstance.map) {
+          this.mapInstance.map.invalidateSize();
+        }
+      }, 50);
+      setTimeout(() => {
+        if (this.mapInstance && this.mapInstance.map) {
+          this.mapInstance.map.invalidateSize();
+        }
+      }, 250);
+    }
+  }
+
+  updateStats() {
+    const totalReports = this.reports.length;
+    const counterBadge = document.getElementById('banner-counter-badge');
+    const mobileCounter = document.getElementById('mobile-sticky-counter');
+
+    const text = totalReports === 0 
+      ? '0 reclamos registrados' 
+      : `${totalReports} ${totalReports === 1 ? 'reclamo registrado' : 'reclamos registrados'}`;
+
+    if (counterBadge) {
+      counterBadge.textContent = text;
+    }
+    if (mobileCounter) {
+      mobileCounter.textContent = text;
+    }
+  }
+
+  // Modal para agregar reporte con flujo de 2 pasos
+  openReportModal(preselectedDistrict = null) {
+    this.navigateToView('map');
+    const modal = document.getElementById('modal-new-report');
+    if (!modal) return;
+
+    const step1 = document.getElementById('report-step-1');
+    const step2 = document.getElementById('new-report-form');
+    const step1Select = document.getElementById('step1-district-select');
+
+    // Determinar distrito inicial
+    let initialDistrict = preselectedDistrict || (this.selectedDistrict !== 'all' ? this.selectedDistrict : 'dorrego');
+    if (step1Select) {
+      step1Select.value = initialDistrict;
+    }
+    const pickerSelect = document.getElementById('map-picker-district-select');
+    if (pickerSelect) {
+      pickerSelect.value = initialDistrict;
+    }
+    this.pickerDistrictId = initialDistrict;
+
+    // Si no hay ubicación confirmada, empezar obligatoriamente en Paso 1 (seleccionar distrito)
+    if (!this.pendingLocation) {
+      if (step1) step1.classList.remove('hidden');
+      if (step2) step2.classList.add('hidden');
+    } else {
+      if (step1) step1.classList.add('hidden');
+      if (step2) step2.classList.remove('hidden');
+    }
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.classList.add('overflow-hidden');
+
+    const citizenInput = document.querySelector('input[name="report-citizen"]');
+    if (citizenInput && this.currentUser && !citizenInput.value) {
+      citizenInput.value = this.currentUser.name;
+    }
+  }
+
+  closeReportModal() {
+    const modal = document.getElementById('modal-new-report');
+    if (!modal) return;
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.body.classList.remove('overflow-hidden');
+  }
+
+  // Paso 1 -> Pasar al mapa enfocado solo en el distrito para arrastrar el pin rojo
+  proceedToMapPicker() {
+    const step1Select = document.getElementById('step1-district-select');
+    const districtId = step1Select ? step1Select.value : (this.pickerDistrictId || 'dorrego');
+    this.pickerDistrictId = districtId;
+
+    const distObj = APP_DATA.districts.find(d => d.id === districtId);
+
+    // Ocultar modal
+    this.closeReportModal();
+
+    // Sincronizar selector en el banner superior flotante
+    const pickerSelect = document.getElementById('map-picker-district-select');
+    if (pickerSelect) {
+      pickerSelect.value = districtId;
+    }
+
+    // Mostrar barra superior de confirmación
+    const pickerBanner = document.getElementById('map-picker-banner');
+    if (pickerBanner) {
+      pickerBanner.classList.remove('hidden');
+      pickerBanner.classList.add('flex');
+    }
+
+    // En móvil, cambiar a pestaña del mapa
+    if (window.innerWidth < 768) {
+      this.switchMobileTab('map');
+    }
+
+    // Iniciar pin rojo arrastrable en el mapa enfocado solo en este distrito
+    this.mapInstance.startDraggablePicker(districtId, this.pendingLocation);
+  }
+
+  // Reabrir picker si el usuario quiere mover el pin desde el Paso 2
+  reopenMapPicker() {
+    this.proceedToMapPicker();
+  }
+
+  // Cambiar distrito directamente desde el selector de la barra superior flotante
+  changePickerDistrict(districtId) {
+    if (!districtId) return;
+    this.pickerDistrictId = districtId;
+    this.pendingLocation = null;
+
+    // 1. Cambiar INMEDIATAMENTE el distrito y pin en el mapa (0 ms)
+    this.mapInstance.startDraggablePicker(districtId, null);
+
+    // 2. Sincronizar select del Paso 1
+    const step1Select = document.getElementById('step1-district-select');
+    if (step1Select) {
+      step1Select.value = districtId;
+    }
+
+    // 3. Sincronizar select del banner
+    const pickerSelect = document.getElementById('map-picker-district-select');
+    if (pickerSelect) {
+      pickerSelect.value = districtId;
+    }
+
+    const distObj = APP_DATA.districts.find(d => d.id === districtId);
+    if (distObj) {
+      this.showToast(`Distrito: ${distObj.name}`, 'info', 1800);
+    }
+  }
+
+  // Cancelar picker desde la barra superior del mapa
+  cancelMapPicker() {
+    this.mapInstance.stopDraggablePicker();
+    const pickerBanner = document.getElementById('map-picker-banner');
+    if (pickerBanner) {
+      pickerBanner.classList.add('hidden');
+      pickerBanner.classList.remove('flex');
+    }
+    this.openReportModal(this.pickerDistrictId);
+  }
+
+  // Confirmar ubicación desde la barra superior del mapa
+  confirmMapPicker() {
+    const latlng = this.mapInstance.getPickerLocation();
+    if (!latlng) {
+      this.showToast('No se pudo determinar la ubicación en el mapa', 'error');
+      return;
+    }
+
+    this.pendingLocation = latlng;
+    this.mapInstance.stopDraggablePicker();
+
+    const pickerBanner = document.getElementById('map-picker-banner');
+    if (pickerBanner) {
+      pickerBanner.classList.add('hidden');
+      pickerBanner.classList.remove('flex');
+    }
+
+    const distObj = APP_DATA.districts.find(d => d.id === this.pickerDistrictId);
+
+    // Actualizar tarjeta del Paso 2
+    const step2Badge = document.getElementById('step2-district-badge');
+    const coordsPreview = document.getElementById('step2-coords-preview');
+    if (step2Badge && distObj) step2Badge.textContent = distObj.name;
+    if (coordsPreview) {
+      coordsPreview.textContent = `Coordenadas: Lat ${latlng.lat.toFixed(5)}, Lng ${latlng.lng.toFixed(5)}`;
+    }
+
+    // Cambiar a Paso 2 en el modal
+    const step1 = document.getElementById('report-step-1');
+    const step2 = document.getElementById('new-report-form');
+    if (step1) step1.classList.add('hidden');
+    if (step2) step2.classList.remove('hidden');
+
+    const modal = document.getElementById('modal-new-report');
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.classList.add('overflow-hidden');
+    }
+
+    this.showToast('¡Ubicación fijada con éxito! Completá los detalles del reclamo.', 'success', 3500);
+
+    // Sugerir nombre de calle mediante geocodificación inversa si está vacío
+    this.tryReverseGeocode(latlng);
+  }
+
+  tryReverseGeocode(latlng) {
+    const addressInput = document.getElementById('report-address-input');
+    if (!addressInput || addressInput.value.trim().length > 0) return;
+
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${latlng.lat}&lon=${latlng.lng}&format=json`;
+    fetch(url, { headers: { 'Accept': 'application/json' } })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.address) {
+          const road = data.address.road || data.address.pedestrian || data.address.neighbourhood || '';
+          if (road && !addressInput.value) {
+            addressInput.value = road;
+          }
+        }
+      })
+      .catch(() => {});
+  }
+
+  handleNewReportSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const title = form['report-title'].value.trim();
+    const category = form['report-category'].value;
+    const address = form['report-address'].value.trim();
+    const description = form['report-description'].value.trim();
+    const citizen = form['report-citizen'].value.trim() || (this.currentUser ? this.currentUser.name : 'Vecino de Guaymallén');
+    const districtId = this.pickerDistrictId || 'dorrego';
+
+    // Validación estricta: UBICACIÓN OBLIGATORIA EN EL MAPA
+    if (!this.pendingLocation) {
+      this.showToast('⚠️ Es obligatorio seleccionar la ubicación en el mapa antes de publicar el reclamo.', 'error', 4500);
+      this.proceedToMapPicker();
+      return;
+    }
+
+    if (!title || !address || !description) {
+      this.showToast('Por favor completá todos los campos requeridos', 'error');
+      return;
+    }
+
+    const distObj = APP_DATA.districts.find(d => d.id === districtId);
+
+    const newReport = {
+      id: `rep-${Date.now()}`,
+      title,
+      district: districtId,
+      districtName: distObj ? distObj.name : 'Guaymallén',
+      category,
+      lat: this.pendingLocation.lat,
+      lng: this.pendingLocation.lng,
+      address,
+      description,
+      status: "Registrado - En Gestión con Luz Llorens",
+      statusColor: "bg-sky-100 text-sky-800 border-sky-200",
+      upvotes: 1,
+      userUpvoted: true,
+      date: "Recién",
+      citizen,
+      isMyReport: true, // Siempre etiquetado como propio en esta sesión
+      userId: this.currentUser ? this.currentUser.id : 'session-user'
+    };
+
+    this.reports.unshift(newReport);
+
+    // Limpiar estado temporal de ubicación
+    this.pendingLocation = null;
+    form.reset();
+
+    this.closeReportModal();
+    this.renderReports();
+    this.updateMapMarkers();
+    this.updateStats();
+    this.updateScopeTabs();
+    this.renderUserHeader();
+
+    this.showToast('¡Reclamo registrado con éxito en Pensando Guaymallén!', 'success', 5000);
+
+    setTimeout(() => {
+      this.viewOnMap(newReport.id);
+    }, 400);
+  }
+
+  // Modales secundarios y Gestión de Usuario
+  openLoginModal() {
+    const modal = document.getElementById('modal-login');
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+  }
+
+  closeLoginModal() {
+    const modal = document.getElementById('modal-login');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+  }
+
+  handleLogin(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const userInput = document.getElementById('login-input-user');
+    const rawName = (userInput && userInput.value.trim()) || 'Carlos Gómez';
+    const name = rawName.includes('@') ? rawName.split('@')[0] : rawName;
+    const email = rawName.includes('@') ? rawName : `${name.toLowerCase().replace(/\s+/g, '.')}@guaymallen.ar`;
+
+    this.currentUser = {
+      id: `usr-${name.toLowerCase().replace(/\s+/g, '-')}`,
+      name: name,
+      email: email
+    };
+
+    this.closeLoginModal();
+    this.setFeedReportScope('mine');
+    this.renderUserHeader();
+    this.showToast(`¡Bienvenido ${this.currentUser.name}! Podés ver y hacer seguimiento de tus reclamos.`, 'success', 4500);
+  }
+
+  quickDemoLogin() {
+    this.currentUser = {
+      id: 'usr-carlos',
+      name: 'Carlos Gómez',
+      email: 'carlos.gomez@vecinosguaymallen.ar'
+    };
+
+    // Si Carlos no tiene reportes aún, agregamos uno de ejemplo representativo en Dorrego
+    const existingMine = this.getMyReports();
+    if (existingMine.length === 0) {
+      const demoReport = {
+        id: `rep-carlos-${Date.now()}`,
+        title: "Bache profundo en cruce principal",
+        district: "dorrego",
+        districtName: "Dorrego",
+        category: "baches",
+        lat: -32.9085,
+        lng: -68.8320,
+        address: "Moldes y Adolfo Calle",
+        description: "Bache peligroso que dificulta el tránsito y daña vehículos. Solicitamos bacheo y nivelación urgente a la comuna y vialidad provincial.",
+        status: "En Gestión con Luz Llorens",
+        statusColor: "bg-sky-100 text-sky-800 border-sky-200",
+        upvotes: 4,
+        userUpvoted: true,
+        date: "Hoy",
+        citizen: "Carlos Gómez",
+        isMyReport: true,
+        userId: 'usr-carlos'
+      };
+      this.reports.unshift(demoReport);
+    }
+
+    this.closeLoginModal();
+    this.setFeedReportScope('mine');
+    this.renderUserHeader();
+    this.updateStats();
+    this.showToast('¡Sesión iniciada como Carlos Gómez! Mostrando tus reclamos.', 'success', 4500);
+  }
+
+  handleLogout() {
+    this.currentUser = null;
+    this.setFeedReportScope('all');
+    this.renderUserHeader();
+    this.showToast('Sesión cerrada correctamente.', 'info');
+  }
+
+  renderUserHeader() {
+    const headerContainer = document.getElementById('header-user-container');
+    const drawerContainer = document.getElementById('drawer-user-container');
+
+    if (headerContainer) {
+      if (!this.currentUser) {
+        headerContainer.innerHTML = `
+          <button 
+            type="button"
+            onclick="App.openLoginModal()"
+            id="btn-header-login"
+            class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full md:rounded-xl text-xs sm:text-sm font-bold bg-white md:bg-[#1A2B4C] text-[#1A2B4C] md:text-white border border-slate-200 md:border-transparent hover:bg-slate-100 md:hover:bg-[#243B66] shadow-2xs md:shadow-sm transition-all flex items-center gap-1 sm:gap-1.5">
+            <i class="fa-regular fa-user text-xs"></i>
+            <span>Login</span>
+          </button>
+        `;
+      } else {
+        const firstName = this.currentUser.name.split(' ')[0];
+        const initials = this.currentUser.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+        const myCount = this.getMyReports().length;
+
+        headerContainer.innerHTML = `
+          <div class="relative">
+            <button 
+              type="button"
+              onclick="App.toggleUserDropdown()"
+              class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full md:rounded-xl text-xs sm:text-sm font-extrabold bg-sky-50 md:bg-[#1A2B4C] text-sky-900 md:text-white border border-sky-200 md:border-sky-500/30 hover:bg-sky-100 md:hover:bg-[#243B66] shadow-2xs md:shadow-sm transition-all flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span class="max-w-[75px] sm:max-w-[110px] truncate">${firstName}</span>
+              <i class="fa-solid fa-chevron-down text-[9px] opacity-75"></i>
+            </button>
+
+            <!-- Dropdown Menu de Usuario -->
+            <div 
+              id="user-profile-dropdown" 
+              class="hidden absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-2 z-[600] space-y-1">
+              
+              <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-100 mb-1">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-full bg-sky-600 text-white font-black text-xs flex items-center justify-center shrink-0">
+                    ${initials}
+                  </div>
+                  <div class="min-w-0">
+                    <p class="font-extrabold text-xs text-slate-900 truncate">${this.currentUser.name}</p>
+                    <p class="text-[10px] text-emerald-700 font-bold flex items-center gap-1">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                      Vecino Conectado
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                type="button"
+                onclick="App.setFeedReportScope('mine'); App.closeUserDropdown();" 
+                class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-[#1A2B4C] hover:bg-sky-50 hover:text-sky-700 transition-colors flex items-center justify-between">
+                <span class="flex items-center gap-2">
+                  <i class="fa-solid fa-user-check text-emerald-600 text-xs"></i>
+                  <span>Ver Mis Reclamos</span>
+                </span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-100 text-emerald-800 font-black">${myCount}</span>
+              </button>
+
+              <button 
+                type="button"
+                onclick="App.openReportModal(); App.closeUserDropdown();" 
+                class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors flex items-center gap-2">
+                <i class="fa-solid fa-plus text-amber-500 text-xs"></i>
+                <span>Nuevo Reclamo</span>
+              </button>
+
+              <div class="pt-1 border-t border-slate-100">
+                <button 
+                  type="button"
+                  onclick="App.handleLogout(); App.closeUserDropdown();" 
+                  class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2">
+                  <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                  <span>Cerrar Sesión</span>
+                </button>
+              </div>
+
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    if (drawerContainer) {
+      if (!this.currentUser) {
+        drawerContainer.innerHTML = `
+          <button 
+            type="button"
+            onclick="App.openLoginModal(); App.closeMobileDrawer();" 
+            class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-[#1A2B4C] hover:bg-[#243B66] text-white shadow-sm flex items-center justify-center gap-2 transition-all">
+            <i class="fa-regular fa-user text-xs"></i>
+            <span>Portal del Vecino (Login)</span>
+          </button>
+        `;
+      } else {
+        const myCount = this.getMyReports().length;
+        drawerContainer.innerHTML = `
+          <div class="p-3 bg-sky-50 rounded-2xl border border-sky-200/80 space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
+                <span class="text-xs font-black text-sky-950 truncate">${this.currentUser.name}</span>
+              </div>
+              <span class="text-[10px] font-bold text-sky-700 bg-white px-2 py-0.5 rounded-full border border-sky-200 shrink-0">${myCount} reclamos</span>
+            </div>
+            <button 
+              type="button"
+              onclick="App.setFeedReportScope('mine'); App.switchMobileTab('list'); App.closeMobileDrawer();" 
+              class="w-full py-2 px-3 rounded-xl text-xs font-extrabold bg-[#1A2B4C] text-white shadow-xs flex items-center justify-center gap-2">
+              <i class="fa-solid fa-user-check text-emerald-400 text-xs"></i>
+              <span>Ver Mis Reclamos</span>
+            </button>
+            <button 
+              type="button"
+              onclick="App.handleLogout(); App.closeMobileDrawer();" 
+              class="w-full py-1 text-center text-xs font-bold text-red-600 hover:underline">
+              Cerrar Sesión
+            </button>
+          </div>
+        `;
+      }
+    }
+  }
+
+  toggleUserDropdown() {
+    const dd = document.getElementById('user-profile-dropdown');
+    if (dd) dd.classList.toggle('hidden');
+  }
+
+  closeUserDropdown() {
+    const dd = document.getElementById('user-profile-dropdown');
+    if (dd) dd.classList.add('hidden');
+  }
+
+  openShareModal(reportId) {
+    const rep = this.reports.find(r => r.id === reportId);
+    if (!rep) return;
+
+    const modal = document.getElementById('modal-share');
+    const shareTitle = document.getElementById('share-modal-title');
+    const shareLink = document.getElementById('share-modal-link');
+    const btnWp = document.getElementById('share-btn-whatsapp');
+    const btnTw = document.getElementById('share-btn-twitter');
+
+    const fakeUrl = `${window.location.origin}${window.location.pathname}?report=${rep.id}`;
+    const shareText = `Apoyá este reclamo vecinal en Pensando Guaymallén junto a la Senadora Luz Llorens: "${rep.title}" (${rep.districtName})`;
+
+    if (shareTitle) shareTitle.textContent = rep.title;
+    if (shareLink) shareLink.value = fakeUrl;
+
+    if (btnWp) {
+      btnWp.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + fakeUrl)}`;
+    }
+    if (btnTw) {
+      btnTw.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(fakeUrl)}`;
+    }
+
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+  }
+
+  closeShareModal() {
+    const modal = document.getElementById('modal-share');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+  }
+
+  copyShareLink() {
+    const shareLink = document.getElementById('share-modal-link');
+    if (shareLink) {
+      shareLink.select();
+      navigator.clipboard.writeText(shareLink.value);
+      this.showToast('Enlace copiado al portapapeles', 'success');
+    }
+  }
+
+  showToast(message, type = 'info', duration = 3500) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    const bgColors = {
+      success: 'bg-emerald-600 text-white',
+      error: 'bg-red-600 text-white',
+      info: 'bg-[#1A2B4C] text-white'
+    };
+    const icons = {
+      success: 'fa-circle-check',
+      error: 'fa-circle-exclamation',
+      info: 'fa-circle-info'
+    };
+
+    toast.className = `flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl text-xs font-semibold transform transition-all duration-300 translate-y-2 opacity-0 ${bgColors[type] || bgColors.info}`;
+    toast.innerHTML = `
+      <i class="fa-solid ${icons[type] || icons.info} text-sm"></i>
+      <span>${message}</span>
+    `;
+
+    container.appendChild(toast);
+
+    requestAnimationFrame(() => {
+      toast.classList.remove('translate-y-2', 'opacity-0');
+    });
+
+    setTimeout(() => {
+      toast.classList.add('opacity-0', 'translate-y-2');
+      setTimeout(() => toast.remove(), 300);
+    }, duration);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  window.App = new PensandoGuaymallenApp();
+});

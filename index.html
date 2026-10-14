@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pensando Guaymallén - Senadora Luz Llorens | Plataforma Ciudadana</title>
+  <meta name="description" content="Plataforma de reporte ciudadano y mapa participativo de Guaymallén, Mendoza. Sumate a transformar nuestro departamento junto a la Senadora Provincial Luz Llorens.">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#1A2B4C',
+              'navy-dark': '#0F1A2E',
+              'navy-light': '#243B66',
+              celeste: '#0EA5E9',
+              'celeste-dark': '#0284C7',
+              'celeste-light': '#BAE6FD',
+              green: '#059669',
+              amber: '#D97706',
+              red: '#DC2626'
+            }
+          },
+          screens: {
+            'xs': '480px'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Leaflet CSS (Local con fallback a CDN) -->
+  <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body class="bg-[#F8FAFC] text-slate-800 flex flex-col h-screen overflow-hidden antialiased select-none sm:select-auto">
+
+  <!-- ========================================================
+       1. HEADER / BARRA DE NAVEGACIÓN
+       ======================================================== -->
+  <header class="bg-white border-b border-slate-200/90 shadow-sm z-30 shrink-0">
+    <div class="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
+      
+      <!-- Brand & Identity -->
+      <div class="flex items-center gap-2 sm:gap-3.5 shrink-0">
+        <button onclick="App.navigateToView('map')" class="flex items-center gap-2 sm:gap-3 group text-left">
+          <div class="flex flex-col">
+            <div class="flex items-center gap-1">
+              <span class="text-[10px] sm:text-xs font-medium text-slate-500 tracking-tight">Pensando</span>
+              <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-sky-500 inline-block"></span>
+            </div>
+            <span class="text-base sm:text-xl font-extrabold text-[#1A2B4C] leading-none tracking-tight">
+              Guaymallén
+            </span>
+            <span class="text-[8px] sm:text-[9px] uppercase tracking-wider font-semibold text-sky-600 -mt-0.5">
+              Junto a Vos
+            </span>
+          </div>
+
+          <!-- Divider -->
+          <div class="h-8 sm:h-9 w-px bg-slate-300"></div>
+
+          <!-- Senator Identification (Visible en desktop y móvil compacto) -->
+          <div class="flex flex-col">
+            <span class="text-xs sm:text-base font-extrabold text-[#1A2B4C] tracking-wide leading-tight">
+              LUZ LLORENS
+            </span>
+            <span class="text-[8px] sm:text-[10px] uppercase font-bold tracking-wider text-sky-700">
+              SENADORA PROVINCIAL
+            </span>
+          </div>
+        </button>
+      </div>
+
+      <!-- Navigation Menu (Desktop) -->
+      <nav class="hidden md:flex items-center gap-1 lg:gap-2">
+        <button 
+          onclick="App.navigateToView('map')" 
+          data-nav-view="map"
+          class="nav-tab-btn px-3.5 py-2 text-xs lg:text-sm font-bold text-sky-950 border-b-2 border-sky-600 bg-sky-50 rounded-t-xl transition-all">
+          <i class="fa-solid fa-map-location-dot mr-1 text-xs"></i>
+          Inicio (Mapa y Reclamos)
+        </button>
+        <button 
+          onclick="App.navigateToView('conoce')" 
+          data-nav-view="conoce"
+          class="nav-tab-btn px-3 py-2 rounded-xl text-xs lg:text-sm font-semibold text-slate-600 hover:text-[#1A2B4C] hover:bg-slate-100 transition-all">
+          <i class="fa-solid fa-compass mr-1 text-xs"></i>
+          Conocé Guaymallén
+        </button>
+        <button 
+          onclick="App.navigateToView('propuestas')" 
+          data-nav-view="propuestas"
+          class="nav-tab-btn px-3 py-2 rounded-xl text-xs lg:text-sm font-semibold text-slate-600 hover:text-[#1A2B4C] hover:bg-slate-100 transition-all">
+          <i class="fa-solid fa-file-lines mr-1 text-xs"></i>
+          Propuestas
+        </button>
+        <button 
+          onclick="App.navigateToView('contacto')" 
+          data-nav-view="contacto"
+          class="nav-tab-btn px-3 py-2 rounded-xl text-xs lg:text-sm font-semibold text-slate-600 hover:text-[#1A2B4C] hover:bg-slate-100 transition-all">
+          <i class="fa-solid fa-envelope mr-1 text-xs"></i>
+          Contacto
+        </button>
+      </nav>
+
+      <!-- Right Action Buttons -->
+      <div class="flex items-center gap-1.5 sm:gap-2.5">
+        <!-- CTA Desktop: Reportar Problema -->
+        <button 
+          onclick="App.openReportModal()"
+          class="hidden md:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold uppercase tracking-wider bg-sky-600 hover:bg-sky-700 text-white shadow-sm transition-all">
+          <i class="fa-solid fa-plus text-[11px] text-amber-300"></i>
+          <span>Reportar</span>
+        </button>
+
+        <!-- Contenedor dinámico de Usuario / Login -->
+        <div id="header-user-container" class="relative">
+          <button 
+            onclick="App.openLoginModal()"
+            id="btn-header-login"
+            class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full md:rounded-xl text-xs sm:text-sm font-bold bg-white md:bg-[#1A2B4C] text-[#1A2B4C] md:text-white border border-slate-200 md:border-transparent hover:bg-slate-100 md:hover:bg-[#243B66] shadow-2xs md:shadow-sm transition-all flex items-center gap-1 sm:gap-1.5">
+            <i class="fa-regular fa-user text-xs"></i>
+            <span>Login</span>
+          </button>
+        </div>
+
+        <!-- Botón Menú Hamburguesa Móvil (3 líneas) -->
+        <button 
+          id="mobile-drawer-btn"
+          onclick="App.toggleMobileDrawer()"
+          class="md:hidden p-2 rounded-xl text-[#1A2B4C] hover:bg-slate-100 transition-colors flex items-center justify-center"
+          title="Menú de Navegación">
+          <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ========================================================
+       DRAWER VERTICAL MÓVIL (MENÚ HAMBURGUESA DESPLEGABLE)
+       ======================================================== -->
+  <div 
+    id="mobile-drawer-backdrop" 
+    onclick="App.closeMobileDrawer()" 
+    class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[998] hidden opacity-0 transition-opacity duration-300 md:hidden"></div>
+
+  <div 
+    id="mobile-drawer" 
+    class="fixed top-0 right-0 h-full w-[290px] max-w-[85vw] bg-white z-[999] shadow-2xl flex flex-col justify-between transform translate-x-full transition-transform duration-300 ease-in-out md:hidden">
+    
+    <!-- Top Header del Drawer -->
+    <div>
+      <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl overflow-hidden border-2 border-sky-500 shrink-0 shadow-sm">
+            <img src="assets/img/luz_llorens.png" alt="Senadora Luz Llorens" class="w-full h-full object-cover">
+          </div>
+          <div>
+            <h3 class="font-extrabold text-sm text-[#1A2B4C] leading-tight">Luz Llorens</h3>
+            <span class="text-[9px] uppercase font-bold text-sky-700">Senadora Provincial</span>
+          </div>
+        </div>
+        <button 
+          onclick="App.closeMobileDrawer()" 
+          class="w-8 h-8 rounded-full bg-slate-200/80 hover:bg-slate-300 text-slate-700 flex items-center justify-center transition-colors"
+          title="Cerrar menú">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Links de Navegación -->
+      <nav class="p-4 space-y-1.5">
+        <button 
+          onclick="App.navigateToView('map'); App.closeMobileDrawer();" 
+          class="w-full text-left px-3.5 py-3 rounded-2xl text-xs font-bold text-sky-950 bg-sky-50 hover:bg-sky-100 transition-colors flex items-center gap-3">
+          <i class="fa-solid fa-map-location-dot text-sky-600 w-4 text-sm"></i>
+          <span>Inicio (Mapa y Reclamos)</span>
+        </button>
+
+        <button 
+          onclick="App.navigateToView('conoce'); App.closeMobileDrawer();" 
+          class="w-full text-left px-3.5 py-3 rounded-2xl text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors flex items-center gap-3">
+          <i class="fa-solid fa-compass text-slate-400 w-4 text-sm"></i>
+          <span>Conocé Guaymallén</span>
+        </button>
+
+        <button 
+          onclick="App.navigateToView('propuestas'); App.closeMobileDrawer();" 
+          class="w-full text-left px-3.5 py-3 rounded-2xl text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors flex items-center gap-3">
+          <i class="fa-solid fa-file-lines text-slate-400 w-4 text-sm"></i>
+          <span>Propuestas Legislativas</span>
+        </button>
+
+        <button 
+          onclick="App.navigateToView('contacto'); App.closeMobileDrawer();" 
+          class="w-full text-left px-3.5 py-3 rounded-2xl text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors flex items-center gap-3">
+          <i class="fa-solid fa-envelope text-slate-400 w-4 text-sm"></i>
+          <span>Contacto y Despacho</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Botones de Acción y Redes del Drawer -->
+    <div class="p-4 border-t border-slate-100 space-y-2.5 bg-slate-50/60">
+      <button 
+        onclick="App.openReportModal(); App.closeMobileDrawer();" 
+        class="w-full py-3 px-4 rounded-xl text-xs font-black uppercase tracking-wider bg-sky-600 hover:bg-sky-700 text-white shadow-md flex items-center justify-center gap-2 transition-all">
+        <i class="fa-solid fa-plus text-amber-300"></i>
+        <span>Reportar Problema</span>
+      </button>
+
+      <!-- Contenedor dinámico de Usuario en Drawer -->
+      <div id="drawer-user-container">
+        <button 
+          onclick="App.openLoginModal(); App.closeMobileDrawer();" 
+          class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-[#1A2B4C] hover:bg-[#243B66] text-white shadow-sm flex items-center justify-center gap-2 transition-all">
+          <i class="fa-regular fa-user text-xs"></i>
+          <span>Portal del Vecino (Login)</span>
+        </button>
+      </div>
+
+      <a 
+        href="https://wa.me/5492615551234?text=Hola%20Senadora%20Luz%20Llorens,%20te%20escribo%20desde%20Pensando%20Guaymall%C3%A9n"
+        target="_blank"
+        class="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 flex items-center justify-center gap-2 transition-colors">
+        <i class="fa-brands fa-whatsapp text-emerald-600 text-sm"></i>
+        <span>WhatsApp Directo con Luz</span>
+      </a>
+
+      <p class="text-[10px] text-center text-slate-400 pt-1">
+        Pensando Guaymallén • Senadora Luz Llorens
+      </p>
+    </div>
+
+  </div>
+
+  <!-- ========================================================
+       VISTA 1: INICIO (MAPA INTERACTIVO Y FEED DE RECLAMOS)
+       ======================================================== -->
+  <div id="view-map" class="app-view active flex-1 flex flex-col overflow-hidden relative">
+
+    <!-- Mobile View Switcher (Dual Pill Selector exacto al mockup) -->
+    <div class="md:hidden bg-white border-b border-slate-200/90 py-2 px-3 shrink-0 z-20">
+      <div class="flex items-center justify-center max-w-sm mx-auto bg-slate-100 p-1 rounded-full border border-slate-200/80">
+        <button 
+          id="tab-btn-map" 
+          onclick="App.switchMobileTab('map')"
+          class="flex-1 py-1.5 px-3 rounded-full text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 bg-[#1A2B4C] text-white shadow-sm">
+          <i class="fa-solid fa-map-location-dot text-[11px]"></i>
+          <span>Ver Mapa</span>
+        </button>
+        <button 
+          id="tab-btn-list" 
+          onclick="App.switchMobileTab('list')"
+          class="flex-1 py-1.5 px-3 rounded-full text-xs font-bold transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900">
+          <i class="fa-solid fa-list-check text-[11px]"></i>
+          <span>Lista de Reclamos</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenedor de dos columnas -->
+    <div class="flex-1 flex overflow-hidden relative">
+      
+      <!-- Panel Izquierdo: Feed de Reclamos Ciudadanos -->
+      <section 
+        id="left-feed-panel" 
+        class="w-full md:w-[380px] lg:w-[440px] xl:w-[480px] 2xl:w-[520px] shrink-0 bg-white border-r border-slate-200/90 flex flex-col h-full z-10 shadow-lg md:shadow-none">
+        
+        <!-- Header del Feed & Filtros -->
+        <div class="p-4 border-b border-slate-100 space-y-3 bg-white/95 backdrop-blur-sm shrink-0">
+          
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-base sm:text-lg font-extrabold text-[#1A2B4C] tracking-tight">
+                Reportes Ciudadanos
+              </h2>
+              <p class="text-xs text-slate-500">
+                Guaymallén, Mendoza • Senadora Luz Llorens
+              </p>
+            </div>
+            <span 
+              id="reports-count-badge" 
+              class="px-2.5 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-800 border border-sky-200">
+              0 reportes
+            </span>
+          </div>
+
+          <!-- Selector de Alcance de Reclamos: Todos vs Mis Reclamos -->
+          <div class="flex items-center bg-slate-100/90 p-1 rounded-2xl text-xs font-bold border border-slate-200/80 shadow-2xs">
+            <button 
+              id="feed-tab-all" 
+              type="button"
+              onclick="App.setFeedReportScope('all')" 
+              class="flex-1 py-1.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 bg-white text-[#1A2B4C] shadow-2xs font-black">
+              <i class="fa-solid fa-earth-americas text-[11px] text-sky-600"></i>
+              <span>Todos los Reclamos</span>
+            </button>
+            <button 
+              id="feed-tab-mine" 
+              type="button" 
+              onclick="App.setFeedReportScope('mine')" 
+              class="flex-1 py-1.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900 font-bold">
+              <i class="fa-solid fa-user-check text-[11px] text-emerald-600"></i>
+              <span>Mis Reclamos</span>
+              <span id="feed-tab-mine-count" class="hidden px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-100 text-emerald-800 font-black">0</span>
+            </button>
+          </div>
+
+          <!-- Filtro Desplegable: Barrio / Distrito (21 Distritos Oficiales) -->
+          <div class="space-y-1">
+            <label for="filter-district-select" class="block text-xs font-semibold text-slate-600">
+              Filtrar por Distrito Oficial:
+            </label>
+            <div class="relative">
+              <select 
+                id="filter-district-select" 
+                class="w-full appearance-none bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all pr-8 cursor-pointer">
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+                <i class="fa-solid fa-chevron-down text-xs"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Buscador -->
+          <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs text-slate-400"></i>
+            <input 
+              type="text" 
+              id="search-reports-input" 
+              placeholder="Buscar por calle o palabra clave..." 
+              class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-8 py-2 text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all">
+            <button 
+              type="button" 
+              onclick="App.clearFilters()" 
+              title="Limpiar búsqueda" 
+              class="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 text-xs p-1">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <!-- Chips de Categoría -->
+          <div 
+            id="category-filter-bar" 
+            class="flex items-center gap-1.5 overflow-x-auto hide-scrollbar pb-1 pt-0.5">
+          </div>
+
+        </div>
+
+        <!-- Lista scrollable de tarjetas de reportes -->
+        <div 
+          id="reports-feed-container" 
+          class="flex-1 overflow-y-auto custom-scrollbar p-3 sm:p-4 space-y-3.5 bg-slate-50/60">
+        </div>
+
+      </section>
+
+      <!-- Panel Derecho: Mapa Interactivo con Leaflet -->
+      <section 
+        id="right-map-panel" 
+        class="flex-1 relative h-full bg-slate-100 overflow-hidden hidden md:block">
+        
+        <!-- Contenedor del mapa -->
+        <div id="map-container" class="absolute inset-0 w-full h-full"></div>
+
+        <!-- Tarjeta Flotante Institucional de Luz Llorens (Top-Left) -->
+        <div 
+          id="senator-floating-card" 
+          class="absolute top-2.5 left-2.5 md:top-4 md:left-4 z-[450] bg-white/95 backdrop-blur-md rounded-2xl md:rounded-3xl shadow-lg md:shadow-xl border border-slate-200/90 p-2 sm:p-2.5 md:p-3.5 max-w-[185px] sm:max-w-[210px] md:max-w-[270px] pointer-events-auto transition-all">
+          
+          <div class="senator-card-expanded space-y-1.5 md:space-y-2.5">
+            <div class="flex items-center md:items-start justify-between gap-1.5 md:gap-2">
+              <div class="flex items-center gap-2 md:gap-2.5">
+                <div class="relative w-9 h-9 md:w-12 md:h-12 rounded-xl md:rounded-2xl overflow-hidden shrink-0 border-2 border-sky-500 shadow-sm md:shadow-md">
+                  <img 
+                    src="assets/img/luz_llorens.png" 
+                    alt="Senadora Luz Llorens" 
+                    class="w-full h-full object-cover">
+                  <span class="absolute bottom-0 right-0 w-2.5 h-2.5 md:w-3 md:h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
+                </div>
+                <div>
+                  <h3 class="font-extrabold text-xs md:text-sm text-[#1A2B4C] leading-tight">
+                    Luz Llorens
+                  </h3>
+                  <span class="hidden md:inline-block text-[10px] font-bold uppercase tracking-wider text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded-md border border-sky-200/80 mt-0.5">
+                    Senadora Provincial
+                  </span>
+                </div>
+              </div>
+
+              <!-- Botón para minimizar (Desktop) -->
+              <button 
+                id="toggle-senator-card" 
+                class="hidden md:flex w-6 h-6 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 items-center justify-center transition-colors"
+                title="Minimizar tarjeta">
+                <i class="fa-solid fa-minus text-[10px]"></i>
+              </button>
+            </div>
+
+            <!-- Acciones en Desktop -->
+            <div class="hidden md:flex items-center gap-2 pt-0.5">
+              <button 
+                onclick="App.navigateToView('propuestas')"
+                class="flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold bg-[#1A2B4C] hover:bg-[#243B66] text-white transition-all text-center">
+                Propuestas
+              </button>
+              <a 
+                href="https://wa.me/5492615551234?text=Hola%20Senadora%20Luz%20Llorens,%20te%20escribo%20desde%20la%20plataforma%20Pensando%20Guaymall%C3%A9n"
+                target="_blank"
+                class="w-7 h-7 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center transition-all shrink-0 shadow-sm"
+                title="Escribile a Luz por WhatsApp">
+                <i class="fa-brands fa-whatsapp text-xs"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Modo minimizado -->
+          <div class="senator-card-minimized hidden items-center justify-center cursor-pointer" onclick="document.getElementById('senator-floating-card').classList.remove('minimized')">
+            <div class="relative w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden border-2 border-sky-500 shadow-md" title="Luz Llorens (Clic para abrir)">
+              <img src="assets/img/luz_llorens.png" alt="Luz Llorens" class="w-full h-full object-cover">
+            </div>
+          </div>
+        </div>
+
+        <!-- Barra Superior Flotante: Confirmación de Ubicación en el Mapa -->
+        <div 
+          id="map-picker-banner" 
+          class="hidden absolute top-3 sm:top-4 left-1/2 -translate-x-1/2 z-[500] bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/90 px-3.5 sm:px-4 py-2 sm:py-2.5 max-w-md sm:max-w-lg w-[95%] sm:w-auto flex items-center justify-between gap-2 sm:gap-4 pointer-events-auto">
+          
+          <div class="flex items-center gap-2 min-w-0 flex-1">
+            <span class="w-2.5 h-2.5 rounded-full bg-sky-500 animate-pulse shrink-0"></span>
+            <div class="flex items-center gap-1.5 min-w-0 flex-1">
+              <span class="hidden sm:inline text-xs font-bold text-slate-600 shrink-0">Distrito:</span>
+              <div class="relative min-w-0 flex-1 max-w-[160px] sm:max-w-[220px]">
+                <select 
+                  id="map-picker-district-select" 
+                  title="Cambiar distrito del reporte"
+                  class="w-full bg-sky-50 hover:bg-sky-100/90 text-sky-950 font-black text-xs sm:text-sm py-1.5 pl-2.5 pr-7 rounded-xl border border-sky-300 focus:ring-2 focus:ring-sky-500 focus:outline-none appearance-none cursor-pointer transition-all truncate shadow-2xs">
+                  <!-- Populated by app.js with the 21 official districts -->
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-sky-700">
+                  <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            <button 
+              type="button" 
+              onclick="App.cancelMapPicker()" 
+              class="px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 active:scale-95 text-white shadow-sm transition-all flex items-center gap-1">
+              <i class="fa-solid fa-xmark text-[11px]"></i>
+              <span>Cancelar</span>
+            </button>
+            <button 
+              type="button" 
+              onclick="App.confirmMapPicker()" 
+              class="px-3.5 sm:px-4 py-1.5 rounded-xl text-xs font-extrabold uppercase bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white shadow-md shadow-emerald-600/20 transition-all flex items-center gap-1.5">
+              <i class="fa-solid fa-check text-xs"></i>
+              <span>Confirmar</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Leyenda Flotante del Mapa (Abajo a la izquierda: Pill compacto en mobile, caja en desktop) -->
+        <div 
+          id="map-legend-box" 
+          class="absolute bottom-20 left-2.5 md:bottom-6 md:left-4 z-[450] pointer-events-auto flex flex-col items-start">
+          
+          <!-- Botón Pill Compacto para Mobile (Exacto al mockup: [ ● Leyenda ]) -->
+          <button 
+            type="button"
+            onclick="App.toggleLegend()"
+            class="flex md:hidden items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-slate-200 shadow-md text-xs font-bold text-slate-800 active:bg-slate-100 transition-all">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+            <span>Leyenda</span>
+            <i class="fa-solid fa-chevron-up text-[9px] text-slate-400 ml-0.5"></i>
+          </button>
+
+          <!-- Contenedor Desplegable de Items de la Leyenda -->
+          <div 
+            id="legend-content-panel"
+            class="hidden md:block bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/90 w-48 text-xs font-sans overflow-hidden mt-1.5 md:mt-0 transition-all">
+            
+            <!-- Encabezado cliqueable en Desktop para colapsar / expandir -->
+            <div 
+              onclick="App.toggleLegend()"
+              class="hidden md:flex p-3 items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors select-none">
+              <span class="font-extrabold text-[#1A2B4C] flex items-center gap-1.5 text-xs">
+                <i class="fa-solid fa-layer-group text-sky-600"></i>
+                <span>Leyenda</span>
+              </span>
+              <span class="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-transform legend-arrow">
+                <i class="fa-solid fa-chevron-down text-[10px]"></i>
+              </span>
+            </div>
+
+            <!-- Items desplegables de la leyenda -->
+            <div class="legend-items p-3 md:pt-0 space-y-2 md:border-t md:border-slate-100">
+              <div onclick="App.selectCategory('baches'); App.closeMobileLegend();" class="flex items-center gap-2 hover:bg-slate-50 p-1 rounded-lg cursor-pointer transition-colors group">
+                <span class="w-3.5 h-3.5 rounded-full bg-[#DC2626] border-2 border-white shadow-sm shrink-0"></span>
+                <span class="text-slate-700 font-semibold group-hover:text-red-700">Baches y Calles</span>
+              </div>
+              <div onclick="App.selectCategory('alumbrado'); App.closeMobileLegend();" class="flex items-center gap-2 hover:bg-slate-50 p-1 rounded-lg cursor-pointer transition-colors group">
+                <span class="w-3.5 h-3.5 rounded-full bg-[#EAB308] border-2 border-white shadow-sm shrink-0"></span>
+                <span class="text-slate-700 font-semibold group-hover:text-amber-700">Alumbrado</span>
+              </div>
+              <div onclick="App.selectCategory('limpieza'); App.closeMobileLegend();" class="flex items-center gap-2 hover:bg-slate-50 p-1 rounded-lg cursor-pointer transition-colors group">
+                <span class="w-3.5 h-3.5 rounded-full bg-[#10B981] border-2 border-white shadow-sm shrink-0"></span>
+                <span class="text-slate-700 font-semibold group-hover:text-emerald-700">Limpieza</span>
+              </div>
+              <div onclick="App.selectCategory('seguridad'); App.closeMobileLegend();" class="flex items-center gap-2 hover:bg-slate-50 p-1 rounded-lg cursor-pointer transition-colors group">
+                <span class="w-3.5 h-3.5 rounded-full bg-[#0284C7] border-2 border-white shadow-sm shrink-0"></span>
+                <span class="text-slate-700 font-semibold group-hover:text-sky-700">Seguridad</span>
+              </div>
+              <div onclick="App.selectCategory('parques'); App.closeMobileLegend();" class="flex items-center gap-2 hover:bg-slate-50 p-1 rounded-lg cursor-pointer transition-colors group">
+                <span class="w-3.5 h-3.5 rounded-full bg-[#16A34A] border-2 border-white shadow-sm shrink-0"></span>
+                <span class="text-slate-700 font-semibold group-hover:text-green-800">Plazas y Parques</span>
+              </div>
+              <div class="pt-1.5 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+                <button onclick="App.selectCategory('all'); App.closeMobileLegend();" class="text-sky-700 font-bold hover:underline">Ver todas</button>
+                <span>Clic para filtrar</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón Centrar Mapa: Ubicado para no colisionar con controles móviles ni desktop -->
+        <button 
+          id="btn-reset-map" 
+          class="absolute bottom-20 md:bottom-6 right-3 z-[400] w-9 h-9 bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-slate-200/90 flex items-center justify-center text-slate-700 hover:text-sky-600 hover:bg-slate-50 transition-all pointer-events-auto"
+          title="Centrar mapa en Guaymallén">
+          <i class="fa-solid fa-crosshairs text-xs"></i>
+        </button>
+
+      </section>
+
+    </div>
+
+    <!-- Botón Sticky Inferior para Mobile: "REPORTAR PROBLEMA EN MI BARRIO" (Exacto al mockup) -->
+    <div class="md:hidden fixed bottom-3 inset-x-3 z-30 pointer-events-auto">
+      <button 
+        onclick="App.openReportModal()"
+        class="w-full bg-[#1A2B4C] hover:bg-[#243B66] active:scale-[0.98] text-white py-2.5 px-4 rounded-2xl shadow-2xl flex flex-col items-center justify-center gap-0.5 transition-all border border-white/10">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-bullhorn text-amber-400 text-xs"></i>
+          <span class="text-xs font-black uppercase tracking-wide">REPORTAR PROBLEMA EN MI BARRIO</span>
+        </div>
+        <span id="mobile-sticky-counter" class="text-[10px] text-slate-300 font-medium">
+          0 reclamos registrados
+        </span>
+      </button>
+    </div>
+
+    <!-- Banner Inferior Desktop: "Explorá tu Barrio" y Reporte Rápido (hidden en mobile) -->
+    <footer class="hidden md:block bg-white border-t border-slate-200 shadow-xl z-20 shrink-0">
+      <div class="max-w-[1920px] mx-auto px-4 lg:px-6 py-2.5 sm:py-3 flex flex-col md:flex-row items-center justify-between gap-2.5 sm:gap-4">
+        
+        <!-- Selector rápido de distritos -->
+        <div class="w-full md:w-auto flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+          <div>
+            <h3 class="text-xs sm:text-sm font-extrabold text-[#1A2B4C] leading-none">
+              Explorá tu Barrio
+            </h3>
+            <p class="text-[10px] text-slate-500 mt-0.5">
+              Seleccioná entre los 21 distritos oficiales
+            </p>
+          </div>
+
+          <div class="relative w-full sm:w-64">
+            <select 
+              id="banner-district-select" 
+              class="w-full appearance-none bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 focus:outline-none transition-all pr-8 cursor-pointer">
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+              <i class="fa-solid fa-chevron-down text-xs"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA Principal: REPORTAR PROBLEMA EN MI BARRIO -->
+        <div class="w-full md:w-auto flex items-center justify-between sm:justify-end gap-3 shrink-0">
+          <span 
+            id="banner-counter-badge" 
+            class="text-[11px] font-bold text-sky-700 bg-sky-50 px-2.5 py-1 rounded-full border border-sky-200 hidden sm:inline-block">
+            0 reclamos registrados
+          </span>
+
+          <button 
+            onclick="App.openReportModal()"
+            class="flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold tracking-wide uppercase bg-[#1A2B4C] hover:bg-sky-700 text-white shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 group">
+            <i class="fa-solid fa-bullhorn text-amber-400 group-hover:rotate-12 transition-transform"></i>
+            <span>REPORTAR PROBLEMA EN MI BARRIO</span>
+          </button>
+        </div>
+
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ========================================================
+       VISTA 2: CONOCÉ GUAYMALLÉN (PÁGINA COMPLETA)
+       ======================================================== -->
+  <div id="view-conoce" class="app-view w-full bg-slate-50 py-8">
+    <div class="max-w-6xl mx-auto w-full p-4 sm:p-8 space-y-8">
+      
+      <!-- Cabecera de la sección -->
+      <div class="bg-gradient-to-r from-[#1A2B4C] to-[#0284C7] rounded-3xl p-6 sm:p-10 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="space-y-2 max-w-xl">
+          <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-white/10 text-amber-300 backdrop-blur-sm">
+            Departamento de Guaymallén
+          </span>
+          <h1 class="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
+            El Corazón Productivo y Urbano de Mendoza
+          </h1>
+          <p class="text-xs sm:text-sm text-slate-200 leading-relaxed">
+            Con más de 320.000 habitantes, Guaymallén es el departamento con mayor población de la provincia. Su territorio abarca 21 distritos que integran zonas urbanas históricas y el mayor cinturón verde productivo del oeste argentino.
+          </p>
+        </div>
+
+        <button 
+          onclick="App.navigateToView('map')" 
+          class="shrink-0 px-5 py-3 rounded-2xl bg-white text-[#1A2B4C] font-extrabold text-xs sm:text-sm hover:bg-sky-50 transition-all flex items-center gap-2 shadow-lg">
+          <i class="fa-solid fa-map-location-dot text-sky-600"></i>
+          <span>Volver al Mapa de Reclamos</span>
+        </button>
+      </div>
+
+      <!-- Estadísticas Clave -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center space-y-1">
+          <span class="block text-2xl sm:text-3xl font-black text-[#1A2B4C]">+320.000</span>
+          <span class="block text-xs font-bold text-slate-700">Habitantes</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center space-y-1">
+          <span class="block text-2xl sm:text-3xl font-black text-sky-600">21</span>
+          <span class="block text-xs font-bold text-slate-700">Distritos Oficiales</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center space-y-1">
+          <span class="block text-2xl sm:text-3xl font-black text-emerald-700">164 km²</span>
+          <span class="block text-xs font-bold text-slate-700">Superficie Total</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center space-y-1">
+          <span class="block text-2xl sm:text-3xl font-black text-amber-600">100%</span>
+          <span class="block text-xs font-bold text-slate-700">Compromiso</span>
+        </div>
+      </div>
+
+      <!-- Grilla interactiva de los 21 Distritos -->
+      <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-4">
+        <div>
+          <h3 class="text-lg font-extrabold text-[#1A2B4C]">
+            Directorio de Distritos (Hacé clic para ver en el mapa)
+          </h3>
+          <p class="text-xs text-slate-500">
+            Seleccioná cualquiera de los 21 distritos para ver su ubicación y reportes en el mapa interactivo
+          </p>
+        </div>
+
+        <div id="conoce-districts-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+          <!-- Populated by app.js -->
+        </div>
+      </div>
+
+      <!-- Perfil Institucional de Luz Llorens -->
+      <div class="bg-sky-50 border border-sky-200 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center gap-6">
+        <div class="w-20 h-20 rounded-2xl overflow-hidden shrink-0 border-2 border-sky-500 shadow-md">
+          <img src="assets/img/luz_llorens.png" alt="Senadora Luz Llorens" class="w-full h-full object-cover">
+        </div>
+        <div class="space-y-1 flex-1 text-center md:text-left">
+          <h4 class="font-black text-lg text-[#1A2B4C]">
+            Luz Llorens
+          </h4>
+          <span class="inline-block text-xs font-bold text-sky-700 bg-white/80 px-3 py-1 rounded-full border border-sky-200 shadow-2xs">
+            Senadora Provincial • Segunda Sección Electoral - Mendoza
+          </span>
+        </div>
+        <button 
+          onclick="App.openReportModal()"
+          class="shrink-0 px-5 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs transition-all shadow-md">
+          Cargar mi Reclamo
+        </button>
+      </div>
+
+      <!-- Footer Institucional de Conocé Guaymallén -->
+      <footer class="pt-8 border-t border-slate-200 text-center text-xs text-slate-500">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-[#1A2B4C]">Pensando Guaymallén</span>
+            <span>•</span>
+            <span class="font-semibold text-sky-700">Senadora Provincial Luz Llorens</span>
+          </div>
+          <p>© 2026 Plataforma de Participación Ciudadana y Gestión Legislativa.</p>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+
+  <!-- ========================================================
+       VISTA 3: PROPUESTAS LEGISLATIVAS (PÁGINA COMPLETA)
+       ======================================================== -->
+  <div id="view-propuestas" class="app-view w-full bg-slate-50 py-8">
+    <div class="max-w-5xl mx-auto w-full p-4 sm:p-8 space-y-8">
+      
+      <!-- Header Propuestas -->
+      <div class="bg-gradient-to-r from-[#1A2B4C] to-[#243B66] rounded-3xl p-6 sm:p-10 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="space-y-2 max-w-xl">
+          <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-white/10 text-amber-300">
+            Gestión Legislativa
+          </span>
+          <h1 class="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
+            Nuestras Propuestas para Transformar Guaymallén
+          </h1>
+          <p class="text-xs sm:text-sm text-slate-200 leading-relaxed">
+            Ejes estratégicos impulsados desde la Cámara de Senadores de Mendoza para mejorar la calidad de vida en cada uno de los 21 distritos.
+          </p>
+        </div>
+
+        <button 
+          onclick="App.navigateToView('map')" 
+          class="shrink-0 px-5 py-3 rounded-2xl bg-white text-[#1A2B4C] font-extrabold text-xs sm:text-sm hover:bg-sky-50 transition-all flex items-center gap-2 shadow-lg">
+          <i class="fa-solid fa-map-location-dot text-sky-600"></i>
+          <span>Volver al Mapa</span>
+        </button>
+      </div>
+
+      <!-- 4 Ejes Legislativos -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        
+        <!-- Eje 1 -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-3 hover:border-sky-300 transition-all">
+          <div class="flex items-center gap-3">
+            <span class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl shrink-0">
+              <i class="fa-solid fa-lightbulb"></i>
+            </span>
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-amber-700">Infraestructura y Seguridad</span>
+              <h3 class="font-extrabold text-base text-[#1A2B4C]">Red de Alumbrado LED y Corredores Seguros</h3>
+            </div>
+          </div>
+          <div class="pt-2 text-xs font-bold text-sky-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-check text-emerald-600"></i>
+            <span>Proyecto de Ley en tratamiento parlamentario</span>
+          </div>
+        </div>
+
+        <!-- Eje 2 -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-3 hover:border-sky-300 transition-all">
+          <div class="flex items-center gap-3">
+            <span class="w-12 h-12 rounded-2xl bg-red-100 text-red-700 flex items-center justify-center text-xl shrink-0">
+              <i class="fa-solid fa-road"></i>
+            </span>
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-red-700">Vialidad y Calles</span>
+              <h3 class="font-extrabold text-base text-[#1A2B4C]">Fondo de Reparación de Arterias Troncales</h3>
+            </div>
+          </div>
+          <div class="pt-2 text-xs font-bold text-sky-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-check text-emerald-600"></i>
+            <span>Pedidos de informe formales a Vialidad</span>
+          </div>
+        </div>
+
+        <!-- Eje 3 -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-3 hover:border-sky-300 transition-all">
+          <div class="flex items-center gap-3">
+            <span class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl shrink-0">
+              <i class="fa-solid fa-recycle"></i>
+            </span>
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Medio Ambiente</span>
+              <h3 class="font-extrabold text-base text-[#1A2B4C]">Puntos Verdes y Erradicación de Basurales</h3>
+            </div>
+          </div>
+          <div class="pt-2 text-xs font-bold text-sky-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-check text-emerald-600"></i>
+            <span>Recuperación de espacios verdes y forestación</span>
+          </div>
+        </div>
+
+        <!-- Eje 4 -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-3 hover:border-sky-300 transition-all">
+          <div class="flex items-center gap-3">
+            <span class="w-12 h-12 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center text-xl shrink-0">
+              <i class="fa-solid fa-users-gear"></i>
+            </span>
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-sky-700">Cercanía y Participación</span>
+              <h3 class="font-extrabold text-base text-[#1A2B4C]">Mesa de Enlace Legislativa con Vecinos</h3>
+            </div>
+          </div>
+          <div class="pt-2 text-xs font-bold text-sky-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-check text-emerald-600"></i>
+            <span>La banca legislativa al servicio de cada barrio</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Formulario para proponer una idea -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-4">
+        <div>
+          <h3 class="text-lg font-extrabold text-[#1A2B4C]">
+            ¿Tenés una propuesta o idea para tu distrito?
+          </h3>
+          <p class="text-xs text-slate-500">
+            Enviasela directamente al equipo legislativo de la Senadora Luz Llorens
+          </p>
+        </div>
+
+        <form onsubmit="event.preventDefault(); App.showToast('¡Gracias! Tu propuesta fue enviada al equipo legislativo de Luz Llorens.', 'success'); this.reset();" class="space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Tu Nombre</label>
+              <input type="text" required placeholder="Ej: Juan Pérez" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs">
+            </div>
+            <div>
+              <label for="propuesta-district-select" class="block text-xs font-bold text-slate-700 mb-1">Distrito de Guaymallén *</label>
+              <select id="propuesta-district-select" name="district" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none transition-all cursor-pointer">
+                <option value="" disabled selected>Seleccioná tu distrito...</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Tu Propuesta</label>
+            <textarea rows="3" required placeholder="Contanos tu proyecto o idea para mejorar tu zona..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs"></textarea>
+          </div>
+          <button type="submit" class="px-6 py-2.5 rounded-xl text-xs font-extrabold uppercase bg-sky-600 hover:bg-sky-700 text-white transition-all">
+            Enviar Propuesta
+          </button>
+        </form>
+      </div>
+
+      <!-- Footer Institucional de Propuestas -->
+      <footer class="pt-8 border-t border-slate-200 text-center text-xs text-slate-500">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-[#1A2B4C]">Pensando Guaymallén</span>
+            <span>•</span>
+            <span class="font-semibold text-sky-700">Senadora Provincial Luz Llorens</span>
+          </div>
+          <p>© 2026 Plataforma de Participación Ciudadana y Gestión Legislativa.</p>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+
+  <!-- ========================================================
+       VISTA 4: CONTACTO (PÁGINA COMPLETA)
+       ======================================================== -->
+  <div id="view-contacto" class="app-view w-full bg-slate-50 py-8">
+    <div class="max-w-5xl mx-auto w-full p-4 sm:p-8 space-y-8">
+      
+      <div class="bg-gradient-to-r from-[#1A2B4C] to-[#243B66] rounded-3xl p-6 sm:p-10 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="space-y-2">
+          <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-white/10 text-amber-300">
+            Canales de Comunicación
+          </span>
+          <h1 class="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
+            Contacto con la Senadora Luz Llorens
+          </h1>
+          <p class="text-xs sm:text-sm text-slate-200">
+            Estamos cerca para escucharte y llevar la voz de tu barrio a la Legislatura.
+          </p>
+        </div>
+
+        <button 
+          onclick="App.navigateToView('map')" 
+          class="shrink-0 px-5 py-3 rounded-2xl bg-white text-[#1A2B4C] font-extrabold text-xs sm:text-sm hover:bg-sky-50 transition-all flex items-center gap-2 shadow-lg">
+          <i class="fa-solid fa-map-location-dot text-sky-600"></i>
+          <span>Volver al Mapa</span>
+        </button>
+      </div>
+
+      <!-- Botones Principales de Contacto: WhatsApp y Correo -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- WhatsApp Oficial -->
+        <a 
+          href="https://wa.me/5492615551234?text=Hola%20Senadora%20Luz%20Llorens,%20te%20escribo%20desde%20Pensando%20Guaymall%C3%A9n"
+          target="_blank"
+          class="bg-white p-7 sm:p-8 rounded-3xl border border-slate-200 hover:border-emerald-400 hover:shadow-xl transition-all flex flex-col items-center justify-between text-center gap-5 group">
+          <div class="space-y-3 flex flex-col items-center w-full">
+            <div class="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform shadow-sm">
+              <i class="fa-brands fa-whatsapp"></i>
+            </div>
+            <div>
+              <h3 class="font-extrabold text-base sm:text-lg text-slate-800">WhatsApp Oficial</h3>
+              <p class="text-sm font-semibold text-slate-500 mt-0.5">+54 9 261 555-1234</p>
+            </div>
+          </div>
+          <div class="w-full pt-1">
+            <span class="w-full py-3 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 transition-all">
+              <i class="fa-brands fa-whatsapp text-base"></i>
+              <span class="whitespace-nowrap">Iniciar Chat de WhatsApp</span>
+              <i class="fa-solid fa-arrow-right text-xs"></i>
+            </span>
+          </div>
+        </a>
+
+        <!-- Correo Electrónico Oficial -->
+        <a 
+          href="mailto:luz.llorens@legislaturamendoza.gov.ar"
+          class="bg-white p-7 sm:p-8 rounded-3xl border border-slate-200 hover:border-sky-400 hover:shadow-xl transition-all flex flex-col items-center justify-between text-center gap-5 group">
+          <div class="space-y-3 flex flex-col items-center w-full">
+            <div class="w-16 h-16 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform shadow-sm">
+              <i class="fa-regular fa-envelope"></i>
+            </div>
+            <div class="w-full">
+              <h3 class="font-extrabold text-base sm:text-lg text-slate-800">Correo Electrónico</h3>
+              <p class="text-xs sm:text-sm font-semibold text-slate-600 mt-0.5 whitespace-nowrap overflow-x-auto sm:overflow-visible py-0.5">
+                luz.llorens@legislaturamendoza.gov.ar
+              </p>
+            </div>
+          </div>
+          <div class="w-full pt-1">
+            <span class="w-full py-3 px-6 rounded-2xl bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-sky-600/20 flex items-center justify-center gap-2 transition-all">
+              <i class="fa-regular fa-envelope text-base"></i>
+              <span class="whitespace-nowrap">Enviar Correo Electrónico</span>
+              <i class="fa-solid fa-arrow-right text-xs"></i>
+            </span>
+          </div>
+        </a>
+
+      </div>
+
+      <!-- Despacho Legislativo en el Senado -->
+      <div class="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
+        <div class="w-14 h-14 rounded-2xl bg-slate-100 text-[#1A2B4C] flex items-center justify-center text-2xl shrink-0">
+          <i class="fa-solid fa-landmark"></i>
+        </div>
+        <div class="flex-1 space-y-1">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+            <h3 class="font-extrabold text-sm sm:text-base text-slate-800">Despacho en el Senado Provincial</h3>
+            <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-800 w-fit mx-auto sm:mx-0">Atención Vecinal</span>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-500">Peatonal Sarmiento y Patricias Mendocinas, Ciudad de Mendoza</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL: REPORTAR PROBLEMA EN MI BARRIO (100% Mobile Fullscreen)
+       ======================================================== -->
+  <div 
+    id="modal-new-report" 
+    class="fixed inset-0 z-[1000] bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-0 md:p-4">
+    
+    <div class="bg-white w-full h-full md:h-auto md:max-h-[92vh] md:max-w-lg md:rounded-3xl shadow-2xl flex flex-col overflow-hidden border-0 md:border md:border-slate-200">
+      
+      <!-- Modal Header -->
+      <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-[#1A2B4C] to-[#243B66] text-white shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-amber-400 text-lg shadow-inner">
+            <i class="fa-solid fa-bullhorn"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-sm sm:text-base leading-tight">
+              Reportar Problema en mi Barrio
+            </h3>
+            <p class="text-[11px] sm:text-xs text-slate-300">
+              Pensando Guaymallén • Senadora Luz Llorens
+            </p>
+          </div>
+        </div>
+        <button 
+          onclick="App.closeReportModal()" 
+          class="w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 text-white flex items-center justify-center transition-all"
+          title="Cerrar modal">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- PASO 1: SELECCIONAR DISTRITO Y PASAR AL MAPA -->
+      <div id="report-step-1" class="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6 flex flex-col justify-between md:justify-start">
+        <div class="space-y-4">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-sky-100 text-sky-700 font-extrabold text-xs flex items-center justify-center">1</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-sky-700">Paso 1 de 2: Tu Distrito</span>
+          </div>
+
+          <div>
+            <h4 class="text-base sm:text-lg font-extrabold text-[#1A2B4C] leading-snug">
+              ¿En qué distrito de Guaymallén ocurrió el problema?
+            </h4>
+            <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+              Al seleccionar tu distrito, el mapa se abrirá automáticamente enfocado en esa zona para indicar la ubicación exacta del problema.
+            </p>
+          </div>
+
+          <div class="pt-2">
+            <label class="block text-xs font-bold text-slate-700 mb-2">
+              Seleccioná el Distrito de Guaymallén *
+            </label>
+            <div class="relative">
+              <select 
+                id="step1-district-select" 
+                class="w-full bg-slate-50 hover:bg-slate-100 border-2 border-slate-300 rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-sky-500 focus:outline-none appearance-none pr-10 cursor-pointer transition-all">
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                <i class="fa-solid fa-chevron-down text-xs"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button 
+          type="button" 
+          onclick="App.proceedToMapPicker()"
+          class="w-full py-4 rounded-2xl text-xs sm:text-sm font-extrabold uppercase tracking-wide bg-[#1A2B4C] hover:bg-sky-700 text-white shadow-lg transition-all flex items-center justify-center gap-2 group mt-6 active:scale-[0.98]">
+          <span>IR AL MAPA Y SELECCIONAR UBICACIÓN</span>
+          <i class="fa-solid fa-arrow-right text-amber-400 group-hover:translate-x-1 transition-transform"></i>
+        </button>
+      </div>
+
+      <!-- PASO 2: FORMULARIO DETALLADO (CON UBICACIÓN YA CONFIRMADA) -->
+      <form id="new-report-form" class="hidden flex-1 overflow-y-auto custom-scrollbar p-5 pb-8 space-y-4">
+        
+        <!-- Tarjeta de Distrito y Ubicación Confirmada -->
+        <div class="p-3.5 rounded-2xl bg-emerald-50/90 border border-emerald-200 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <span class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-sm shrink-0 shadow-sm">
+              <i class="fa-solid fa-check"></i>
+            </span>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-xs font-black text-emerald-950" id="step2-district-badge">Distrito</span>
+                <span class="text-[10px] font-bold text-emerald-700 bg-white px-2 py-0.5 rounded-full border border-emerald-200">
+                  Ubicación fijada en el mapa
+                </span>
+              </div>
+              <p id="step2-coords-preview" class="text-[11px] text-emerald-800 truncate mt-0.5 font-medium">
+                Ubicación georreferenciada con precisión
+              </p>
+            </div>
+          </div>
+
+          <button 
+            type="button" 
+            onclick="App.reopenMapPicker()" 
+            class="shrink-0 px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 transition-all flex items-center gap-1 shadow-2xs">
+            <i class="fa-solid fa-location-dot text-sky-600"></i>
+            <span>Cambiar ubicación</span>
+          </button>
+        </div>
+
+        <!-- Categoría del Reclamo -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">
+            Categoría del Reclamo *
+          </label>
+          <div class="relative">
+            <select 
+              id="modal-category-select" 
+              name="report-category" 
+              required
+              class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 focus:outline-none cursor-pointer">
+            </select>
+          </div>
+        </div>
+
+        <!-- Título -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">
+            Título del Reclamo *
+          </label>
+          <input 
+            type="text" 
+            name="report-title" 
+            required 
+            placeholder="Ej: Bache profundo en cruce principal" 
+            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+        </div>
+
+        <!-- Dirección / Esquina -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">
+            Calle y Altura / Esquina *
+          </label>
+          <input 
+            type="text" 
+            id="report-address-input"
+            name="report-address" 
+            required 
+            placeholder="Ej: Moldes y Adolfo Calle" 
+            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+          <p class="text-[10px] text-slate-400 mt-1">Escribí la calle y altura o entre calles para facilitar el trabajo en el barrio</p>
+        </div>
+
+        <!-- Descripción -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">
+            Descripción Detallada *
+          </label>
+          <textarea 
+            name="report-description" 
+            rows="3" 
+            required 
+            placeholder="Describí el problema y cómo perjudica a los vecinos..." 
+            class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-sky-500 focus:outline-none"></textarea>
+        </div>
+
+        <!-- Tu Nombre o anónimo -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">
+            Tu Nombre o Contacto (Opcional)
+          </label>
+          <input 
+            type="text" 
+            name="report-citizen" 
+            placeholder="Podés dejar tu nombre o enviarlo anónimo" 
+            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-3">
+          <button 
+            type="submit" 
+            class="w-full py-3.5 rounded-xl text-xs sm:text-sm font-extrabold uppercase tracking-wider bg-sky-600 hover:bg-sky-700 active:scale-[0.98] text-white shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span>Publicar Reclamo en el Mapa</span>
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL: LOGIN / PORTAL VECINAL
+       ======================================================== -->
+  <div 
+    id="modal-login" 
+    class="fixed inset-0 z-[1000] bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    
+    <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
+      
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-[#1A2B4C] to-[#243B66] text-white">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-amber-400">
+            <i class="fa-solid fa-fingerprint"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-sm sm:text-base leading-tight">Portal del Vecino</h3>
+            <p class="text-[11px] text-slate-300">Pensando Guaymallén</p>
+          </div>
+        </div>
+        <button onclick="App.closeLoginModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div>
+          <h4 class="font-extrabold text-slate-800 text-sm">Ingresá a tu Cuenta Vecinal</h4>
+          <p class="text-xs text-slate-500 mt-0.5">Podrás ver tus propios reclamos, hacer seguimiento de su estado e interactuar con el equipo de Luz Llorens.</p>
+        </div>
+
+        <form id="login-form" onsubmit="App.handleLogin(event)" class="space-y-3.5">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Nombre o Email / DNI</label>
+            <input 
+              type="text" 
+              id="login-input-user" 
+              required 
+              placeholder="Ej: Carlos Gómez o carlos@gmail.com" 
+              value="Carlos Gómez"
+              class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Contraseña</label>
+            <input 
+              type="password" 
+              required 
+              placeholder="••••••••" 
+              value="123456" 
+              class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+          </div>
+
+          <button 
+            type="submit" 
+            class="w-full py-3 rounded-xl text-xs sm:text-sm font-extrabold uppercase tracking-wide bg-[#1A2B4C] hover:bg-sky-700 active:scale-98 text-white transition-all shadow-md flex items-center justify-center gap-2">
+            <i class="fa-solid fa-right-to-bracket text-amber-300"></i>
+            <span>Iniciar Sesión y Ver Mis Reclamos</span>
+          </button>
+        </form>
+
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+          <span class="text-slate-400">¿Querés probar rápido?</span>
+          <button 
+            type="button" 
+            onclick="App.quickDemoLogin()" 
+            class="text-sky-700 font-bold hover:underline flex items-center gap-1">
+            <i class="fa-solid fa-bolt text-amber-500"></i>
+            <span>Demo con 1 clic</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL: COMPARTIR REPORTE
+       ======================================================== -->
+  <div 
+    id="modal-share" 
+    class="fixed inset-0 z-[1000] bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    
+    <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden border border-slate-200">
+      
+      <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <h4 class="font-bold text-sm text-[#1A2B4C]">Compartir Reclamo</h4>
+        <button onclick="App.closeShareModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4">
+        <p id="share-modal-title" class="text-xs font-bold text-slate-800 line-clamp-2">
+          Reclamo Ciudadano
+        </p>
+
+        <div class="flex items-center gap-2">
+          <a 
+            id="share-btn-whatsapp" 
+            href="#" 
+            target="_blank" 
+            class="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all">
+            <i class="fa-brands fa-whatsapp text-sm"></i>
+            <span>WhatsApp</span>
+          </a>
+          <a 
+            id="share-btn-twitter" 
+            href="#" 
+            target="_blank" 
+            class="flex-1 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all">
+            <i class="fa-brands fa-x-twitter text-sm"></i>
+            <span>Twitter/X</span>
+          </a>
+        </div>
+
+        <div class="relative">
+          <input 
+            type="text" 
+            id="share-modal-link" 
+            readonly 
+            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[11px] text-slate-600 pr-16 select-all">
+          <button 
+            type="button" 
+            onclick="App.copyShareLink()" 
+            class="absolute right-1 top-1 px-3 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-[10px] font-bold">
+            Copiar
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="fixed bottom-20 right-4 z-[2000] flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Leaflet JS (Local con fallback a CDN) -->
+  <script src="assets/vendor/leaflet/leaflet.js"></script>
+  <script>
+    if (typeof L === 'undefined') {
+      document.write('<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>');
+    }
+  </script>
+
+  <!-- Módulos de la Aplicación -->
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/map.js"></script>
+  <script src="assets/js/app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,5 @@
+node_modules/
+dist/
+cache_osm/
+.DS_Store
+Thumbs.db

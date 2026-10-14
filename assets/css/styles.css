@@ -1,0 +1,349 @@
+/* ========================================================
+   PENSANDO GUAYMALLÉN - ESTILOS PERSONALIZADOS
+   Senadora Provincial Luz Llorens | Guaymallén, Mendoza
+   ======================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  --navy-primary: #1A2B4C;
+  --navy-dark: #0F1A2E;
+  --navy-light: #243B66;
+  --celeste-brand: #0EA5E9;
+  --celeste-dark: #0284C7;
+  --celeste-light: #BAE6FD;
+  --gold-accent: #F59E0B;
+  --green-accent: #10B981;
+  --red-accent: #EF4444;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #1e293b;
+  background-color: #f8fafc;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Main View Switching */
+.app-view {
+  display: none;
+  width: 100%;
+}
+#view-map.active {
+  display: flex !important;
+  height: 100%;
+  flex: 1 1 0%;
+}
+#view-conoce.active,
+#view-propuestas.active,
+#view-contacto.active {
+  display: block !important;
+  width: 100%;
+  min-height: calc(100vh - 64px);
+}
+
+/* Leaflet Container & Overrides */
+#map-container {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  z-index: 1 !important;
+  background-color: #e2e8f0;
+  outline: none;
+}
+
+.leaflet-container {
+  font-family: 'Inter', sans-serif !important;
+  width: 100% !important;
+  height: 100% !important;
+  background-color: #f1f5f9 !important;
+}
+
+/* Custom Leaflet Popup */
+.custom-leaflet-popup .leaflet-popup-content-wrapper {
+  padding: 0 !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  overflow: hidden;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.custom-leaflet-popup .leaflet-popup-content {
+  margin: 0 !important;
+  line-height: inherit !important;
+}
+
+.custom-leaflet-popup .leaflet-popup-tip-container {
+  margin-top: -1px;
+}
+
+.custom-leaflet-popup a.leaflet-popup-close-button {
+  top: 8px !important;
+  right: 8px !important;
+  color: #ffffff !important;
+  background: rgba(15, 23, 42, 0.6) !important;
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 9999px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 14px !important;
+  font-weight: bold !important;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+  z-index: 30;
+}
+.custom-leaflet-popup a.leaflet-popup-close-button:hover {
+  background: rgba(15, 23, 42, 0.9) !important;
+  color: #fff !important;
+}
+
+/* Custom Tooltip for Districts */
+.custom-district-tooltip {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 0.5rem !important;
+  padding: 0 !important;
+}
+.custom-district-tooltip:before {
+  border-top-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Map Zoom Controls */
+.leaflet-bar {
+  border: none !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 0.75rem !important;
+  overflow: hidden;
+}
+.leaflet-bar a {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  width: 36px !important;
+  height: 36px !important;
+  line-height: 36px !important;
+  transition: all 0.2s ease;
+}
+.leaflet-bar a:hover {
+  background-color: #f8fafc !important;
+  color: #0284C7 !important;
+}
+
+/* Senator Floating Card on Map */
+#senator-floating-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#senator-floating-card.minimized {
+  width: auto !important;
+  max-width: 56px !important;
+  padding: 6px !important;
+  background: white !important;
+  border-radius: 9999px !important;
+}
+#senator-floating-card.minimized .senator-card-expanded {
+  display: none !important;
+}
+#senator-floating-card.minimized .senator-card-minimized {
+  display: flex !important;
+}
+
+/* Legend Box */
+#map-legend-box {
+  transition: all 0.25s ease-in-out;
+}
+#map-legend-box.collapsed .legend-items {
+  display: none !important;
+}
+#map-legend-box.collapsed .legend-arrow {
+  transform: rotate(180deg);
+}
+
+@media (max-width: 767px) {
+  #legend-content-panel {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    margin-bottom: 8px;
+    z-index: 500;
+    width: 195px;
+  }
+}
+
+/* Mobile Drawer (Menú Hamburguesa) */
+#mobile-drawer {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+#mobile-drawer.open {
+  transform: translateX(0) !important;
+}
+#mobile-drawer-backdrop {
+  transition: opacity 0.3s ease-in-out;
+}
+#mobile-drawer-backdrop.open {
+  display: block !important;
+  opacity: 1 !important;
+}
+
+/* Responsive layout behavior */
+@media (min-width: 768px) {
+  #left-feed-panel {
+    display: flex !important;
+  }
+  #right-map-panel {
+    display: block !important;
+  }
+}
+
+/* Touch & Mobile Optimizations */
+@media (max-width: 767px) {
+  .leaflet-bar a {
+    width: 38px !important;
+    height: 38px !important;
+    line-height: 38px !important;
+    font-size: 16px !important;
+  }
+
+  #map-container {
+    touch-action: pan-x pan-y !important;
+  }
+
+  #reports-feed-container {
+    padding-bottom: 6rem !important;
+  }
+}
+
+/* Category Filter Bar Scroll */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Pulse animation */
+@keyframes pulseRing {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 0.2; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.pulse-circle {
+  animation: pulseRing 2s infinite ease-in-out;
+}
+
+/* ========================================================
+   PIN ROJO ARRASTRABLE & MODO SELECCIÓN DE UBICACIÓN
+   ======================================================== */
+.custom-draggable-pin {
+  background: transparent !important;
+  border: none !important;
+}
+
+.draggable-pin-container {
+  position: relative;
+  width: 44px;
+  height: 54px;
+  cursor: grab;
+  cursor: -webkit-grab;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  user-select: none;
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.35));
+  transition: transform 0.15s ease-out;
+}
+
+.draggable-pin-container:active {
+  cursor: grabbing;
+  cursor: -webkit-grabbing;
+  transform: scale(1.15) translateY(-6px);
+}
+
+.pin-ring-pulse {
+  position: absolute;
+  bottom: 0;
+  width: 32px;
+  height: 14px;
+  background: rgba(220, 38, 38, 0.45);
+  border-radius: 50%;
+  animation: pulseRing 1.5s infinite ease-in-out;
+  pointer-events: none;
+}
+
+.pin-marker-head {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #EF4444 0%, #B91C1C 100%);
+  border-radius: 50%;
+  border: 3.5px solid #ffffff;
+  box-shadow: 0 10px 18px -3px rgba(185, 28, 28, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.pin-marker-point {
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 12px solid #B91C1C;
+  margin-top: -3px;
+  z-index: 1;
+}
+
+.draggable-pin-tooltip {
+  background-color: #1A2B4C !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  font-size: 11px !important;
+  padding: 5px 10px !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25) !important;
+  letter-spacing: 0.02em;
+}
+
+.draggable-pin-tooltip:before {
+  border-top-color: #1A2B4C !important;
+}
+
+/* Animación corta para el banner del picker */
+@keyframes slideDownShort {
+  0% { transform: translate(-50%, -15px); opacity: 0; }
+  100% { transform: translate(-50%, 0); opacity: 1; }
+}
+
+#map-picker-banner {
+  animation: slideDownShort 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
