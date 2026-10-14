@@ -55,42 +55,42 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="assets/css/styles.css">
 </head>
-<body class="bg-[#F8FAFC] text-slate-800 flex flex-col h-screen h-[100dvh] overflow-hidden antialiased select-none sm:select-auto">
+<body class="bg-white text-slate-800 flex flex-col h-screen h-[100dvh] overflow-hidden antialiased select-none sm:select-auto">
 
   <!-- ========================================================
        1. HEADER / BARRA DE NAVEGACIÓN INSTITUCIONAL
        ======================================================== -->
   <header class="sticky top-0 bg-white border-b-2 border-slate-200 shadow-xs z-50 shrink-0 pt-[env(safe-area-inset-top,0px)]">
-    <div class="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
+    <div class="max-w-[1920px] mx-auto px-2 sm:px-4 lg:px-6 h-14 sm:h-16 flex items-center justify-between gap-1 sm:gap-4">
       
       <!-- Identidad Institucional Oficial -->
-      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
-        <button onclick="App.navigateToView('map')" class="flex items-center gap-2 sm:gap-3 text-left group">
+      <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        <button onclick="App.navigateToView('map')" class="flex items-center gap-1.5 sm:gap-3 text-left group">
           <div class="flex flex-col">
-            <div class="flex items-center gap-1.5">
-              <span class="text-[9px] sm:text-xs font-semibold text-slate-500 uppercase tracking-[0.15em] leading-none">Pensando</span>
-              <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-xs bg-[#0072bb] inline-block"></span>
+            <div class="flex items-center gap-1">
+              <span class="text-[8px] sm:text-xs font-semibold text-slate-500 uppercase tracking-[0.12em] sm:tracking-[0.15em] leading-none">Pensando</span>
+              <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-none bg-[#0072bb] inline-block"></span>
             </div>
-            <span class="text-sm sm:text-xl font-serif font-black text-[#0a2540] leading-tight tracking-tight mt-0.5">
+            <span class="text-xs sm:text-xl font-serif font-black text-[#0a2540] leading-tight tracking-tight mt-0.5">
               Guaymallén
             </span>
-            <span class="text-[8px] sm:text-[9px] uppercase tracking-[0.18em] font-bold text-[#0072bb] leading-none mt-0.5">
+            <span class="text-[7px] sm:text-[9px] uppercase tracking-[0.14em] sm:tracking-[0.18em] font-bold text-[#0072bb] leading-none mt-0.5">
               Portal Ciudadano
             </span>
           </div>
 
           <!-- Divisoria Editorial -->
-          <div class="h-8 sm:h-10 w-px bg-slate-300"></div>
+          <div class="h-7 sm:h-10 w-px bg-slate-300 mx-0.5 sm:mx-1"></div>
 
           <!-- Identificación Legislativa Oficial -->
           <div class="flex flex-col justify-center">
-            <span class="text-[11px] sm:text-base font-serif font-bold text-[#0a2540] tracking-wide leading-tight">
+            <span class="text-[10px] sm:text-base font-serif font-bold text-[#0a2540] tracking-wide leading-tight">
               LUZ LLORENS
             </span>
             <div class="flex items-center gap-1 mt-0.5">
-              <span class="w-1.5 h-1.5 rounded-none bg-[#c59b27] inline-block"></span>
-              <span class="text-[8px] sm:text-[10px] uppercase font-bold tracking-[0.15em] text-slate-700 leading-none">
-                Senadora Provincial
+              <span class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-none bg-[#c59b27] inline-block"></span>
+              <span class="text-[7px] sm:text-[10px] uppercase font-bold tracking-[0.12em] sm:tracking-[0.15em] text-slate-700 leading-none">
+                Senadora
               </span>
             </div>
           </div>
@@ -161,15 +161,14 @@
             </button>
           </div>
 
-          <!-- Mobile: botón de acceso ciudadano formal -->
+          <!-- Mobile: botón de acceso ciudadano compacto -->
           <button 
             type="button"
             onclick="App.openAuthModal('login')"
             id="btn-header-auth-mobile"
-            class="md:hidden px-2.5 py-1.5 rounded-sm text-[11px] font-bold bg-[#0a2540] text-white shadow-2xs flex items-center gap-1.5 border border-[#0a2540]">
-            <i class="fa-solid fa-circle-user text-xs text-sky-300 shrink-0"></i>
-            <span class="hidden xs:inline">Ingresar / Registro</span>
-            <span class="xs:hidden">Ingresar</span>
+            class="md:hidden px-2 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider bg-[#0a2540] hover:bg-[#0072bb] active:scale-95 text-white shadow-2xs flex items-center gap-1 transition-all whitespace-nowrap border-l-2 border-[#c59b27] shrink-0">
+            <i class="fa-solid fa-circle-user text-[11px] text-[#c59b27] shrink-0"></i>
+            <span>Acceso</span>
           </button>
         </div>
 
@@ -177,9 +176,9 @@
         <button 
           id="mobile-drawer-btn"
           onclick="App.toggleMobileDrawer()"
-          class="md:hidden p-2 rounded-sm text-[#0a2540] hover:bg-slate-100 border border-slate-300 transition-colors flex items-center justify-center shrink-0"
+          class="md:hidden w-8 h-8 rounded-sm text-[#0a2540] hover:bg-slate-100 border border-slate-300 transition-colors flex items-center justify-center shrink-0"
           title="Menú de Navegación">
-          <i class="fa-solid fa-bars text-lg"></i>
+          <i class="fa-solid fa-bars text-sm"></i>
         </button>
       </div>
 
@@ -198,10 +197,10 @@
     id="mobile-drawer" 
     class="fixed inset-x-0 top-[calc(3.5rem+env(safe-area-inset-top,0px))] bottom-0 w-full max-w-full bg-white z-[9999] shadow-2xl flex flex-col hidden md:hidden border-t border-slate-200">
     
-    <!-- Top Header del Menú Desplegable -->
-    <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 shrink-0">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 overflow-hidden border border-slate-300 shrink-0 shadow-xs bg-white">
+    <!-- Top Header del Menú Desplegable (Blanco Puro) -->
+    <div class="p-3.5 border-b border-slate-200 flex items-center justify-between bg-white shrink-0">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 overflow-hidden border border-slate-300 shrink-0 shadow-xs bg-white">
           <img src="assets/img/luz_llorens.png" alt="Senadora Luz Llorens" class="w-full h-full object-cover">
         </div>
         <div>
@@ -211,67 +210,67 @@
       </div>
       <button 
         onclick="App.closeMobileDrawer()" 
-        class="w-8 h-8 rounded-sm bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center transition-colors"
+        class="w-7 h-7 rounded-sm bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 flex items-center justify-center transition-colors shrink-0"
         title="Cerrar menú">
-        <i class="fa-solid fa-xmark text-sm"></i>
+        <i class="fa-solid fa-xmark text-xs"></i>
       </button>
     </div>
 
-    <!-- Contenido Scrolleable del Menú -->
-    <div class="flex-1 overflow-y-auto overscroll-contain flex flex-col justify-between custom-scrollbar">
+    <!-- Contenido Scrolleable del Menú (Blanco Puro) -->
+    <div class="flex-1 overflow-y-auto overscroll-contain flex flex-col justify-between custom-scrollbar bg-white">
       <!-- Links de Navegación Editorial -->
-      <nav class="p-3 space-y-1">
+      <nav class="p-3 space-y-1 bg-white">
         <button 
           onclick="App.navigateToView('map'); App.closeMobileDrawer();" 
-          class="w-full text-left px-3.5 py-3 rounded-sm text-xs font-bold text-[#0a2540] bg-sky-50 border-l-4 border-[#0072bb] flex items-center gap-3">
+          class="w-full text-left px-3 py-2.5 rounded-sm text-xs font-bold text-[#0a2540] bg-sky-50 border-l-4 border-[#0072bb] flex items-center gap-3">
           <i class="fa-solid fa-map-location-dot text-[#0072bb] w-4 text-sm"></i>
           <span>Inicio (Mapa y Reclamos)</span>
         </button>
 
         <button 
           onclick="App.navigateToView('conoce'); App.closeMobileDrawer();" 
-          class="w-full text-left px-3.5 py-3 rounded-sm text-xs font-semibold text-slate-700 hover:bg-slate-100 border-l-4 border-transparent flex items-center gap-3">
+          class="w-full text-left px-3 py-2.5 rounded-sm text-xs font-semibold text-slate-700 hover:bg-slate-100 border-l-4 border-transparent flex items-center gap-3">
           <i class="fa-solid fa-compass text-slate-400 w-4 text-sm"></i>
           <span>Conocé Guaymallén</span>
         </button>
 
         <button 
           onclick="App.navigateToView('propuestas'); App.closeMobileDrawer();" 
-          class="w-full text-left px-3.5 py-3 rounded-sm text-xs font-semibold text-slate-700 hover:bg-slate-100 border-l-4 border-transparent flex items-center gap-3">
+          class="w-full text-left px-3 py-2.5 rounded-sm text-xs font-semibold text-slate-700 hover:bg-slate-100 border-l-4 border-transparent flex items-center gap-3">
           <i class="fa-solid fa-file-lines text-slate-400 w-4 text-sm"></i>
           <span>Propuestas Legislativas</span>
         </button>
 
         <button 
           onclick="App.navigateToView('contacto'); App.closeMobileDrawer();" 
-          class="w-full text-left px-3.5 py-3 rounded-sm text-xs font-semibold text-slate-700 hover:bg-slate-100 border-l-4 border-transparent flex items-center gap-3">
+          class="w-full text-left px-3 py-2.5 rounded-sm text-xs font-semibold text-slate-700 hover:bg-slate-100 border-l-4 border-transparent flex items-center gap-3">
           <i class="fa-solid fa-landmark text-slate-400 w-4 text-sm"></i>
           <span>Contacto y Despacho</span>
         </button>
       </nav>
 
-      <!-- Botones de Acción y Redes del Menú -->
-      <div class="p-4 pb-[max(2rem,env(safe-area-inset-bottom,0px))] border-t border-slate-200 space-y-2.5 bg-slate-50 mt-auto">
+      <!-- Botones de Acción y Redes del Menú (Blanco Puro) -->
+      <div class="p-3.5 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))] border-t border-slate-200 space-y-2 bg-white mt-auto">
         <button 
           onclick="App.openReportModal(); App.closeMobileDrawer();" 
-          class="w-full py-3 px-4 rounded-sm text-xs font-bold uppercase tracking-wider bg-[#0a2540] hover:bg-[#0072bb] text-white shadow-xs border-l-4 border-[#c59b27] flex items-center justify-center gap-2 transition-all">
+          class="w-full py-2.5 px-3 rounded-sm text-xs font-bold uppercase tracking-wider bg-[#0a2540] hover:bg-[#0072bb] text-white shadow-xs border-l-4 border-[#c59b27] flex items-center justify-center gap-2 transition-all">
           <i class="fa-solid fa-plus text-[#c59b27]"></i>
           <span>Reportar Problema en mi Barrio</span>
         </button>
 
         <!-- Contenedor dinámico de Usuario en Menú -->
-        <div id="drawer-user-container" class="space-y-2">
+        <div id="drawer-user-container" class="space-y-1.5">
           <button 
             type="button"
             onclick="App.openAuthModal('login'); App.closeMobileDrawer();" 
-            class="w-full py-2.5 px-4 rounded-sm text-xs font-bold bg-white text-[#0a2540] border border-slate-300 hover:bg-slate-100 shadow-2xs flex items-center justify-center gap-2 transition-all">
+            class="w-full py-2 px-3 rounded-sm text-xs font-bold bg-white text-[#0a2540] border border-slate-300 hover:bg-slate-100 shadow-2xs flex items-center justify-center gap-2 transition-all">
             <i class="fa-solid fa-right-to-bracket text-[#0072bb] text-xs"></i>
             <span>Ingresar con mi Correo</span>
           </button>
           <button 
             type="button"
             onclick="App.openAuthModal('register'); App.closeMobileDrawer();" 
-            class="w-full py-2.5 px-4 rounded-sm text-xs font-bold bg-[#0f3460] hover:bg-[#0a2540] text-white shadow-xs flex items-center justify-center gap-2 transition-all">
+            class="w-full py-2 px-3 rounded-sm text-xs font-bold bg-[#0f3460] hover:bg-[#0a2540] text-white shadow-xs flex items-center justify-center gap-2 transition-all">
             <i class="fa-solid fa-user-plus text-sky-300 text-xs"></i>
             <span>Registrarse con mi Correo</span>
           </button>
@@ -280,12 +279,12 @@
         <a 
           href="https://wa.me/5492615551234?text=Hola%20Senadora%20Luz%20Llorens,%20te%20escribo%20desde%20Pensando%20Guaymall%C3%A9n"
           target="_blank"
-          class="w-full py-2.5 px-4 rounded-sm text-xs font-bold text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center justify-center gap-2 transition-colors">
+          class="w-full py-2 px-3 rounded-sm text-xs font-bold text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center justify-center gap-2 transition-colors">
           <i class="fa-brands fa-whatsapp text-emerald-600 text-sm"></i>
           <span>WhatsApp Directo con Despacho</span>
         </a>
 
-        <p class="text-[10px] text-center text-slate-500 pt-1 tracking-wider uppercase font-semibold">
+        <p class="text-[9px] text-center text-slate-500 pt-1 tracking-wider uppercase font-semibold">
           Pensando Guaymallén • Senadora Provincial Luz Llorens
         </p>
       </div>
@@ -298,20 +297,20 @@
        ======================================================== -->
   <div id="view-map" class="app-view active flex-1 flex flex-col overflow-hidden relative">
 
-    <!-- Mobile View Switcher (Sticky permanente bajo el Header, estilo Segmented Control Legislativo) -->
-    <div id="mobile-view-switcher" class="md:hidden sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] bg-white/98 backdrop-blur-sm border-b border-slate-200 py-1.5 px-3 shrink-0 z-30 shadow-xs">
-      <div class="flex items-center justify-center max-w-sm mx-auto bg-slate-100 p-0.5 rounded-sm border border-slate-300">
+    <!-- Mobile View Switcher (Barra bajo el Header) -->
+    <div id="mobile-view-switcher" class="md:hidden relative bg-white border-b border-slate-200 py-1.5 px-3 shrink-0 z-20 shadow-2xs">
+      <div class="flex items-center justify-center max-w-xs mx-auto bg-slate-100 p-0.5 rounded-sm border border-slate-300">
         <button 
           id="tab-btn-map" 
           onclick="App.switchMobileTab('map')"
-          class="flex-1 py-1.5 px-3 rounded-none text-xs font-bold transition-all flex items-center justify-center gap-1.5 bg-[#0a2540] text-white shadow-xs">
+          class="flex-1 py-1 px-3 rounded-none text-xs font-bold transition-all flex items-center justify-center gap-1.5 bg-[#0a2540] text-white shadow-xs">
           <i class="fa-solid fa-map-location-dot text-[11px]"></i>
           <span>Ver Mapa</span>
         </button>
         <button 
           id="tab-btn-list" 
           onclick="App.switchMobileTab('list')"
-          class="flex-1 py-1.5 px-3 rounded-none text-xs font-semibold transition-all flex items-center justify-center gap-1.5 text-slate-700 hover:text-slate-950">
+          class="flex-1 py-1 px-3 rounded-none text-xs font-semibold transition-all flex items-center justify-center gap-1.5 text-slate-700 hover:text-slate-950">
           <i class="fa-solid fa-list-check text-[11px]"></i>
           <span>Lista de Reclamos</span>
         </button>
@@ -418,7 +417,7 @@
       <!-- Panel Derecho: Mapa Interactivo con Leaflet -->
       <section 
         id="right-map-panel" 
-        class="flex-1 relative h-full bg-slate-100 overflow-hidden hidden md:block">
+        class="flex-1 relative h-full bg-white overflow-hidden hidden md:block">
         
         <!-- Contenedor del mapa -->
         <div id="map-container" class="absolute inset-0 w-full h-full"></div>
@@ -426,12 +425,12 @@
         <!-- Tarjeta Flotante Institucional de Luz Llorens (Top-Left) -->
         <div 
           id="senator-floating-card" 
-          class="absolute top-2.5 left-2.5 md:top-4 md:left-4 z-[450] bg-white/98 backdrop-blur-md rounded-sm shadow-md border border-slate-300 p-2 sm:p-2.5 md:p-3.5 max-w-[185px] sm:max-w-[210px] md:max-w-[280px] pointer-events-auto transition-all">
+          class="absolute top-2.5 left-2.5 md:top-4 md:left-4 z-[450] bg-white rounded-sm shadow-md border border-slate-300 p-1.5 sm:p-2.5 md:p-3.5 max-w-[165px] sm:max-w-[200px] md:max-w-[280px] pointer-events-auto transition-all">
           
-          <div class="senator-card-expanded space-y-1.5 md:space-y-2.5">
+          <div class="senator-card-expanded space-y-1 md:space-y-2">
             <div class="flex items-center md:items-start justify-between gap-1.5 md:gap-2">
-              <div class="flex items-center gap-2 md:gap-2.5">
-                <div class="relative w-9 h-9 md:w-12 md:h-12 rounded-none overflow-hidden shrink-0 border border-slate-300 shadow-2xs bg-white">
+              <div class="flex items-center gap-1.5 md:gap-2.5">
+                <div class="relative w-8 h-8 md:w-12 md:h-12 rounded-none overflow-hidden shrink-0 border border-slate-300 shadow-2xs bg-white">
                   <img 
                     src="assets/img/luz_llorens.png" 
                     alt="Senadora Luz Llorens" 
@@ -532,7 +531,7 @@
           <button 
             type="button" 
             onclick="App.toggleLegend()" 
-            class="flex md:hidden items-center gap-2 px-3 py-1.5 rounded-sm bg-white/98 backdrop-blur-md border border-slate-300 shadow-md text-xs font-bold text-[#0a2540] active:bg-slate-100 transition-all">
+            class="flex md:hidden items-center gap-2 px-3 py-1.5 rounded-sm bg-white border border-slate-300 shadow-md text-xs font-bold text-[#0a2540] active:bg-slate-100 transition-all">
             <span class="w-2.5 h-2.5 rounded-none bg-[#c59b27]"></span>
             <span>Leyenda</span>
             <i class="fa-solid fa-chevron-up text-[9px] text-slate-500 ml-0.5"></i>
@@ -541,7 +540,7 @@
           <!-- Contenedor Desplegable de Items de la Leyenda -->
           <div 
             id="legend-content-panel" 
-            class="hidden md:block bg-white/98 backdrop-blur-md rounded-sm shadow-md border border-slate-300 w-52 text-xs font-sans overflow-hidden mt-1.5 md:mt-0 transition-all">
+            class="hidden md:block bg-white rounded-sm shadow-md border border-slate-300 w-52 text-xs font-sans overflow-hidden mt-1.5 md:mt-0 transition-all">
             
             <!-- Encabezado cliqueable en Desktop para colapsar / expandir -->
             <div 
@@ -663,7 +662,7 @@
   <!-- ========================================================
        VISTA 2: CONOCÉ GUAYMALLÉN (PÁGINA COMPLETA)
        ======================================================== -->
-  <div id="view-conoce" class="app-view w-full bg-[#f4f6f8] py-8">
+  <div id="view-conoce" class="app-view w-full bg-white py-8">
     <div class="max-w-6xl mx-auto w-full p-4 sm:p-8 space-y-8">
       
       <!-- Cabecera de la sección -->
@@ -768,7 +767,7 @@
   <!-- ========================================================
        VISTA 3: PROPUESTAS LEGISLATIVAS (PÁGINA COMPLETA)
        ======================================================== -->
-  <div id="view-propuestas" class="app-view w-full bg-[#f4f6f8] py-8">
+  <div id="view-propuestas" class="app-view w-full bg-white py-8">
     <div class="max-w-5xl mx-auto w-full p-4 sm:p-8 space-y-8">
       
       <!-- Header Propuestas -->
@@ -929,7 +928,7 @@
   <!-- ========================================================
        VISTA 4: CONTACTO (PÁGINA COMPLETA)
        ======================================================== -->
-  <div id="view-contacto" class="app-view w-full bg-[#f4f6f8] py-8">
+  <div id="view-contacto" class="app-view w-full bg-white py-8">
     <div class="max-w-5xl mx-auto w-full p-4 sm:p-8 space-y-8">
       
       <div class="bg-[#0a2540] border-l-4 border-[#c59b27] rounded-sm p-6 sm:p-10 text-white shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">

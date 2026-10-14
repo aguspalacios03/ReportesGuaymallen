@@ -1561,10 +1561,9 @@ class PensandoGuaymallenApp {
             type="button"
             onclick="App.openAuthModal('login')"
             id="btn-header-auth-mobile"
-            class="md:hidden px-2.5 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider bg-[#0a2540] hover:bg-[#0072bb] active:scale-95 text-white shadow-2xs flex items-center gap-1.5 transition-all whitespace-nowrap border-l-2 border-[#c59b27]">
-            <i class="fa-solid fa-circle-user text-xs text-[#c59b27] shrink-0"></i>
-            <span class="hidden xs:inline">Acceso Vecinal</span>
-            <span class="xs:hidden">Acceso</span>
+            class="md:hidden px-2 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider bg-[#0a2540] hover:bg-[#0072bb] active:scale-95 text-white shadow-2xs flex items-center gap-1 transition-all whitespace-nowrap border-l-2 border-[#c59b27] shrink-0">
+            <i class="fa-solid fa-circle-user text-[11px] text-[#c59b27] shrink-0"></i>
+            <span>Acceso</span>
           </button>
         `;
       } else {
@@ -1574,9 +1573,9 @@ class PensandoGuaymallenApp {
             <button 
               type="button"
               onclick="App.toggleUserDropdown()"
-              class="px-2.5 py-1.5 rounded-sm text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-white text-[#0a2540] border border-slate-300 hover:bg-slate-50 shadow-2xs transition-all flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-none bg-emerald-600 shrink-0"></span>
-              <span class="max-w-[75px] xs:max-w-[105px] sm:max-w-[150px] truncate" title="${this.currentUser.email}">${this.currentUser.email}</span>
+              class="px-2 py-1 rounded-sm text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-white text-[#0a2540] border border-slate-300 hover:bg-slate-50 shadow-2xs transition-all flex items-center gap-1 shrink-0">
+              <span class="w-1.5 h-1.5 rounded-none bg-emerald-600 shrink-0"></span>
+              <span class="max-w-[70px] sm:max-w-[150px] truncate" title="${this.currentUser.email}">${this.currentUser.email}</span>
               <i class="fa-solid fa-chevron-down text-[8px] sm:text-[9px] text-slate-400 shrink-0"></i>
             </button>
 
