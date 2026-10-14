@@ -46,8 +46,8 @@ class GuaymallenMap {
         zoomControl: false // Ubicado en la esquina inferior derecha
       });
 
-      // Control de zoom en bottom-right
-      L.control.zoom({ position: 'bottomright' }).addTo(this.map);
+      // Control de zoom en top-right para desktop (en mobile se oculta por CSS para pantalla táctil)
+      L.control.zoom({ position: 'topright' }).addTo(this.map);
 
       // Capa base limpia y de alto rendimiento de OpenStreetMap con pre-carga de caché
       this.tileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -423,9 +423,11 @@ class GuaymallenMap {
     if (!this.map) return;
     this.isPickLocationMode = true;
 
-    // Ocultar leyenda del mapa durante el modo picker para una vista totalmente limpia
+    // Ocultar leyenda y botón de centrado del mapa durante el modo picker para una vista totalmente limpia
     const legendBox = document.getElementById('map-legend-box');
     if (legendBox) legendBox.classList.add('hidden');
+    const resetBtn = document.getElementById('btn-reset-map');
+    if (resetBtn) resetBtn.classList.add('hidden');
 
     // 1. APAGAR capas normales (removiéndolas del mapa sin destruirlas para evitar costo de re-renderizado)
     if (this.map.hasLayer(this.districtLayersGroup)) {
@@ -578,9 +580,11 @@ class GuaymallenMap {
       this.map.addLayer(this.markersGroup);
     }
 
-    // Volver a mostrar leyenda
+    // Volver a mostrar leyenda y botón de centrado
     const legendBox = document.getElementById('map-legend-box');
     if (legendBox) legendBox.classList.remove('hidden');
+    const resetBtn = document.getElementById('btn-reset-map');
+    if (resetBtn) resetBtn.classList.remove('hidden');
   }
 }
 

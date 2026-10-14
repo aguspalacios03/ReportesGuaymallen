@@ -48,12 +48,12 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="assets/css/styles.css">
 </head>
-<body class="bg-[#F8FAFC] text-slate-800 flex flex-col h-screen overflow-hidden antialiased select-none sm:select-auto">
+<body class="bg-[#F8FAFC] text-slate-800 flex flex-col h-screen h-[100dvh] overflow-hidden antialiased select-none sm:select-auto">
 
   <!-- ========================================================
        1. HEADER / BARRA DE NAVEGACIÓN
        ======================================================== -->
-  <header class="bg-white border-b border-slate-200/90 shadow-sm z-30 shrink-0">
+  <header class="sticky top-0 bg-white border-b border-slate-200/90 shadow-sm z-40 shrink-0">
     <div class="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
       
       <!-- Brand & Identity -->
@@ -512,15 +512,15 @@
           </div>
         </div>
 
-        <!-- Leyenda Flotante del Mapa (Abajo a la izquierda: Pill compacto en mobile, caja en desktop) -->
+        <!-- Leyenda Flotante del Mapa (Abajo a la izquierda: Fijo sobre el botón en mobile, caja en desktop) -->
         <div 
           id="map-legend-box" 
-          class="absolute bottom-20 left-2.5 md:bottom-6 md:left-4 z-[450] pointer-events-auto flex flex-col items-start">
+          class="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] left-3 md:absolute md:bottom-6 md:left-4 z-35 md:z-[450] pointer-events-auto flex flex-col items-start">
           
           <!-- Botón Pill Compacto para Mobile (Exacto al mockup: [ ● Leyenda ]) -->
           <button 
-            type="button"
-            onclick="App.toggleLegend()"
+            type="button" 
+            onclick="App.toggleLegend()" 
             class="flex md:hidden items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-slate-200 shadow-md text-xs font-bold text-slate-800 active:bg-slate-100 transition-all">
             <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
             <span>Leyenda</span>
@@ -529,12 +529,12 @@
 
           <!-- Contenedor Desplegable de Items de la Leyenda -->
           <div 
-            id="legend-content-panel"
+            id="legend-content-panel" 
             class="hidden md:block bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/90 w-48 text-xs font-sans overflow-hidden mt-1.5 md:mt-0 transition-all">
             
             <!-- Encabezado cliqueable en Desktop para colapsar / expandir -->
             <div 
-              onclick="App.toggleLegend()"
+              onclick="App.toggleLegend()" 
               class="hidden md:flex p-3 items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors select-none">
               <span class="font-extrabold text-[#1A2B4C] flex items-center gap-1.5 text-xs">
                 <i class="fa-solid fa-layer-group text-sky-600"></i>
@@ -575,10 +575,10 @@
           </div>
         </div>
 
-        <!-- Botón Centrar Mapa: Ubicado para no colisionar con controles móviles ni desktop -->
+        <!-- Botón Centrar Mapa: Ubicado fijo sobre el botón de reporte en mobile y flotante en desktop -->
         <button 
           id="btn-reset-map" 
-          class="absolute bottom-20 md:bottom-6 right-3 z-[400] w-9 h-9 bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-slate-200/90 flex items-center justify-center text-slate-700 hover:text-sky-600 hover:bg-slate-50 transition-all pointer-events-auto"
+          class="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] right-3 md:absolute md:bottom-6 md:right-3 z-35 md:z-[400] w-9 h-9 bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-slate-200/90 flex items-center justify-center text-slate-700 hover:text-sky-600 hover:bg-slate-50 transition-all pointer-events-auto"
           title="Centrar mapa en Guaymallén">
           <i class="fa-solid fa-crosshairs text-xs"></i>
         </button>
@@ -588,7 +588,7 @@
     </div>
 
     <!-- Botón Sticky Inferior para Mobile: "REPORTAR PROBLEMA EN MI BARRIO" (Exacto al mockup) -->
-    <div class="md:hidden fixed bottom-3 inset-x-3 z-30 pointer-events-auto">
+    <div id="mobile-sticky-cta" class="md:hidden fixed bottom-3 inset-x-3 z-30 pointer-events-auto">
       <button 
         onclick="App.openReportModal()"
         class="w-full bg-[#1A2B4C] hover:bg-[#243B66] active:scale-[0.98] text-white py-2 px-3 rounded-2xl shadow-2xl flex flex-col items-center justify-center gap-0.5 transition-all border border-white/10">

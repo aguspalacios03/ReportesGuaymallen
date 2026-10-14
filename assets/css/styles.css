@@ -19,6 +19,7 @@
 
 html, body {
   height: 100%;
+  height: 100dvh;
   margin: 0;
   padding: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -27,6 +28,13 @@ html, body {
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
   max-width: 100%;
+}
+
+/* Header Sticky Permanente en Desktop y Mobile */
+header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 40 !important;
 }
 
 /* Custom Scrollbar */
@@ -138,8 +146,12 @@ html, body {
 }
 
 /* Map Zoom Controls */
+.leaflet-top.leaflet-right .leaflet-control-zoom {
+  margin-top: 1rem !important;
+  margin-right: 1rem !important;
+}
 .leaflet-bar {
-  border: none !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1) !important;
   border-radius: 0.75rem !important;
   overflow: hidden;
@@ -188,6 +200,29 @@ html, body {
 }
 
 @media (max-width: 767px) {
+  #mobile-sticky-cta {
+    position: fixed !important;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px)) !important;
+    left: 0.75rem !important;
+    right: 0.75rem !important;
+    z-index: 30 !important;
+  }
+
+  /* Botones de Leyenda y Ubicación FIJOS justo por encima del botón de Reportar */
+  #map-legend-box {
+    position: fixed !important;
+    bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px)) !important;
+    left: 0.75rem !important;
+    z-index: 35 !important;
+  }
+
+  #btn-reset-map {
+    position: fixed !important;
+    bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px)) !important;
+    right: 0.75rem !important;
+    z-index: 35 !important;
+  }
+
   #legend-content-panel {
     position: absolute;
     bottom: 100%;
@@ -226,11 +261,9 @@ html, body {
 
 /* Touch & Mobile Optimizations */
 @media (max-width: 767px) {
-  .leaflet-bar a {
-    width: 38px !important;
-    height: 38px !important;
-    line-height: 38px !important;
-    font-size: 16px !important;
+  /* Ocultar botones de zoom Leaflet en móvil (se usa pinch-to-zoom táctil nativo y evita solaparse con el botón de centrado) */
+  .leaflet-control-zoom {
+    display: none !important;
   }
 
   #map-container {

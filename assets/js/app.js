@@ -288,7 +288,7 @@ class PensandoGuaymallenApp {
     // Si estamos en el mapa: body con h-screen y overflow-hidden para layout de app
     // Si estamos en Conocé, Propuestas o Contacto: body con min-h-screen y overflow-y-auto para scroll web natural
     if (viewName === 'map') {
-      document.body.classList.add('h-screen', 'overflow-hidden');
+      document.body.classList.add('h-screen', 'h-[100dvh]', 'overflow-hidden');
       document.body.classList.remove('min-h-screen', 'overflow-y-auto');
 
       if (this.mapInstance && this.mapInstance.map) {
@@ -300,7 +300,7 @@ class PensandoGuaymallenApp {
         }, 300);
       }
     } else {
-      document.body.classList.remove('h-screen', 'overflow-hidden');
+      document.body.classList.remove('h-screen', 'h-[100dvh]', 'overflow-hidden');
       document.body.classList.add('min-h-screen', 'overflow-y-auto');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -806,6 +806,9 @@ class PensandoGuaymallenApp {
 
     if (!tabListBtn || !tabMapBtn || !listCol || !mapCol) return;
 
+    const legendBox = document.getElementById('map-legend-box');
+    const resetBtn = document.getElementById('btn-reset-map');
+
     if (tab === 'list') {
       tabListBtn.classList.add('bg-[#1A2B4C]', 'text-white', 'shadow-sm', 'font-extrabold');
       tabListBtn.classList.remove('text-slate-600', 'font-bold');
@@ -813,6 +816,9 @@ class PensandoGuaymallenApp {
       tabMapBtn.classList.add('text-slate-600', 'font-bold');
       listCol.style.display = 'flex';
       mapCol.style.display = 'none';
+      if (legendBox) legendBox.style.display = 'none';
+      if (resetBtn) resetBtn.style.display = 'none';
+      this.closeMobileLegend();
     } else {
       tabMapBtn.classList.add('bg-[#1A2B4C]', 'text-white', 'shadow-sm', 'font-extrabold');
       tabMapBtn.classList.remove('text-slate-600', 'font-bold');
@@ -820,6 +826,8 @@ class PensandoGuaymallenApp {
       tabListBtn.classList.add('text-slate-600', 'font-bold');
       listCol.style.display = 'none';
       mapCol.style.display = 'block';
+      if (legendBox) legendBox.style.display = '';
+      if (resetBtn) resetBtn.style.display = '';
 
       setTimeout(() => {
         if (this.mapInstance && this.mapInstance.map) {
