@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Pensando Guaymallén - Senadora Luz Llorens | Plataforma Ciudadana</title>
   <meta name="description" content="Plataforma de reporte ciudadano y mapa participativo de Guaymallén, Mendoza. Sumate a transformar nuestro departamento junto a la Senadora Provincial Luz Llorens.">
   
@@ -53,7 +53,7 @@
   <!-- ========================================================
        1. HEADER / BARRA DE NAVEGACIÓN
        ======================================================== -->
-  <header class="sticky top-0 bg-white border-b border-slate-200/90 shadow-sm z-40 shrink-0">
+  <header class="sticky top-0 bg-white border-b border-slate-200/90 shadow-sm z-40 shrink-0 pt-[env(safe-area-inset-top,0px)]">
     <div class="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
       
       <!-- Brand & Identity -->
@@ -186,28 +186,29 @@
 
   <div 
     id="mobile-drawer" 
-    class="fixed top-0 right-0 h-full w-[290px] max-w-[85vw] bg-white z-[999] shadow-2xl flex flex-col justify-between transform translate-x-full transition-transform duration-300 ease-in-out md:hidden">
+    class="fixed inset-y-0 right-0 h-full w-[300px] max-w-[85vw] bg-white z-[999] shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out md:hidden">
     
-    <!-- Top Header del Drawer -->
-    <div>
-      <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-        <div class="flex items-center gap-2.5">
-          <div class="w-10 h-10 rounded-xl overflow-hidden border-2 border-sky-500 shrink-0 shadow-sm">
-            <img src="assets/img/luz_llorens.png" alt="Senadora Luz Llorens" class="w-full h-full object-cover">
-          </div>
-          <div>
-            <h3 class="font-extrabold text-sm text-[#1A2B4C] leading-tight">Luz Llorens</h3>
-            <span class="text-[9px] uppercase font-bold text-sky-700">Senadora Provincial</span>
-          </div>
+    <!-- Top Header del Drawer (Con Safe Area Top) -->
+    <div class="p-4 sm:p-5 pt-[max(1rem,env(safe-area-inset-top,0px))] border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-xl overflow-hidden border-2 border-sky-500 shrink-0 shadow-sm">
+          <img src="assets/img/luz_llorens.png" alt="Senadora Luz Llorens" class="w-full h-full object-cover">
         </div>
-        <button 
-          onclick="App.closeMobileDrawer()" 
-          class="w-8 h-8 rounded-full bg-slate-200/80 hover:bg-slate-300 text-slate-700 flex items-center justify-center transition-colors"
-          title="Cerrar menú">
-          <i class="fa-solid fa-xmark text-sm"></i>
-        </button>
+        <div>
+          <h3 class="font-extrabold text-sm text-[#1A2B4C] leading-tight">Luz Llorens</h3>
+          <span class="text-[9px] uppercase font-bold text-sky-700">Senadora Provincial</span>
+        </div>
       </div>
+      <button 
+        onclick="App.closeMobileDrawer()" 
+        class="w-8 h-8 rounded-full bg-slate-200/80 hover:bg-slate-300 text-slate-700 flex items-center justify-center transition-colors"
+        title="Cerrar menú">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
 
+    <!-- Contenido Scrolleable del Drawer (Evita cortes en pantallas compactas) -->
+    <div class="flex-1 overflow-y-auto overscroll-contain flex flex-col justify-between custom-scrollbar">
       <!-- Links de Navegación -->
       <nav class="p-4 space-y-1.5">
         <button 
@@ -238,46 +239,46 @@
           <span>Contacto y Despacho</span>
         </button>
       </nav>
-    </div>
 
-    <!-- Botones de Acción y Redes del Drawer -->
-    <div class="p-4 border-t border-slate-100 space-y-2.5 bg-slate-50/60">
-      <button 
-        onclick="App.openReportModal(); App.closeMobileDrawer();" 
-        class="w-full py-3 px-4 rounded-xl text-xs font-black uppercase tracking-wider bg-sky-600 hover:bg-sky-700 text-white shadow-md flex items-center justify-center gap-2 transition-all">
-        <i class="fa-solid fa-plus text-amber-300"></i>
-        <span>Reportar Problema</span>
-      </button>
+      <!-- Botones de Acción y Redes del Drawer (Con Safe Area Bottom) -->
+      <div class="p-4 pb-[max(1.25rem,env(safe-area-inset-bottom,0px))] border-t border-slate-100 space-y-2.5 bg-slate-50/60 mt-auto">
+        <button 
+          onclick="App.openReportModal(); App.closeMobileDrawer();" 
+          class="w-full py-3 px-4 rounded-xl text-xs font-black uppercase tracking-wider bg-sky-600 hover:bg-sky-700 text-white shadow-md flex items-center justify-center gap-2 transition-all">
+          <i class="fa-solid fa-plus text-amber-300"></i>
+          <span>Reportar Problema</span>
+        </button>
 
-      <!-- Contenedor dinámico de Usuario en Drawer -->
-      <div id="drawer-user-container" class="space-y-2">
-        <button 
-          type="button"
-          onclick="App.openAuthModal('login'); App.closeMobileDrawer();" 
-          class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-white text-[#1A2B4C] border border-slate-200 hover:bg-slate-50 shadow-2xs flex items-center justify-center gap-2 transition-all">
-          <i class="fa-solid fa-right-to-bracket text-sky-600 text-xs"></i>
-          <span>Ingresar con mi Correo</span>
-        </button>
-        <button 
-          type="button"
-          onclick="App.openAuthModal('register'); App.closeMobileDrawer();" 
-          class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-[#1A2B4C] hover:bg-[#243B66] text-white shadow-sm flex items-center justify-center gap-2 transition-all">
-          <i class="fa-solid fa-user-plus text-sky-300 text-xs"></i>
-          <span>Registrarse con mi Correo</span>
-        </button>
+        <!-- Contenedor dinámico de Usuario en Drawer -->
+        <div id="drawer-user-container" class="space-y-2">
+          <button 
+            type="button"
+            onclick="App.openAuthModal('login'); App.closeMobileDrawer();" 
+            class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-white text-[#1A2B4C] border border-slate-200 hover:bg-slate-50 shadow-2xs flex items-center justify-center gap-2 transition-all">
+            <i class="fa-solid fa-right-to-bracket text-sky-600 text-xs"></i>
+            <span>Ingresar con mi Correo</span>
+          </button>
+          <button 
+            type="button"
+            onclick="App.openAuthModal('register'); App.closeMobileDrawer();" 
+            class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-[#1A2B4C] hover:bg-[#243B66] text-white shadow-sm flex items-center justify-center gap-2 transition-all">
+            <i class="fa-solid fa-user-plus text-sky-300 text-xs"></i>
+            <span>Registrarse con mi Correo</span>
+          </button>
+        </div>
+
+        <a 
+          href="https://wa.me/5492615551234?text=Hola%20Senadora%20Luz%20Llorens,%20te%20escribo%20desde%20Pensando%20Guaymall%C3%A9n"
+          target="_blank"
+          class="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 flex items-center justify-center gap-2 transition-colors">
+          <i class="fa-brands fa-whatsapp text-emerald-600 text-sm"></i>
+          <span>WhatsApp Directo con Luz</span>
+        </a>
+
+        <p class="text-[10px] text-center text-slate-400 pt-1">
+          Pensando Guaymallén • Senadora Luz Llorens
+        </p>
       </div>
-
-      <a 
-        href="https://wa.me/5492615551234?text=Hola%20Senadora%20Luz%20Llorens,%20te%20escribo%20desde%20Pensando%20Guaymall%C3%A9n"
-        target="_blank"
-        class="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 flex items-center justify-center gap-2 transition-colors">
-        <i class="fa-brands fa-whatsapp text-emerald-600 text-sm"></i>
-        <span>WhatsApp Directo con Luz</span>
-      </a>
-
-      <p class="text-[10px] text-center text-slate-400 pt-1">
-        Pensando Guaymallén • Senadora Luz Llorens
-      </p>
     </div>
 
   </div>

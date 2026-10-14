@@ -285,11 +285,14 @@ class PensandoGuaymallenApp {
     }
 
     // Modo Pantalla Completa:
-    // Si estamos en el mapa: body con h-screen y overflow-hidden para layout de app
+    // Si estamos en el mapa: html y body con h-screen y overflow-hidden para layout de app
     // Si estamos en Conocé, Propuestas o Contacto: body con min-h-screen y overflow-y-auto para scroll web natural
     if (viewName === 'map') {
+      document.documentElement.classList.add('h-screen', 'h-[100dvh]', 'overflow-hidden');
       document.body.classList.add('h-screen', 'h-[100dvh]', 'overflow-hidden');
+      document.documentElement.classList.remove('min-h-screen', 'overflow-y-auto');
       document.body.classList.remove('min-h-screen', 'overflow-y-auto');
+      window.scrollTo(0, 0);
 
       if (this.mapInstance && this.mapInstance.map) {
         setTimeout(() => {
@@ -300,7 +303,9 @@ class PensandoGuaymallenApp {
         }, 300);
       }
     } else {
+      document.documentElement.classList.remove('h-screen', 'h-[100dvh]', 'overflow-hidden');
       document.body.classList.remove('h-screen', 'h-[100dvh]', 'overflow-hidden');
+      document.documentElement.classList.add('min-h-screen', 'overflow-y-auto');
       document.body.classList.add('min-h-screen', 'overflow-y-auto');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -336,6 +341,7 @@ class PensandoGuaymallenApp {
     const drawer = document.getElementById('mobile-drawer');
     const backdrop = document.getElementById('mobile-drawer-backdrop');
     if (!drawer || !backdrop) return;
+    window.scrollTo(0, 0);
     backdrop.classList.remove('hidden');
     requestAnimationFrame(() => {
       backdrop.classList.add('open');
