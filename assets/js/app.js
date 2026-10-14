@@ -7,7 +7,8 @@ class PensandoGuaymallenApp {
   constructor() {
     this.currentView = 'map'; // 'map' | 'conoce' | 'propuestas' | 'contacto'
     this.reports = this.loadReports();
-    this.currentUser = null; // Usuario autenticado { id, name, email }
+    this.authMode = 'login'; // 'login' | 'register'
+    this.currentUser = this.loadCurrentUser(); // Usuario autenticado { id, name, email }
     this.reportScope = 'all'; // 'all' | 'mine'
     this.selectedDistrict = 'all';
     this.selectedCategory = 'all';
@@ -19,6 +20,14 @@ class PensandoGuaymallenApp {
     this.pendingLocation = null;
 
     this.init();
+  }
+
+  loadCurrentUser() {
+    try {
+      const saved = sessionStorage.getItem('pensando_guaymallen_user');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return null;
   }
 
   loadReports() {
@@ -401,8 +410,9 @@ class PensandoGuaymallenApp {
   getMyReports() {
     return this.reports.filter(rep => {
       if (rep.isMyReport) return true;
+      if (this.currentUser && rep.userEmail && rep.userEmail.toLowerCase() === this.currentUser.email.toLowerCase()) return true;
       if (this.currentUser && rep.userId && rep.userId === this.currentUser.id) return true;
-      if (this.currentUser && rep.citizen && rep.citizen.toLowerCase() === this.currentUser.name.toLowerCase()) return true;
+      if (this.currentUser && rep.citizen && rep.citizen.toLowerCase() === this.currentUser.email.toLowerCase()) return true;
       return false;
     });
   }
@@ -412,8 +422,9 @@ class PensandoGuaymallenApp {
       // Filtrar por Mis Reclamos si el scope está en 'mine'
       if (this.reportScope === 'mine') {
         const isMine = rep.isMyReport ||
+          (this.currentUser && rep.userEmail && rep.userEmail.toLowerCase() === this.currentUser.email.toLowerCase()) ||
           (this.currentUser && rep.userId && rep.userId === this.currentUser.id) ||
-          (this.currentUser && rep.citizen && rep.citizen.toLowerCase() === this.currentUser.name.toLowerCase());
+          (this.currentUser && rep.citizen && rep.citizen.toLowerCase() === this.currentUser.email.toLowerCase());
         if (!isMine) return false;
       }
 
@@ -569,7 +580,11 @@ class PensandoGuaymallenApp {
                     <i class="fa-solid fa-location-dot text-slate-400 text-[9px]"></i>
                     ${report.districtName}
                   </span>
-                  ${(report.isMyReport || (this.currentUser && (report.userId === this.currentUser.id || (report.citizen && report.citizen.toLowerCase() === this.currentUser.name.toLowerCase())))) ? `
+                  ${(report.isMyReport || (this.currentUser && (
+                    report.userId === this.currentUser.id || 
+                    (report.userEmail && report.userEmail.toLowerCase() === this.currentUser.email.toLowerCase()) ||
+                    (report.citizen && report.citizen.toLowerCase() === this.currentUser.email.toLowerCase())
+                  ))) ? `
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
                       <i class="fa-solid fa-circle-check text-emerald-600 text-[9px]"></i>
                       Tu Reclamo
@@ -740,8 +755,8 @@ class PensandoGuaymallenApp {
   // Filtrado por alcance: Todos los Reclamos vs Mis Reclamos
   setFeedReportScope(scope) {
     if (scope === 'mine' && !this.currentUser) {
-      this.openLoginModal();
-      this.showToast('Iniciá sesión en el Portal Vecinal para ver tus propios reclamos', 'info');
+      this.openAuthModal('login');
+      this.showToast('Ingresá con tu correo electrónico para ver tus propios reclamos', 'info');
       return;
     }
 
@@ -872,7 +887,7 @@ class PensandoGuaymallenApp {
 
     const citizenInput = document.querySelector('input[name="report-citizen"]');
     if (citizenInput && this.currentUser && !citizenInput.value) {
-      citizenInput.value = this.currentUser.name;
+      citizenInput.value = this.currentUser.email;
     }
   }
 
@@ -1031,7 +1046,7 @@ class PensandoGuaymallenApp {
     const category = form['report-category'].value;
     const address = form['report-address'].value.trim();
     const description = form['report-description'].value.trim();
-    const citizen = form['report-citizen'].value.trim() || (this.currentUser ? this.currentUser.name : 'Vecino de Guaymallén');
+    const citizen = form['report-citizen'].value.trim() || (this.currentUser ? this.currentUser.email : 'Vecino de Guaymallén');
     const districtId = this.pickerDistrictId || 'dorrego';
 
     // Validación estricta: UBICACIÓN OBLIGATORIA EN EL MAPA
@@ -1064,6 +1079,7 @@ class PensandoGuaymallenApp {
       userUpvoted: true,
       date: "Recién",
       citizen,
+      userEmail: this.currentUser ? this.currentUser.email : null,
       isMyReport: true, // Siempre etiquetado como propio en esta sesión
       userId: this.currentUser ? this.currentUser.id : 'session-user'
     };
@@ -1088,83 +1104,175 @@ class PensandoGuaymallenApp {
     }, 400);
   }
 
-  // Modales secundarios y Gestión de Usuario
-  openLoginModal() {
+  // ========================================================
+  // GESTIÓN DE ACCESO VECINAL (LOGIN Y REGISTRO SOLO CON CORREO)
+  // ========================================================
+
+  validateEmail(email) {
+    if (!email || typeof email !== 'string') return false;
+    const clean = email.trim();
+    // 1. Debe contener '@' y debe contener '.'
+    if (!clean.includes('@') || !clean.includes('.')) return false;
+    // 2. No debe contener espacios
+    if (/\s/.test(clean)) return false;
+    // 3. Separar en usuario y dominio
+    const parts = clean.split('@');
+    if (parts.length !== 2) return false;
+    const [userPart, domainPart] = parts;
+    if (!userPart || userPart.length === 0) return false;
+    if (!domainPart || !domainPart.includes('.')) return false;
+    if (domainPart.startsWith('.') || domainPart.endsWith('.')) return false;
+    const domainSegments = domainPart.split('.');
+    if (domainSegments.some(seg => seg.length === 0)) return false;
+    // 4. Formato estándar
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    return emailRegex.test(clean);
+  }
+
+  openAuthModal(mode = 'login') {
     const modal = document.getElementById('modal-login');
     if (modal) {
+      this.switchAuthMode(mode);
+      const emailInput = document.getElementById('auth-input-email');
+      const errorEl = document.getElementById('auth-email-error');
+      if (emailInput) {
+        emailInput.classList.remove('border-rose-500', 'focus:ring-rose-400');
+        emailInput.value = this.currentUser ? this.currentUser.email : '';
+      }
+      if (errorEl) errorEl.classList.add('hidden');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
+      setTimeout(() => {
+        if (emailInput) emailInput.focus();
+      }, 50);
     }
   }
 
-  closeLoginModal() {
+  // Alias para retrocompatibilidad
+  openLoginModal(mode = 'login') {
+    this.openAuthModal(mode);
+  }
+
+  closeAuthModal() {
     const modal = document.getElementById('modal-login');
     if (modal) {
       modal.classList.add('hidden');
       modal.classList.remove('flex');
     }
+    const errorEl = document.getElementById('auth-email-error');
+    if (errorEl) errorEl.classList.add('hidden');
   }
 
-  handleLogin(e) {
+  // Alias para retrocompatibilidad
+  closeLoginModal() {
+    this.closeAuthModal();
+  }
+
+  switchAuthMode(mode) {
+    this.authMode = mode === 'register' ? 'register' : 'login';
+
+    const tabLogin = document.getElementById('auth-tab-login');
+    const tabRegister = document.getElementById('auth-tab-register');
+    const modalTitle = document.getElementById('auth-modal-title');
+    const modalDesc = document.getElementById('auth-modal-desc');
+    const submitBtnText = document.getElementById('auth-submit-text');
+    const submitIcon = document.getElementById('auth-submit-icon');
+    const switchPrompt = document.getElementById('auth-switch-prompt');
+    const errorEl = document.getElementById('auth-email-error');
+
+    if (errorEl) errorEl.classList.add('hidden');
+
+    if (this.authMode === 'register') {
+      if (tabLogin) {
+        tabLogin.className = "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900";
+      }
+      if (tabRegister) {
+        tabRegister.className = "flex-1 py-2 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 bg-white text-[#1A2B4C] shadow-2xs";
+      }
+      if (modalTitle) modalTitle.textContent = "Registrá tu Correo Electrónico";
+      if (modalDesc) modalDesc.textContent = "Sumate al portal vecinal de Pensando Guaymallén para registrar y dar seguimiento a tus reclamos.";
+      if (submitBtnText) submitBtnText.textContent = "Registrarme y Acceder";
+      if (submitIcon) submitIcon.className = "fa-solid fa-user-plus text-sky-300";
+      if (switchPrompt) {
+        switchPrompt.innerHTML = `¿Ya registraste tu correo antes? <button type="button" onclick="App.switchAuthMode('login')" class="text-sky-700 font-bold hover:underline ml-1">Iniciá sesión acá</button>`;
+      }
+    } else {
+      if (tabLogin) {
+        tabLogin.className = "flex-1 py-2 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 bg-white text-[#1A2B4C] shadow-2xs";
+      }
+      if (tabRegister) {
+        tabRegister.className = "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900";
+      }
+      if (modalTitle) modalTitle.textContent = "Ingresá con tu Correo";
+      if (modalDesc) modalDesc.textContent = "Accedé a tus reclamos registrados y hacé seguimiento de las gestiones comunitarias.";
+      if (submitBtnText) submitBtnText.textContent = "Iniciar Sesión y Ver Mis Reclamos";
+      if (submitIcon) submitIcon.className = "fa-solid fa-right-to-bracket text-sky-300";
+      if (switchPrompt) {
+        switchPrompt.innerHTML = `¿No registraste tu correo aún? <button type="button" onclick="App.switchAuthMode('register')" class="text-sky-700 font-bold hover:underline ml-1">Registrate acá</button>`;
+      }
+    }
+  }
+
+  handleAuthSubmit(e) {
     if (e && e.preventDefault) e.preventDefault();
-    const userInput = document.getElementById('login-input-user');
-    const rawName = (userInput && userInput.value.trim()) || 'Carlos Gómez';
-    const name = rawName.includes('@') ? rawName.split('@')[0] : rawName;
-    const email = rawName.includes('@') ? rawName : `${name.toLowerCase().replace(/\s+/g, '.')}@guaymallen.ar`;
 
-    this.currentUser = {
-      id: `usr-${name.toLowerCase().replace(/\s+/g, '-')}`,
-      name: name,
-      email: email
-    };
+    const input = document.getElementById('auth-input-email');
+    const email = input ? input.value.trim() : '';
+    const errorEl = document.getElementById('auth-email-error');
+    const errorMsg = document.getElementById('auth-email-error-msg');
 
-    this.closeLoginModal();
-    this.setFeedReportScope('mine');
-    this.renderUserHeader();
-    this.showToast(`¡Bienvenido ${this.currentUser.name}! Podés ver y hacer seguimiento de tus reclamos.`, 'success', 4500);
-  }
-
-  quickDemoLogin() {
-    this.currentUser = {
-      id: 'usr-carlos',
-      name: 'Carlos Gómez',
-      email: 'carlos.gomez@vecinosguaymallen.ar'
-    };
-
-    // Si Carlos no tiene reportes aún, agregamos uno de ejemplo representativo en Dorrego
-    const existingMine = this.getMyReports();
-    if (existingMine.length === 0) {
-      const demoReport = {
-        id: `rep-carlos-${Date.now()}`,
-        title: "Bache profundo en cruce principal",
-        district: "dorrego",
-        districtName: "Dorrego",
-        category: "baches",
-        lat: -32.9085,
-        lng: -68.8320,
-        address: "Moldes y Adolfo Calle",
-        description: "Bache peligroso que dificulta el tránsito y daña vehículos. Solicitamos bacheo y nivelación urgente a la comuna y vialidad provincial.",
-        status: "En Gestión con Luz Llorens",
-        statusColor: "bg-sky-100 text-sky-800 border-sky-200",
-        upvotes: 4,
-        userUpvoted: true,
-        date: "Hoy",
-        citizen: "Carlos Gómez",
-        isMyReport: true,
-        userId: 'usr-carlos'
-      };
-      this.reports.unshift(demoReport);
+    // Validación estricta: debe contener '@' y '.' con estructura de correo válida
+    if (!this.validateEmail(email)) {
+      if (errorEl) {
+        errorEl.classList.remove('hidden');
+        if (errorMsg) {
+          errorMsg.textContent = "El correo debe tener formato válido, contener '@' y un punto '.' (ej: vecino@correo.com).";
+        }
+      }
+      if (input) {
+        input.classList.add('border-rose-500', 'focus:ring-rose-400');
+        input.focus();
+      }
+      this.showToast("Por favor ingresá un correo electrónico válido (debe contener '@' y un '.')", 'warning', 4000);
+      return;
     }
 
-    this.closeLoginModal();
+    // Correo válido: normalizar y crear sesión de usuario
+    const cleanEmail = email.toLowerCase();
+    const userAlias = cleanEmail.split('@')[0];
+
+    this.currentUser = {
+      id: `usr-${userAlias.replace(/[^a-z0-9]/g, '-')}`,
+      email: cleanEmail,
+      name: userAlias
+    };
+
+    // Guardar en sessionStorage para mantener la sesión activa
+    try {
+      sessionStorage.setItem('pensando_guaymallen_user', JSON.stringify(this.currentUser));
+    } catch (err) {}
+
+    this.closeAuthModal();
     this.setFeedReportScope('mine');
     this.renderUserHeader();
-    this.updateStats();
-    this.showToast('¡Sesión iniciada como Carlos Gómez! Mostrando tus reclamos.', 'success', 4500);
+
+    if (this.authMode === 'register') {
+      this.showToast(`¡Registro exitoso! Sesión iniciada con ${cleanEmail}. Ya podés gestionar tus reclamos.`, 'success', 5000);
+    } else {
+      this.showToast(`¡Bienvenido! Sesión iniciada con ${cleanEmail}.`, 'success', 4500);
+    }
+  }
+
+  // Alias para compatibilidad con código existente
+  handleLogin(e) {
+    this.handleAuthSubmit(e);
   }
 
   handleLogout() {
     this.currentUser = null;
+    try {
+      sessionStorage.removeItem('pensando_guaymallen_user');
+    } catch (e) {}
     this.setFeedReportScope('all');
     this.renderUserHeader();
     this.showToast('Sesión cerrada correctamente.', 'info');
@@ -1179,18 +1287,23 @@ class PensandoGuaymallenApp {
         headerContainer.innerHTML = `
           <button 
             type="button"
-            onclick="App.openLoginModal()"
+            onclick="App.openAuthModal('login')"
             id="btn-header-login"
-            class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full md:rounded-xl text-xs sm:text-sm font-bold bg-white md:bg-[#1A2B4C] text-[#1A2B4C] md:text-white border border-slate-200 md:border-transparent hover:bg-slate-100 md:hover:bg-[#243B66] shadow-2xs md:shadow-sm transition-all flex items-center gap-1 sm:gap-1.5">
-            <i class="fa-regular fa-user text-xs"></i>
-            <span>Login</span>
+            class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-[#1A2B4C] hover:bg-sky-50 border border-slate-200 hover:border-sky-300 shadow-2xs transition-all flex items-center gap-1.5">
+            <i class="fa-solid fa-right-to-bracket text-xs text-sky-600"></i>
+            <span>Ingresar</span>
+          </button>
+          <button 
+            type="button"
+            onclick="App.openAuthModal('register')"
+            id="btn-header-register"
+            class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-extrabold bg-[#1A2B4C] hover:bg-[#243B66] text-white shadow-2xs md:shadow-sm transition-all flex items-center gap-1.5">
+            <i class="fa-solid fa-user-plus text-xs text-sky-300"></i>
+            <span>Registrarse</span>
           </button>
         `;
       } else {
-        const firstName = this.currentUser.name.split(' ')[0];
-        const initials = this.currentUser.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
         const myCount = this.getMyReports().length;
-
         headerContainer.innerHTML = `
           <div class="relative">
             <button 
@@ -1198,22 +1311,22 @@ class PensandoGuaymallenApp {
               onclick="App.toggleUserDropdown()"
               class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full md:rounded-xl text-xs sm:text-sm font-extrabold bg-sky-50 md:bg-[#1A2B4C] text-sky-900 md:text-white border border-sky-200 md:border-sky-500/30 hover:bg-sky-100 md:hover:bg-[#243B66] shadow-2xs md:shadow-sm transition-all flex items-center gap-1.5">
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span class="max-w-[75px] sm:max-w-[110px] truncate">${firstName}</span>
+              <span class="max-w-[100px] sm:max-w-[150px] truncate" title="${this.currentUser.email}">${this.currentUser.email}</span>
               <i class="fa-solid fa-chevron-down text-[9px] opacity-75"></i>
             </button>
 
             <!-- Dropdown Menu de Usuario -->
             <div 
               id="user-profile-dropdown" 
-              class="hidden absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-2 z-[600] space-y-1">
+              class="hidden absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-2 z-[600] space-y-1">
               
               <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-100 mb-1">
                 <div class="flex items-center gap-2">
                   <div class="w-8 h-8 rounded-full bg-sky-600 text-white font-black text-xs flex items-center justify-center shrink-0">
-                    ${initials}
+                    <i class="fa-solid fa-envelope text-xs"></i>
                   </div>
                   <div class="min-w-0">
-                    <p class="font-extrabold text-xs text-slate-900 truncate">${this.currentUser.name}</p>
+                    <p class="font-extrabold text-xs text-slate-900 truncate" title="${this.currentUser.email}">${this.currentUser.email}</p>
                     <p class="text-[10px] text-emerald-700 font-bold flex items-center gap-1">
                       <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                       Vecino Conectado
@@ -1260,13 +1373,22 @@ class PensandoGuaymallenApp {
     if (drawerContainer) {
       if (!this.currentUser) {
         drawerContainer.innerHTML = `
-          <button 
-            type="button"
-            onclick="App.openLoginModal(); App.closeMobileDrawer();" 
-            class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-[#1A2B4C] hover:bg-[#243B66] text-white shadow-sm flex items-center justify-center gap-2 transition-all">
-            <i class="fa-regular fa-user text-xs"></i>
-            <span>Portal del Vecino (Login)</span>
-          </button>
+          <div class="space-y-2">
+            <button 
+              type="button"
+              onclick="App.openAuthModal('login'); App.closeMobileDrawer();" 
+              class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-white text-[#1A2B4C] border border-slate-200 hover:bg-slate-50 shadow-2xs flex items-center justify-center gap-2 transition-all">
+              <i class="fa-solid fa-right-to-bracket text-sky-600 text-xs"></i>
+              <span>Ingresar con mi Correo</span>
+            </button>
+            <button 
+              type="button"
+              onclick="App.openAuthModal('register'); App.closeMobileDrawer();" 
+              class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-[#1A2B4C] hover:bg-[#243B66] text-white shadow-sm flex items-center justify-center gap-2 transition-all">
+              <i class="fa-solid fa-user-plus text-sky-300 text-xs"></i>
+              <span>Registrarse con mi Correo</span>
+            </button>
+          </div>
         `;
       } else {
         const myCount = this.getMyReports().length;
@@ -1275,7 +1397,7 @@ class PensandoGuaymallenApp {
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2 min-w-0">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
-                <span class="text-xs font-black text-sky-950 truncate">${this.currentUser.name}</span>
+                <span class="text-xs font-black text-sky-950 truncate" title="${this.currentUser.email}">${this.currentUser.email}</span>
               </div>
               <span class="text-[10px] font-bold text-sky-700 bg-white px-2 py-0.5 rounded-full border border-sky-200 shrink-0">${myCount} reclamos</span>
             </div>

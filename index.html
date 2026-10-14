@@ -129,14 +129,23 @@
           <span>Reportar</span>
         </button>
 
-        <!-- Contenedor dinámico de Usuario / Login -->
-        <div id="header-user-container" class="relative">
+        <!-- Contenedor dinámico de Usuario / Acceso Vecinal -->
+        <div id="header-user-container" class="relative flex items-center gap-1.5 sm:gap-2">
           <button 
-            onclick="App.openLoginModal()"
+            type="button"
+            onclick="App.openAuthModal('login')"
             id="btn-header-login"
-            class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full md:rounded-xl text-xs sm:text-sm font-bold bg-white md:bg-[#1A2B4C] text-[#1A2B4C] md:text-white border border-slate-200 md:border-transparent hover:bg-slate-100 md:hover:bg-[#243B66] shadow-2xs md:shadow-sm transition-all flex items-center gap-1 sm:gap-1.5">
-            <i class="fa-regular fa-user text-xs"></i>
-            <span>Login</span>
+            class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-[#1A2B4C] hover:bg-sky-50 border border-slate-200 hover:border-sky-300 shadow-2xs transition-all flex items-center gap-1 sm:gap-1.5">
+            <i class="fa-solid fa-right-to-bracket text-xs text-sky-600"></i>
+            <span>Ingresar</span>
+          </button>
+          <button 
+            type="button"
+            onclick="App.openAuthModal('register')"
+            id="btn-header-register"
+            class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-extrabold bg-[#1A2B4C] hover:bg-[#243B66] text-white shadow-2xs md:shadow-sm transition-all flex items-center gap-1 sm:gap-1.5">
+            <i class="fa-solid fa-user-plus text-xs text-sky-300"></i>
+            <span>Registrarse</span>
           </button>
         </div>
 
@@ -227,12 +236,20 @@
       </button>
 
       <!-- Contenedor dinámico de Usuario en Drawer -->
-      <div id="drawer-user-container">
+      <div id="drawer-user-container" class="space-y-2">
         <button 
-          onclick="App.openLoginModal(); App.closeMobileDrawer();" 
+          type="button"
+          onclick="App.openAuthModal('login'); App.closeMobileDrawer();" 
+          class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-white text-[#1A2B4C] border border-slate-200 hover:bg-slate-50 shadow-2xs flex items-center justify-center gap-2 transition-all">
+          <i class="fa-solid fa-right-to-bracket text-sky-600 text-xs"></i>
+          <span>Ingresar con mi Correo</span>
+        </button>
+        <button 
+          type="button"
+          onclick="App.openAuthModal('register'); App.closeMobileDrawer();" 
           class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-[#1A2B4C] hover:bg-[#243B66] text-white shadow-sm flex items-center justify-center gap-2 transition-all">
-          <i class="fa-regular fa-user text-xs"></i>
-          <span>Portal del Vecino (Login)</span>
+          <i class="fa-solid fa-user-plus text-sky-300 text-xs"></i>
+          <span>Registrarse con mi Correo</span>
         </button>
       </div>
 
@@ -1152,7 +1169,7 @@
   </div>
 
   <!-- ========================================================
-       MODAL: LOGIN / PORTAL VECINAL
+       MODAL: ACCESO VECINAL (LOGIN Y REGISTRO SOLO CON CORREO)
        ======================================================== -->
   <div 
     id="modal-login" 
@@ -1162,63 +1179,88 @@
       
       <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-[#1A2B4C] to-[#243B66] text-white">
         <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-amber-400">
-            <i class="fa-solid fa-fingerprint"></i>
+          <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-sky-300">
+            <i class="fa-solid fa-envelope-open-text"></i>
           </div>
           <div>
             <h3 class="font-extrabold text-sm sm:text-base leading-tight">Portal del Vecino</h3>
             <p class="text-[11px] text-slate-300">Pensando Guaymallén</p>
           </div>
         </div>
-        <button onclick="App.closeLoginModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
+        <button onclick="App.closeAuthModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
           <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Selector de Pestañas: Iniciar Sesión vs Registrarse -->
+      <div class="p-1.5 bg-slate-100 border-b border-slate-200/80 flex items-center gap-1">
+        <button 
+          type="button" 
+          id="auth-tab-login"
+          onclick="App.switchAuthMode('login')"
+          class="flex-1 py-2 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 bg-white text-[#1A2B4C] shadow-2xs">
+          <i class="fa-solid fa-right-to-bracket text-sky-600 text-xs"></i>
+          <span>Iniciar Sesión</span>
+        </button>
+        <button 
+          type="button" 
+          id="auth-tab-register"
+          onclick="App.switchAuthMode('register')"
+          class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900">
+          <i class="fa-solid fa-user-plus text-sky-600 text-xs"></i>
+          <span>Registrarse</span>
         </button>
       </div>
 
       <div class="p-6 space-y-4">
         <div>
-          <h4 class="font-extrabold text-slate-800 text-sm">Ingresá a tu Cuenta Vecinal</h4>
-          <p class="text-xs text-slate-500 mt-0.5">Podrás ver tus propios reclamos, hacer seguimiento de su estado e interactuar con el equipo de Luz Llorens.</p>
+          <h4 id="auth-modal-title" class="font-extrabold text-slate-800 text-sm">Ingresá con tu Correo</h4>
+          <p id="auth-modal-desc" class="text-xs text-slate-500 mt-0.5">Accedé a tus reclamos registrados y hacé seguimiento de las gestiones comunitarias.</p>
         </div>
 
-        <form id="login-form" onsubmit="App.handleLogin(event)" class="space-y-3.5">
+        <form id="auth-form" onsubmit="App.handleAuthSubmit(event)" class="space-y-4" novalidate>
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Nombre o Email / DNI</label>
-            <input 
-              type="text" 
-              id="login-input-user" 
-              required 
-              placeholder="Ej: Carlos Gómez o carlos@gmail.com" 
-              value="Carlos Gómez"
-              class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 focus:outline-none">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Contraseña</label>
-            <input 
-              type="password" 
-              required 
-              placeholder="••••••••" 
-              value="123456" 
-              class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+            <label class="block text-xs font-bold text-slate-700 mb-1.5">
+              Correo Electrónico <span class="text-rose-500">*</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <i class="fa-regular fa-envelope text-xs"></i>
+              </div>
+              <input 
+                type="email" 
+                id="auth-input-email" 
+                required 
+                autocomplete="email"
+                placeholder="ejemplo@correo.com" 
+                class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3.5 py-2.5 text-xs font-semibold text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-sky-500 focus:bg-white focus:outline-none transition-all">
+            </div>
+            <!-- Mensaje de error de validación -->
+            <p id="auth-email-error" class="hidden text-[11px] text-rose-600 font-semibold mt-1.5 flex items-center gap-1">
+              <i class="fa-solid fa-circle-exclamation text-[10px]"></i>
+              <span id="auth-email-error-msg">El correo debe contener '@' y un punto '.' (ej: nombre@dominio.com)</span>
+            </p>
+            <p class="text-[10px] text-slate-400 mt-1">
+              Solo requerimos tu correo electrónico para identificar y seguir tus reclamos.
+            </p>
           </div>
 
           <button 
             type="submit" 
+            id="auth-submit-btn"
             class="w-full py-3 rounded-xl text-xs sm:text-sm font-extrabold uppercase tracking-wide bg-[#1A2B4C] hover:bg-sky-700 active:scale-98 text-white transition-all shadow-md flex items-center justify-center gap-2">
-            <i class="fa-solid fa-right-to-bracket text-amber-300"></i>
-            <span>Iniciar Sesión y Ver Mis Reclamos</span>
+            <i id="auth-submit-icon" class="fa-solid fa-right-to-bracket text-sky-300"></i>
+            <span id="auth-submit-text">Iniciar Sesión y Ver Mis Reclamos</span>
           </button>
         </form>
 
-        <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-          <span class="text-slate-400">¿Querés probar rápido?</span>
-          <button 
-            type="button" 
-            onclick="App.quickDemoLogin()" 
-            class="text-sky-700 font-bold hover:underline flex items-center gap-1">
-            <i class="fa-solid fa-bolt text-amber-500"></i>
-            <span>Demo con 1 clic</span>
-          </button>
+        <div class="pt-3 border-t border-slate-100 text-center text-xs">
+          <p id="auth-switch-prompt" class="text-slate-500">
+            ¿No registraste tu correo aún? 
+            <button type="button" onclick="App.switchAuthMode('register')" class="text-sky-700 font-bold hover:underline ml-1">
+              Registrate acá
+            </button>
+          </p>
         </div>
       </div>
 
