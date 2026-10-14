@@ -1105,28 +1105,147 @@ class PensandoGuaymallenApp {
   }
 
   // ========================================================
-  // GESTIÓN DE ACCESO VECINAL (LOGIN Y REGISTRO SOLO CON CORREO)
+  // GESTIÓN DE ACCESO VECINAL (LOGIN Y REGISTRO FLUIDO)
   // ========================================================
 
-  validateEmail(email) {
+  validateEmailFormat(email) {
     if (!email || typeof email !== 'string') return false;
     const clean = email.trim();
-    // 1. Debe contener '@' y debe contener '.'
-    if (!clean.includes('@') || !clean.includes('.')) return false;
-    // 2. No debe contener espacios
     if (/\s/.test(clean)) return false;
-    // 3. Separar en usuario y dominio
-    const parts = clean.split('@');
-    if (parts.length !== 2) return false;
-    const [userPart, domainPart] = parts;
-    if (!userPart || userPart.length === 0) return false;
-    if (!domainPart || !domainPart.includes('.')) return false;
-    if (domainPart.startsWith('.') || domainPart.endsWith('.')) return false;
-    const domainSegments = domainPart.split('.');
-    if (domainSegments.some(seg => seg.length === 0)) return false;
-    // 4. Formato estándar
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-    return emailRegex.test(clean);
+    // Formato estándar usuario@dominio.extension
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(clean);
+  }
+
+  // Validación de correo en tiempo real optimizada (sin retrasos ni bloqueos al escribir)
+  onEmailInput(e) {
+    if (this._emailDebounceTimer) {
+      clearTimeout(this._emailDebounceTimer);
+    }
+
+    const input = e.target;
+    const email = input.value.trim();
+    const errorEl = document.getElementById('auth-email-error');
+    const validIcon = document.getElementById('auth-email-valid-icon');
+
+    // Si el campo está vacío, limpiar estados inmediatamente
+    if (!email) {
+      if (errorEl) errorEl.classList.add('hidden');
+      if (validIcon) validIcon.classList.add('hidden');
+      input.classList.remove('border-rose-400', 'border-emerald-500', 'focus:ring-rose-400', 'focus:ring-emerald-400');
+      return;
+    }
+
+    // Si ya completó un formato válido, marcar verde al instante sin demoras
+    if (this.validateEmailFormat(email)) {
+      if (errorEl) errorEl.classList.add('hidden');
+      if (validIcon) validIcon.classList.remove('hidden');
+      input.classList.remove('border-rose-400', 'focus:ring-rose-400');
+      input.classList.add('border-emerald-500', 'focus:ring-emerald-400');
+      return;
+    }
+
+    // Si aún está escribiendo, esperar 350ms tras la última tecla para no interrumpir la escritura con parpadeos
+    this._emailDebounceTimer = setTimeout(() => {
+      const current = input.value.trim();
+      if (!current) return;
+      if (!this.validateEmailFormat(current)) {
+        if (errorEl) errorEl.classList.remove('hidden');
+        if (validIcon) validIcon.classList.add('hidden');
+        input.classList.remove('border-emerald-500', 'focus:ring-emerald-400');
+        input.classList.add('border-rose-400', 'focus:ring-rose-400');
+      }
+    }, 350);
+  }
+
+  onEmailBlur(e) {
+    if (this._emailDebounceTimer) {
+      clearTimeout(this._emailDebounceTimer);
+    }
+    const input = e.target;
+    const email = input.value.trim();
+    const errorEl = document.getElementById('auth-email-error');
+    const validIcon = document.getElementById('auth-email-valid-icon');
+
+    if (!email) {
+      if (errorEl) errorEl.classList.add('hidden');
+      if (validIcon) validIcon.classList.add('hidden');
+      input.classList.remove('border-rose-400', 'border-emerald-500', 'focus:ring-rose-400', 'focus:ring-emerald-400');
+      return;
+    }
+
+    if (this.validateEmailFormat(email)) {
+      if (errorEl) errorEl.classList.add('hidden');
+      if (validIcon) validIcon.classList.remove('hidden');
+      input.classList.remove('border-rose-400', 'focus:ring-rose-400');
+      input.classList.add('border-emerald-500', 'focus:ring-emerald-400');
+    } else {
+      if (errorEl) errorEl.classList.remove('hidden');
+      if (validIcon) validIcon.classList.add('hidden');
+      input.classList.remove('border-emerald-500', 'focus:ring-emerald-400');
+      input.classList.add('border-rose-400', 'focus:ring-rose-400');
+    }
+  }
+
+  // Validación de contraseñas instantánea y fluida
+  onPasswordInput(e) {
+    const passInput = document.getElementById('auth-input-password');
+    const pass = passInput ? passInput.value : '';
+    const passError = document.getElementById('auth-password-error');
+
+    if (passError && pass.length > 0) {
+      passError.classList.add('hidden');
+      if (passInput) passInput.classList.remove('border-rose-400', 'focus:ring-rose-400');
+    }
+
+    if (this.authMode === 'register') {
+      const confirmInput = document.getElementById('auth-input-password-confirm');
+      const confirmPass = confirmInput ? confirmInput.value : '';
+      const confirmError = document.getElementById('auth-confirm-error');
+      const confirmSuccess = document.getElementById('auth-confirm-success');
+
+      if (!confirmPass) {
+        if (confirmError) confirmError.classList.add('hidden');
+        if (confirmSuccess) confirmSuccess.classList.add('hidden');
+        if (confirmInput) confirmInput.classList.remove('border-rose-400', 'border-emerald-500');
+        return;
+      }
+
+      if (pass === confirmPass) {
+        if (confirmError) confirmError.classList.add('hidden');
+        if (confirmSuccess) confirmSuccess.classList.remove('hidden');
+        if (confirmInput) {
+          confirmInput.classList.remove('border-rose-400');
+          confirmInput.classList.add('border-emerald-500');
+        }
+      } else {
+        if (confirmSuccess) confirmSuccess.classList.add('hidden');
+        if (confirmError) confirmError.classList.remove('hidden');
+        if (confirmInput) {
+          confirmInput.classList.remove('border-emerald-500');
+          confirmInput.classList.add('border-rose-400');
+        }
+      }
+    }
+  }
+
+  // Alternar visualización de contraseña (ojo visible / oculto)
+  togglePasswordVisibility(inputId, btnEl) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const icon = btnEl ? btnEl.querySelector('i') : null;
+    if (input.type === 'password') {
+      input.type = 'text';
+      if (icon) {
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      }
+    } else {
+      input.type = 'password';
+      if (icon) {
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
   }
 
   openAuthModal(mode = 'login') {
@@ -1134,16 +1253,47 @@ class PensandoGuaymallenApp {
     if (modal) {
       this.switchAuthMode(mode);
       const emailInput = document.getElementById('auth-input-email');
-      const errorEl = document.getElementById('auth-email-error');
+      const passInput = document.getElementById('auth-input-password');
+      const confirmInput = document.getElementById('auth-input-password-confirm');
+      const emailError = document.getElementById('auth-email-error');
+      const validIcon = document.getElementById('auth-email-valid-icon');
+      const passError = document.getElementById('auth-password-error');
+      const confirmError = document.getElementById('auth-confirm-error');
+      const confirmSuccess = document.getElementById('auth-confirm-success');
+
+      if (emailError) emailError.classList.add('hidden');
+      if (validIcon) validIcon.classList.add('hidden');
+      if (passError) passError.classList.add('hidden');
+      if (confirmError) confirmError.classList.add('hidden');
+      if (confirmSuccess) confirmSuccess.classList.add('hidden');
+
       if (emailInput) {
-        emailInput.classList.remove('border-rose-500', 'focus:ring-rose-400');
-        emailInput.value = this.currentUser ? this.currentUser.email : '';
+        emailInput.classList.remove('border-rose-400', 'border-emerald-500', 'focus:ring-rose-400', 'focus:ring-emerald-400');
+        if (this.currentUser) {
+          emailInput.value = this.currentUser.email;
+          if (validIcon) validIcon.classList.remove('hidden');
+          emailInput.classList.add('border-emerald-500');
+        } else {
+          emailInput.value = '';
+        }
       }
-      if (errorEl) errorEl.classList.add('hidden');
+      if (passInput) {
+        passInput.classList.remove('border-rose-400', 'focus:ring-rose-400');
+        passInput.value = '';
+      }
+      if (confirmInput) {
+        confirmInput.classList.remove('border-rose-400', 'border-emerald-500');
+        confirmInput.value = '';
+      }
+
       modal.classList.remove('hidden');
       modal.classList.add('flex');
       setTimeout(() => {
-        if (emailInput) emailInput.focus();
+        if (emailInput && !emailInput.value) {
+          emailInput.focus();
+        } else if (passInput) {
+          passInput.focus();
+        }
       }, 50);
     }
   }
@@ -1159,8 +1309,12 @@ class PensandoGuaymallenApp {
       modal.classList.add('hidden');
       modal.classList.remove('flex');
     }
-    const errorEl = document.getElementById('auth-email-error');
-    if (errorEl) errorEl.classList.add('hidden');
+    const emailError = document.getElementById('auth-email-error');
+    if (emailError) emailError.classList.add('hidden');
+    const passError = document.getElementById('auth-password-error');
+    if (passError) passError.classList.add('hidden');
+    const confirmError = document.getElementById('auth-confirm-error');
+    if (confirmError) confirmError.classList.add('hidden');
   }
 
   // Alias para retrocompatibilidad
@@ -1178,76 +1332,147 @@ class PensandoGuaymallenApp {
     const submitBtnText = document.getElementById('auth-submit-text');
     const submitIcon = document.getElementById('auth-submit-icon');
     const switchPrompt = document.getElementById('auth-switch-prompt');
-    const errorEl = document.getElementById('auth-email-error');
+    const confirmContainer = document.getElementById('auth-confirm-container');
+    const confirmInput = document.getElementById('auth-input-password-confirm');
+    const passError = document.getElementById('auth-password-error');
 
-    if (errorEl) errorEl.classList.add('hidden');
+    if (passError) passError.classList.add('hidden');
 
     if (this.authMode === 'register') {
       if (tabLogin) {
-        tabLogin.className = "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900";
+        tabLogin.className = "flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 text-slate-500 hover:text-slate-800 bg-transparent transition-colors";
       }
       if (tabRegister) {
-        tabRegister.className = "flex-1 py-2 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 bg-white text-[#1A2B4C] shadow-2xs";
+        tabRegister.className = "flex-1 py-2 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 bg-white text-[#1A2B4C] shadow-sm transition-colors";
       }
-      if (modalTitle) modalTitle.textContent = "Registrá tu Correo Electrónico";
-      if (modalDesc) modalDesc.textContent = "Sumate al portal vecinal de Pensando Guaymallén para registrar y dar seguimiento a tus reclamos.";
+      if (modalTitle) modalTitle.textContent = "Registrá tu Cuenta Vecinal";
+      if (modalDesc) modalDesc.textContent = "Sumate al portal con tu correo y contraseña para gestionar tus reclamos.";
       if (submitBtnText) submitBtnText.textContent = "Registrarme y Acceder";
       if (submitIcon) submitIcon.className = "fa-solid fa-user-plus text-sky-300";
       if (switchPrompt) {
-        switchPrompt.innerHTML = `¿Ya registraste tu correo antes? <button type="button" onclick="App.switchAuthMode('login')" class="text-sky-700 font-bold hover:underline ml-1">Iniciá sesión acá</button>`;
+        switchPrompt.innerHTML = `¿Ya tenés una cuenta registrada? <button type="button" onclick="App.switchAuthMode('login')" class="text-sky-700 font-bold hover:underline ml-1">Iniciá sesión acá</button>`;
       }
+      if (confirmContainer) confirmContainer.classList.remove('hidden');
+      if (confirmInput) confirmInput.required = true;
     } else {
       if (tabLogin) {
-        tabLogin.className = "flex-1 py-2 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 bg-white text-[#1A2B4C] shadow-2xs";
+        tabLogin.className = "flex-1 py-2 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 bg-white text-[#1A2B4C] shadow-sm transition-colors";
       }
       if (tabRegister) {
-        tabRegister.className = "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900";
+        tabRegister.className = "flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 text-slate-500 hover:text-slate-800 bg-transparent transition-colors";
       }
-      if (modalTitle) modalTitle.textContent = "Ingresá con tu Correo";
-      if (modalDesc) modalDesc.textContent = "Accedé a tus reclamos registrados y hacé seguimiento de las gestiones comunitarias.";
+      if (modalTitle) modalTitle.textContent = "Ingresá a tu Cuenta Vecinal";
+      if (modalDesc) modalDesc.textContent = "Accedé con tu correo y contraseña para hacer seguimiento de tus reclamos.";
       if (submitBtnText) submitBtnText.textContent = "Iniciar Sesión y Ver Mis Reclamos";
       if (submitIcon) submitIcon.className = "fa-solid fa-right-to-bracket text-sky-300";
       if (switchPrompt) {
         switchPrompt.innerHTML = `¿No registraste tu correo aún? <button type="button" onclick="App.switchAuthMode('register')" class="text-sky-700 font-bold hover:underline ml-1">Registrate acá</button>`;
       }
+      if (confirmContainer) confirmContainer.classList.add('hidden');
+      if (confirmInput) {
+        confirmInput.required = false;
+        confirmInput.value = '';
+      }
+      const confirmError = document.getElementById('auth-confirm-error');
+      const confirmSuccess = document.getElementById('auth-confirm-success');
+      if (confirmError) confirmError.classList.add('hidden');
+      if (confirmSuccess) confirmSuccess.classList.add('hidden');
     }
   }
 
   handleAuthSubmit(e) {
     if (e && e.preventDefault) e.preventDefault();
 
-    const input = document.getElementById('auth-input-email');
-    const email = input ? input.value.trim() : '';
-    const errorEl = document.getElementById('auth-email-error');
-    const errorMsg = document.getElementById('auth-email-error-msg');
+    const emailInput = document.getElementById('auth-input-email');
+    const passInput = document.getElementById('auth-input-password');
+    const confirmInput = document.getElementById('auth-input-password-confirm');
 
-    // Validación estricta: debe contener '@' y '.' con estructura de correo válida
-    if (!this.validateEmail(email)) {
-      if (errorEl) {
-        errorEl.classList.remove('hidden');
-        if (errorMsg) {
-          errorMsg.textContent = "El correo debe tener formato válido, contener '@' y un punto '.' (ej: vecino@correo.com).";
-        }
+    const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+    const pass = passInput ? passInput.value : '';
+    const confirmPass = confirmInput ? confirmInput.value : '';
+
+    const emailError = document.getElementById('auth-email-error');
+    const passError = document.getElementById('auth-password-error');
+    const passErrorMsg = document.getElementById('auth-password-error-msg');
+    const confirmError = document.getElementById('auth-confirm-error');
+
+    // 1. Validar formato de correo electrónico
+    if (!this.validateEmailFormat(email)) {
+      if (emailError) emailError.classList.remove('hidden');
+      if (emailInput) {
+        emailInput.classList.remove('border-emerald-500');
+        emailInput.classList.add('border-rose-400', 'focus:ring-rose-400');
+        emailInput.focus();
       }
-      if (input) {
-        input.classList.add('border-rose-500', 'focus:ring-rose-400');
-        input.focus();
-      }
-      this.showToast("Por favor ingresá un correo electrónico válido (debe contener '@' y un '.')", 'warning', 4000);
+      this.showToast('Por favor ingresá un formato de correo válido (ej: nombre@correo.com)', 'warning', 4000);
       return;
     }
 
-    // Correo válido: normalizar y crear sesión de usuario
-    const cleanEmail = email.toLowerCase();
-    const userAlias = cleanEmail.split('@')[0];
+    // 2. Validar contraseña
+    if (!pass || pass.length < 4) {
+      if (passError) {
+        passError.classList.remove('hidden');
+        if (passErrorMsg) passErrorMsg.textContent = pass.length === 0 ? 'Ingresá tu contraseña' : 'La contraseña debe tener al menos 4 caracteres';
+      }
+      if (passInput) {
+        passInput.classList.add('border-rose-400', 'focus:ring-rose-400');
+        passInput.focus();
+      }
+      this.showToast('Por favor completá tu contraseña (mínimo 4 caracteres)', 'warning', 3500);
+      return;
+    }
 
+    // 3. Si es Registro: validar que confirmación sea exactamente igual
+    if (this.authMode === 'register') {
+      if (pass !== confirmPass) {
+        if (confirmError) confirmError.classList.remove('hidden');
+        if (confirmInput) {
+          confirmInput.classList.add('border-rose-400', 'focus:ring-rose-400');
+          confirmInput.focus();
+        }
+        this.showToast('Las contraseñas no coinciden. Deben ser exactamente iguales.', 'error', 4000);
+        return;
+      }
+    }
+
+    // Guardado y verificación de credenciales de usuario
+    let accounts = {};
+    try {
+      accounts = JSON.parse(localStorage.getItem('pensando_guaymallen_accounts') || '{}');
+    } catch (err) {
+      accounts = {};
+    }
+
+    // Si es Iniciar Sesión y el usuario ya estaba registrado con contraseña: verificar coincidencia
+    if (this.authMode === 'login' && accounts[email]) {
+      if (accounts[email] !== pass) {
+        if (passError) {
+          passError.classList.remove('hidden');
+          if (passErrorMsg) passErrorMsg.textContent = 'Contraseña incorrecta para este correo';
+        }
+        if (passInput) {
+          passInput.classList.add('border-rose-400', 'focus:ring-rose-400');
+          passInput.focus();
+        }
+        this.showToast('Contraseña incorrecta. Por favor revisá tus datos.', 'error', 4000);
+        return;
+      }
+    }
+
+    // Guardar / actualizar credencial de la cuenta
+    accounts[email] = pass;
+    try {
+      localStorage.setItem('pensando_guaymallen_accounts', JSON.stringify(accounts));
+    } catch (err) {}
+
+    // Iniciar sesión activa
+    const userAlias = email.split('@')[0];
     this.currentUser = {
       id: `usr-${userAlias.replace(/[^a-z0-9]/g, '-')}`,
-      email: cleanEmail,
+      email: email,
       name: userAlias
     };
 
-    // Guardar en sessionStorage para mantener la sesión activa
     try {
       sessionStorage.setItem('pensando_guaymallen_user', JSON.stringify(this.currentUser));
     } catch (err) {}
@@ -1257,9 +1482,9 @@ class PensandoGuaymallenApp {
     this.renderUserHeader();
 
     if (this.authMode === 'register') {
-      this.showToast(`¡Registro exitoso! Sesión iniciada con ${cleanEmail}. Ya podés gestionar tus reclamos.`, 'success', 5000);
+      this.showToast(`¡Registro exitoso! Sesión iniciada con ${email}. Ya podés gestionar tus reclamos.`, 'success', 5000);
     } else {
-      this.showToast(`¡Bienvenido! Sesión iniciada con ${cleanEmail}.`, 'success', 4500);
+      this.showToast(`¡Bienvenido! Sesión iniciada con ${email}.`, 'success', 4500);
     }
   }
 
