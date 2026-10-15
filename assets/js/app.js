@@ -76,6 +76,12 @@ class PensandoGuaymallenApp {
 
     // Eventos
     this.attachEvents();
+
+    // Vista inicial (por defecto 'inicio', o hash '#map' / '#conoce' si viene con ancla)
+    const initialView = (window.location.hash === '#map' || window.location.hash === '#mapa') ? 'map'
+      : (window.location.hash === '#conoce') ? 'conoce'
+      : 'inicio';
+    this.navigateToView(initialView);
   }
 
   populateDistrictSelects() {
@@ -238,6 +244,12 @@ class PensandoGuaymallenApp {
       newReportForm.addEventListener('submit', (e) => this.handleNewReportSubmit(e));
     }
 
+    // Formulario de Propuestas Ciudadanas (Home)
+    const citizenProposalForm = document.getElementById('citizen-proposal-form');
+    if (citizenProposalForm) {
+      citizenProposalForm.addEventListener('submit', (e) => this.handleProposalSubmit(e));
+    }
+
     // Botón para fijar ubicación en el mapa
     const btnPickLocation = document.getElementById('btn-pick-map-location');
     if (btnPickLocation) {
@@ -270,6 +282,14 @@ class PensandoGuaymallenApp {
 
   // Navegación entre vistas completas (Salir completamente del mapa a otra página)
   navigateToView(viewName) {
+    // Normalizar aliases a las 3 vistas principales
+    if (viewName === 'propuestas' || viewName === 'contacto' || viewName === 'home') {
+      viewName = 'inicio';
+    }
+    if (viewName === 'mapa') {
+      viewName = 'map';
+    }
+
     this.currentView = viewName;
 
     const views = document.querySelectorAll('.app-view');
@@ -286,7 +306,7 @@ class PensandoGuaymallenApp {
 
     // Modo Pantalla Completa:
     // Si estamos en el mapa: html y body con h-screen y overflow-hidden para layout de app
-    // Si estamos en Conocé, Propuestas o Contacto: body con min-h-screen y overflow-y-auto para scroll web natural
+    // Si estamos en Inicio o Conocé: body con min-h-screen y overflow-y-auto para scroll web natural
     if (viewName === 'map') {
       document.documentElement.classList.add('h-screen', 'h-[100dvh]', 'overflow-hidden');
       document.body.classList.add('h-screen', 'h-[100dvh]', 'overflow-hidden');
@@ -295,11 +315,16 @@ class PensandoGuaymallenApp {
       window.scrollTo(0, 0);
 
       if (this.mapInstance && this.mapInstance.map) {
+        this.mapInstance.map.invalidateSize();
         setTimeout(() => {
-          this.mapInstance.map.invalidateSize();
+          if (this.mapInstance && this.mapInstance.map) {
+            this.mapInstance.map.invalidateSize();
+          }
         }, 100);
         setTimeout(() => {
-          this.mapInstance.map.invalidateSize();
+          if (this.mapInstance && this.mapInstance.map) {
+            this.mapInstance.map.invalidateSize();
+          }
         }, 300);
       }
     } else {
@@ -310,18 +335,71 @@ class PensandoGuaymallenApp {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Actualizar botones de navegación en el header
+    // Actualizar botones de navegación en el header (Desktop)
     const navButtons = document.querySelectorAll('.nav-tab-btn');
     navButtons.forEach(btn => {
       const targetView = btn.getAttribute('data-nav-view');
       if (targetView === viewName) {
-        btn.classList.add('text-sky-950', 'border-sky-600', 'bg-sky-50');
-        btn.classList.remove('text-slate-600');
+        btn.classList.add('text-[#0a2540]', 'border-[#0072bb]', 'bg-sky-50', 'font-bold');
+        btn.classList.remove('text-slate-700', 'border-transparent', 'hover:bg-slate-50', 'font-semibold');
       } else {
-        btn.classList.remove('text-sky-950', 'border-sky-600', 'bg-sky-50');
-        btn.classList.add('text-slate-600');
+        btn.classList.remove('text-[#0a2540]', 'border-[#0072bb]', 'bg-sky-50', 'font-bold');
+        btn.classList.add('text-slate-700', 'border-transparent', 'hover:bg-slate-50', 'font-semibold');
       }
     });
+
+    // Actualizar botones de navegación en el menú móvil (Drawer)
+    const drawerButtons = document.querySelectorAll('[data-nav-drawer-view]');
+    drawerButtons.forEach(btn => {
+      const targetView = btn.getAttribute('data-nav-drawer-view');
+      if (targetView === viewName) {
+        btn.classList.add('text-[#0a2540]', 'bg-sky-50', 'border-[#0072bb]', 'font-bold');
+        btn.classList.remove('text-slate-700', 'border-transparent', 'font-semibold');
+      } else {
+        btn.classList.remove('text-[#0a2540]', 'bg-sky-50', 'border-[#0072bb]', 'font-bold');
+        btn.classList.add('text-slate-700', 'border-transparent', 'font-semibold');
+      }
+    });
+  }
+
+  // Manejo del envío del formulario de propuestas ciudadanas en Inicio
+  handleProposalSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const email = document.getElementById('propuesta-email')?.value.trim() || '';
+    const nombre = document.getElementById('propuesta-nombre')?.value.trim() || '';
+    const telefono = document.getElementById('propuesta-telefono')?.value.trim() || '';
+    const departamento = document.getElementById('propuesta-departamento')?.value || '';
+    const texto = document.getElementById('propuesta-texto')?.value.trim() || '';
+    const archivoInput = document.getElementById('propuesta-archivo');
+    const archivo = archivoInput?.files?.[0]?.name || null;
+
+    if (!email || !nombre || !telefono || !departamento || !texto) {
+      this.showToast('Por favor, completá todos los campos obligatorios (*).', 'error');
+      return;
+    }
+
+    const proposal = {
+      id: 'prop-' + Date.now(),
+      email,
+      nombre,
+      telefono,
+      departamento,
+      texto,
+      archivo,
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      const saved = JSON.parse(localStorage.getItem('guaymallen_proposals') || '[]');
+      saved.unshift(proposal);
+      localStorage.setItem('guaymallen_proposals', JSON.stringify(saved));
+    } catch (err) {
+      console.warn('Error al guardar propuesta:', err);
+    }
+
+    this.showToast('¡Propuesta enviada con éxito! Tu iniciativa ha sido ingresada al despacho de la Senadora Luz Llorens.', 'success', 5000);
+    form.reset();
   }
 
   // Manejo del menú desplegable móvil

@@ -55,7 +55,7 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="assets/css/styles.css">
 </head>
-<body class="bg-white text-slate-800 flex flex-col h-screen h-[100dvh] overflow-hidden antialiased select-none sm:select-auto">
+<body class="bg-white text-slate-800 flex flex-col min-h-screen antialiased select-none sm:select-auto">
 
   <!-- ========================================================
        1. HEADER / BARRA DE NAVEGACIÓN INSTITUCIONAL
@@ -65,7 +65,7 @@
       
       <!-- Identidad Institucional Oficial -->
       <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
-        <button onclick="App.navigateToView('map')" class="flex items-center gap-1.5 sm:gap-3 text-left group">
+        <button onclick="App.navigateToView('inicio')" class="flex items-center gap-1.5 sm:gap-3 text-left group">
           <div class="flex flex-col">
             <div class="flex items-center gap-1">
               <span class="text-[8px] sm:text-xs font-semibold text-slate-500 uppercase tracking-[0.12em] sm:tracking-[0.15em] leading-none">Pensando</span>
@@ -97,35 +97,28 @@
         </button>
       </div>
 
-      <!-- Navegación Parlamentaria (Desktop) -->
+      <!-- Navegación Parlamentaria (Desktop) - 3 Pestañas Principales -->
       <nav class="hidden md:flex items-center gap-1 lg:gap-2">
+        <button 
+          onclick="App.navigateToView('inicio')" 
+          data-nav-view="inicio"
+          class="nav-tab-btn px-3.5 py-2 text-xs lg:text-sm font-bold text-[#0a2540] border-b-2 border-[#0072bb] bg-sky-50 transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-landmark text-xs text-[#0072bb]"></i>
+          <span>Inicio</span>
+        </button>
         <button 
           onclick="App.navigateToView('map')" 
           data-nav-view="map"
-          class="nav-tab-btn px-3.5 py-2 text-xs lg:text-sm font-bold text-[#0a2540] border-b-2 border-[#0072bb] bg-slate-50 transition-all flex items-center gap-1.5">
-          <i class="fa-solid fa-map-location-dot text-xs text-[#0072bb]"></i>
-          <span>Inicio (Mapa y Reclamos)</span>
+          class="nav-tab-btn px-3 py-2 text-xs lg:text-sm font-semibold text-slate-700 hover:text-[#0a2540] hover:bg-slate-50 border-b-2 border-transparent transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-map-location-dot text-xs text-slate-400"></i>
+          <span>Mapa de Reclamos</span>
         </button>
         <button 
           onclick="App.navigateToView('conoce')" 
           data-nav-view="conoce"
-          class="nav-tab-btn px-3 py-2 text-xs lg:text-sm font-semibold text-slate-700 hover:text-[#0a2540] hover:bg-slate-100 border-b-2 border-transparent transition-all flex items-center gap-1.5">
+          class="nav-tab-btn px-3 py-2 text-xs lg:text-sm font-semibold text-slate-700 hover:text-[#0a2540] hover:bg-slate-50 border-b-2 border-transparent transition-all flex items-center gap-1.5">
           <i class="fa-solid fa-compass text-xs text-slate-400"></i>
           <span>Conocé Guaymallén</span>
-        </button>
-        <button 
-          onclick="App.navigateToView('propuestas')" 
-          data-nav-view="propuestas"
-          class="nav-tab-btn px-3 py-2 text-xs lg:text-sm font-semibold text-slate-700 hover:text-[#0a2540] hover:bg-slate-100 border-b-2 border-transparent transition-all flex items-center gap-1.5">
-          <i class="fa-solid fa-file-lines text-xs text-slate-400"></i>
-          <span>Propuestas Legislativas</span>
-        </button>
-        <button 
-          onclick="App.navigateToView('contacto')" 
-          data-nav-view="contacto"
-          class="nav-tab-btn px-3 py-2 text-xs lg:text-sm font-semibold text-slate-700 hover:text-[#0a2540] hover:bg-slate-100 border-b-2 border-transparent transition-all flex items-center gap-1.5">
-          <i class="fa-solid fa-landmark text-xs text-slate-400"></i>
-          <span>Contacto y Despacho</span>
         </button>
       </nav>
 
@@ -218,34 +211,30 @@
 
     <!-- Contenido Scrolleable del Menú (Blanco Puro) -->
     <div class="flex-1 overflow-y-auto overscroll-contain flex flex-col justify-between custom-scrollbar bg-white">
-      <!-- Links de Navegación Editorial -->
+      <!-- Links de Navegación Editorial - 3 Pestañas Principales -->
       <nav class="p-3 space-y-1 bg-white">
         <button 
-          onclick="App.navigateToView('map'); App.closeMobileDrawer();" 
+          onclick="App.navigateToView('inicio'); App.closeMobileDrawer();" 
+          data-nav-drawer-view="inicio"
           class="w-full text-left px-3 py-2.5 rounded-sm text-xs font-bold text-[#0a2540] bg-sky-50 border-l-4 border-[#0072bb] flex items-center gap-3">
-          <i class="fa-solid fa-map-location-dot text-[#0072bb] w-4 text-sm"></i>
-          <span>Inicio (Mapa y Reclamos)</span>
+          <i class="fa-solid fa-landmark text-[#0072bb] w-4 text-sm"></i>
+          <span>Inicio</span>
+        </button>
+
+        <button 
+          onclick="App.navigateToView('map'); App.closeMobileDrawer();" 
+          data-nav-drawer-view="map"
+          class="w-full text-left px-3 py-2.5 rounded-sm text-xs font-semibold text-slate-700 hover:bg-slate-50 border-l-4 border-transparent flex items-center gap-3">
+          <i class="fa-solid fa-map-location-dot text-slate-400 w-4 text-sm"></i>
+          <span>Mapa de Reclamos</span>
         </button>
 
         <button 
           onclick="App.navigateToView('conoce'); App.closeMobileDrawer();" 
-          class="w-full text-left px-3 py-2.5 rounded-sm text-xs font-semibold text-slate-700 hover:bg-slate-100 border-l-4 border-transparent flex items-center gap-3">
+          data-nav-drawer-view="conoce"
+          class="w-full text-left px-3 py-2.5 rounded-sm text-xs font-semibold text-slate-700 hover:bg-slate-50 border-l-4 border-transparent flex items-center gap-3">
           <i class="fa-solid fa-compass text-slate-400 w-4 text-sm"></i>
           <span>Conocé Guaymallén</span>
-        </button>
-
-        <button 
-          onclick="App.navigateToView('propuestas'); App.closeMobileDrawer();" 
-          class="w-full text-left px-3 py-2.5 rounded-sm text-xs font-semibold text-slate-700 hover:bg-slate-100 border-l-4 border-transparent flex items-center gap-3">
-          <i class="fa-solid fa-file-lines text-slate-400 w-4 text-sm"></i>
-          <span>Propuestas Legislativas</span>
-        </button>
-
-        <button 
-          onclick="App.navigateToView('contacto'); App.closeMobileDrawer();" 
-          class="w-full text-left px-3 py-2.5 rounded-sm text-xs font-semibold text-slate-700 hover:bg-slate-100 border-l-4 border-transparent flex items-center gap-3">
-          <i class="fa-solid fa-landmark text-slate-400 w-4 text-sm"></i>
-          <span>Contacto y Despacho</span>
         </button>
       </nav>
 
@@ -293,9 +282,602 @@
   </div>
 
   <!-- ========================================================
-       VISTA 1: INICIO (MAPA INTERACTIVO Y FEED DE RECLAMOS)
+       VISTA 1: INICIO (PORTAL INSTITUCIONAL SENADORA LUZ LLORENS)
        ======================================================== -->
-  <div id="view-map" class="app-view active flex-1 flex flex-col overflow-hidden relative">
+  <div id="view-inicio" class="app-view active w-full bg-white py-6 sm:py-10">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 sm:space-y-12">
+
+      <!-- ========================================================
+           A) CABECERA / CARTA DE PRESENTACIÓN DE LUZ LLORENS
+           ======================================================== -->
+      <section class="space-y-6">
+        <!-- Banner Fotográfico Territorial -->
+        <div class="w-full overflow-hidden rounded-sm border border-slate-300 shadow-xs relative bg-slate-100">
+          <img 
+            src="assets/img/luz_presentacion.png" 
+            alt="Senadora Provincial Luz Llorens recorriendo Guaymallén con vecinos" 
+            class="w-full h-48 sm:h-64 md:h-80 object-cover object-[center_35%]">
+          <div class="absolute inset-0 bg-gradient-to-t from-[#0a2540]/85 via-[#0a2540]/30 to-transparent flex items-end p-4 sm:p-6">
+            <span class="text-white text-xs sm:text-sm font-semibold tracking-wide flex items-center gap-2">
+              <i class="fa-solid fa-location-dot text-[#3898ec]"></i>
+              Cercanía y gestión territorial en los distritos de Guaymallén
+            </span>
+          </div>
+        </div>
+
+        <!-- Tarjeta Institucional de Presentación y Biografía -->
+        <div class="bg-white border border-slate-200 rounded-sm shadow-2xs overflow-hidden">
+          <!-- Cabecera Parlamentaria -->
+          <div class="bg-[#0a2540] border-l-4 border-[#c59b27] p-6 sm:p-8 text-white">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-2 h-2 rounded-none bg-[#c59b27] inline-block"></span>
+              <span class="uppercase tracking-[0.18em] text-[10px] sm:text-xs font-bold text-sky-200">
+                H. Cámara de Senadores de Mendoza • Legislatura Provincial
+              </span>
+            </div>
+            <h1 class="font-serif text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+              Tu Voz en el Senado de Mendoza
+            </h1>
+            <div class="flex items-center gap-2 mt-2">
+              <span class="font-sans font-bold text-xs sm:text-sm uppercase tracking-wider text-[#3898ec]">
+                Luz Llorens — Senadora Provincial
+              </span>
+              <span class="text-slate-400">•</span>
+              <span class="text-[11px] sm:text-xs text-slate-300">Segundo Distrito Electoral</span>
+            </div>
+          </div>
+
+          <!-- Carta Biográfica Oficial -->
+          <div class="p-6 sm:p-8 space-y-4 text-slate-700 font-sans text-sm sm:text-base leading-relaxed border-t border-slate-100">
+            <p>
+              Soy <strong>María Luz Llorens</strong>, tengo 36 años, vivo en Guaymallén, estoy casada con Gastón y soy mamá de Jazmín, Julia y Máximo, mi motor de cada día. Estoy a una materia de recibirme de abogada y actualmente ejerzo como Senadora Provincial en la Legislatura de Mendoza, cargo que asumí el 1.° de mayo.
+            </p>
+            <p>
+              En estos primeros cuatro meses presenté 25 proyectos propios y acompañé otros 13. Sigo recorriendo las calles para escuchar a los vecinos e institucionalizar sus reclamos. Mantengo una banca al servicio de la gente; por eso, en este espacio podés dejar tus propuestas. Estamos haciendo algo distinto.
+            </p>
+            
+            <div class="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-slate-500">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-signature text-[#0072bb] text-sm"></i>
+                <span class="font-serif font-bold text-slate-800">María Luz Llorens</span>
+                <span>— Senadora Provincial por Guaymallén</span>
+              </div>
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-sky-50 text-[#0072bb] font-bold rounded-none border border-sky-200">
+                <i class="fa-solid fa-landmark text-[10px]"></i>
+                <span>Período Constitucional 2024-2028</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           B) BARRA / GRILLA DE REDES SOCIALES Y CANALES OFICIALES
+           ======================================================== -->
+      <section class="space-y-4">
+        <div class="border-l-4 border-[#0072bb] pl-3 py-0.5">
+          <span class="uppercase tracking-[0.16em] text-[10px] font-bold text-[#0072bb] block">Canales Oficiales</span>
+          <h2 class="font-serif text-xl sm:text-2xl font-bold text-[#0a2540]">
+            Redes y Vías de Comunicación Directa
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <!-- WhatsApp Canal de Difusión -->
+          <a 
+            href="https://www.whatsapp.com/channel/0029Vb8NmuqLNSa0EXBYrZ1x" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="p-4 bg-white border border-slate-200 hover:border-emerald-500 rounded-sm shadow-2xs hover:shadow-xs transition-all flex items-center justify-between group">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-sm bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 transition-colors">
+                <i class="fa-brands fa-whatsapp text-emerald-600 text-lg group-hover:text-white transition-colors"></i>
+              </div>
+              <div>
+                <h4 class="font-serif font-bold text-xs sm:text-sm text-[#0a2540] group-hover:text-emerald-700 transition-colors">
+                  Canal de WhatsApp
+                </h4>
+                <p class="text-[11px] text-slate-500 leading-tight">Difusión oficial y alertas vecinales</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-emerald-600 transition-colors"></i>
+          </a>
+
+          <!-- Instagram -->
+          <a 
+            href="https://www.instagram.com/luzllorens" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="p-4 bg-white border border-slate-200 hover:border-[#0072bb] rounded-sm shadow-2xs hover:shadow-xs transition-all flex items-center justify-between group">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-sm bg-sky-50 border border-sky-200 flex items-center justify-center shrink-0 group-hover:bg-[#0072bb] transition-colors">
+                <i class="fa-brands fa-instagram text-[#0072bb] text-lg group-hover:text-white transition-colors"></i>
+              </div>
+              <div>
+                <h4 class="font-serif font-bold text-xs sm:text-sm text-[#0a2540] group-hover:text-[#0072bb] transition-colors">
+                  @luzllorens
+                </h4>
+                <p class="text-[11px] text-slate-500 leading-tight">Instagram • Recorridas y labor diaria</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-[#0072bb] transition-colors"></i>
+          </a>
+
+          <!-- TikTok -->
+          <a 
+            href="https://www.tiktok.com/@luz_llorens" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="p-4 bg-white border border-slate-200 hover:border-slate-800 rounded-sm shadow-2xs hover:shadow-xs transition-all flex items-center justify-between group">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-sm bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 group-hover:bg-slate-900 transition-colors">
+                <i class="fa-brands fa-tiktok text-slate-800 text-lg group-hover:text-white transition-colors"></i>
+              </div>
+              <div>
+                <h4 class="font-serif font-bold text-xs sm:text-sm text-[#0a2540] group-hover:text-slate-900 transition-colors">
+                  @luz_llorens
+                </h4>
+                <p class="text-[11px] text-slate-500 leading-tight">TikTok • Resúmenes y videos en territorio</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-slate-900 transition-colors"></i>
+          </a>
+
+          <!-- X (Twitter) -->
+          <a 
+            href="https://x.com/llorensluz" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="p-4 bg-white border border-slate-200 hover:border-slate-900 rounded-sm shadow-2xs hover:shadow-xs transition-all flex items-center justify-between group">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-sm bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 group-hover:bg-black transition-colors">
+                <i class="fa-brands fa-x-twitter text-slate-900 text-lg group-hover:text-white transition-colors"></i>
+              </div>
+              <div>
+                <h4 class="font-serif font-bold text-xs sm:text-sm text-[#0a2540] group-hover:text-black transition-colors">
+                  @llorensluz
+                </h4>
+                <p class="text-[11px] text-slate-500 leading-tight">X • Posicionamientos y debate político</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-black transition-colors"></i>
+          </a>
+
+          <!-- YouTube -->
+          <a 
+            href="https://www.youtube.com/@LuzLlorensGuaymallen" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="p-4 bg-white border border-slate-200 hover:border-rose-600 rounded-sm shadow-2xs hover:shadow-xs transition-all flex items-center justify-between group sm:col-span-2 lg:col-span-1">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-sm bg-rose-50 border border-rose-200 flex items-center justify-center shrink-0 group-hover:bg-rose-600 transition-colors">
+                <i class="fa-brands fa-youtube text-rose-600 text-lg group-hover:text-white transition-colors"></i>
+              </div>
+              <div>
+                <h4 class="font-serif font-bold text-xs sm:text-sm text-[#0a2540] group-hover:text-rose-700 transition-colors">
+                  Luz Llorens Guaymallén
+                </h4>
+                <p class="text-[11px] text-slate-500 leading-tight">YouTube • Sesiones, discursos y proyectos</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-rose-600 transition-colors"></i>
+          </a>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           C) BALANCE LEGISLATIVO (PROYECTOS DESDE EL 1RO DE MAYO)
+           ======================================================== -->
+      <section class="space-y-6">
+        <div class="border-l-4 border-[#c59b27] pl-3 py-0.5">
+          <span class="uppercase tracking-[0.16em] text-[10px] font-bold text-[#c59b27] block">Rendición de Cuentas</span>
+          <h2 class="font-serif text-xl sm:text-2xl font-bold text-[#0a2540]">
+            Balance Legislativo: Proyectos presentados desde el 1.° de Mayo
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-600 mt-1 italic">
+            "Nuestro trabajo en la Legislatura refleja las verdaderas prioridades de la comunidad."
+          </p>
+        </div>
+
+        <!-- Gráfico Donut Chart + Ejes Temáticos -->
+        <div class="bg-white border border-slate-200 rounded-sm shadow-2xs p-6 sm:p-8">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            <!-- Donut Chart SVG -->
+            <div class="lg:col-span-5 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r border-slate-200 pb-6 lg:pb-0 lg:pr-8">
+              <div class="relative w-48 h-48 sm:w-56 sm:h-56">
+                <svg viewBox="0 0 200 200" class="w-full h-full transform -rotate-90">
+                  <!-- Círculo base gris muy tenue -->
+                  <circle cx="100" cy="100" r="68" fill="none" stroke="#e2e8f0" stroke-width="22"></circle>
+                  
+                  <!-- Proyectos Propios (69.8% = 298.22 de 427.25) -->
+                  <circle 
+                    cx="100" cy="100" r="68" 
+                    fill="none" 
+                    stroke="#0a2540" 
+                    stroke-width="22" 
+                    stroke-dasharray="298.22 427.25" 
+                    stroke-linecap="butt"
+                    class="transition-all duration-1000">
+                  </circle>
+                  
+                  <!-- Proyectos Acompañados (30.2% = 129.03 de 427.25) -->
+                  <circle 
+                    cx="100" cy="100" r="68" 
+                    fill="none" 
+                    stroke="#0072bb" 
+                    stroke-width="22" 
+                    stroke-dasharray="129.03 427.25" 
+                    stroke-dashoffset="-298.22" 
+                    stroke-linecap="butt"
+                    class="transition-all duration-1000">
+                  </circle>
+                </svg>
+
+                <!-- Centro del Donut -->
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                  <span class="font-serif font-black text-3xl sm:text-4xl text-[#0a2540] leading-none">38</span>
+                  <span class="font-sans font-bold text-[10px] uppercase tracking-widest text-slate-500 mt-0.5">Proyectos</span>
+                  <span class="font-sans font-extrabold text-[8px] uppercase tracking-wider text-[#0072bb]">En 4 Meses</span>
+                </div>
+              </div>
+
+              <!-- Leyenda del Gráfico -->
+              <div class="mt-5 w-full space-y-2 max-w-xs">
+                <div class="flex items-center justify-between text-xs p-2 rounded-sm bg-slate-50 border border-slate-200">
+                  <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-none bg-[#0a2540] inline-block shrink-0"></span>
+                    <span class="font-semibold text-slate-800">Proyectos propios</span>
+                  </div>
+                  <span class="font-bold text-[#0a2540]">25 (69.8%)</span>
+                </div>
+                <div class="flex items-center justify-between text-xs p-2 rounded-sm bg-slate-50 border border-slate-200">
+                  <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-none bg-[#0072bb] inline-block shrink-0"></span>
+                    <span class="font-semibold text-slate-800">Proyectos acompañados</span>
+                  </div>
+                  <span class="font-bold text-[#0072bb]">13 (30.2%)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ejes Principales de Distribución -->
+            <div class="lg:col-span-7 space-y-3.5">
+              <h3 class="font-serif font-bold text-sm sm:text-base text-[#0a2540] uppercase tracking-wider mb-2 flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-[#0072bb]"></i>
+                <span>4 Ejes Principales de Gestión</span>
+              </h3>
+
+              <div class="space-y-2.5">
+                <!-- Eje 1 -->
+                <div class="p-3 rounded-sm border border-slate-200 bg-white border-l-4 border-l-[#0a2540] hover:bg-slate-50 transition-colors">
+                  <h4 class="font-serif font-bold text-xs sm:text-sm text-[#0a2540]">
+                    1. Servicios Públicos e Infraestructura
+                  </h4>
+                  <p class="text-[11px] sm:text-xs text-slate-600 mt-0.5 leading-relaxed">
+                    Respuestas urgentes ante la crisis cloacal (AYSAM), acceso a agua potable y reclamos en distritos de Guaymallén.
+                  </p>
+                </div>
+
+                <!-- Eje 2 -->
+                <div class="p-3 rounded-sm border border-slate-200 bg-white border-l-4 border-l-[#0072bb] hover:bg-slate-50 transition-colors">
+                  <h4 class="font-serif font-bold text-xs sm:text-sm text-[#0a2540]">
+                    2. Salud, Emergencia y Contingencias Climáticas
+                  </h4>
+                  <p class="text-[11px] sm:text-xs text-slate-600 mt-0.5 leading-relaxed">
+                    Informes sobre centros de salud (Guaymallén y San Martín), emergencia ambiental y planes ante El Niño y contingencias sísmicas en escuelas.
+                  </p>
+                </div>
+
+                <!-- Eje 3 -->
+                <div class="p-3 rounded-sm border border-slate-200 bg-white border-l-4 border-l-[#c59b27] hover:bg-slate-50 transition-colors">
+                  <h4 class="font-serif font-bold text-xs sm:text-sm text-[#0a2540]">
+                    3. Reconocimientos Culturales, Educativos y Sociales
+                  </h4>
+                  <p class="text-[11px] sm:text-xs text-slate-600 mt-0.5 leading-relaxed">
+                    Puesta en valor de la cultura e instituciones locales (bibliotecas populares, escuelas, centros de jubilados y entidades deportivas).
+                  </p>
+                </div>
+
+                <!-- Eje 4 -->
+                <div class="p-3 rounded-sm border border-slate-200 bg-white border-l-4 border-l-[#3898ec] hover:bg-slate-50 transition-colors">
+                  <h4 class="font-serif font-bold text-xs sm:text-sm text-[#0a2540]">
+                    4. Transporte y Seguridad
+                  </h4>
+                  <p class="text-[11px] sm:text-xs text-slate-600 mt-0.5 leading-relaxed">
+                    Beneficios y gratuidad en SUBE y Metrotranvía para el personal policial, y contención al pequeño transporte de pasajeros.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Sub-bloque: Estado de los proyectos presentados -->
+          <div class="mt-8 pt-6 border-t border-slate-200 space-y-4">
+            <h4 class="font-serif font-bold text-xs sm:text-sm text-[#0a2540] uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-chart-simple text-[#0072bb]"></i>
+              <span>Estado de los proyectos presentados</span>
+            </h4>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <!-- KPI 1 -->
+              <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm text-center">
+                <span class="block font-serif font-black text-2xl sm:text-3xl text-emerald-800">68.2%</span>
+                <span class="block text-[11px] font-bold text-slate-700 uppercase tracking-wide mt-1">Proyectos Aprobados</span>
+                <span class="block text-[9px] text-slate-500 mt-0.5">Sancionados en el Senado</span>
+              </div>
+
+              <!-- KPI 2 -->
+              <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm text-center">
+                <span class="block font-serif font-black text-2xl sm:text-3xl text-[#0072bb]">18.2%</span>
+                <span class="block text-[11px] font-bold text-slate-700 uppercase tracking-wide mt-1">En Comisión</span>
+                <span class="block text-[9px] text-slate-500 mt-0.5">En debate parlamentario</span>
+              </div>
+
+              <!-- KPI 3 -->
+              <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm text-center">
+                <span class="block font-serif font-black text-2xl sm:text-3xl text-rose-800">9.1%</span>
+                <span class="block text-[11px] font-bold text-slate-700 uppercase tracking-wide mt-1">Rechazados</span>
+                <span class="block text-[9px] text-slate-500 mt-0.5">Sin aval del oficialismo</span>
+              </div>
+
+              <!-- KPI 4 -->
+              <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm text-center">
+                <span class="block font-serif font-black text-2xl sm:text-3xl text-[#0a2540]">4.5%</span>
+                <span class="block text-[11px] font-bold text-slate-700 uppercase tracking-wide mt-1">Aprobados a Diputados</span>
+                <span class="block text-[9px] text-slate-500 mt-0.5">Con media sanción</span>
+              </div>
+            </div>
+
+            <!-- Recuadro informativo institucional -->
+            <div class="bg-sky-50 border-l-4 border-[#0072bb] p-4 rounded-sm flex items-start gap-3 shadow-2xs mt-3">
+              <i class="fa-solid fa-circle-info text-[#0072bb] text-base shrink-0 mt-0.5"></i>
+              <p class="text-xs sm:text-sm text-slate-800 leading-relaxed font-sans">
+                <strong class="font-bold text-[#0a2540]">Proyectos rechazados:</strong> El oficialismo provincial liderado por Alfredo Cornejo, no acompaña la mayoría de los pedidos de informes en la Legislatura Provincial.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           D) BLOQUE DE PROYECTO DESTACADO (CONFIGURABLE / FÁCIL ACTUALIZACIÓN)
+           ======================================================== -->
+      <section id="seccion-proyecto-destacado" class="space-y-4">
+        <div class="border-l-4 border-[#0a2540] pl-3 py-0.5">
+          <span class="uppercase tracking-[0.16em] text-[10px] font-bold text-[#0a2540] block">Iniciativa Legislativa</span>
+          <h2 class="font-serif text-xl sm:text-2xl font-bold text-[#0a2540]">
+            Proyecto Destacado
+          </h2>
+        </div>
+
+        <div class="bg-white border-2 border-slate-300 rounded-sm shadow-xs p-6 sm:p-8 relative">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-[#0a2540] text-[#c59b27] text-[11px] font-bold uppercase tracking-wider rounded-sm">
+              <i class="fa-solid fa-star text-[10px]"></i>
+              <span>Proyecto en Tratamiento</span>
+            </span>
+            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+              Expediente Legislativo • H. Senado de Mendoza
+            </span>
+          </div>
+
+          <div class="space-y-3 max-w-3xl">
+            <h3 class="font-serif text-xl sm:text-2xl font-bold text-[#0a2540] leading-snug">
+              Boleto Estudiantil Gratuito y Universal en Toda la Provincia
+            </h3>
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
+              Iniciativa para garantizar el acceso al transporte público gratuito para todos los estudiantes de los niveles inicial, primario, secundario, terciario y universitario en Mendoza. Una política pública indispensable para defender el derecho a la educación, aliviar la economía de las familias trabajadoras y evitar la deserción escolar frente a los constantes aumentos de tarifas.
+            </p>
+          </div>
+
+          <div class="mt-6 pt-5 border-t border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-2 text-xs text-slate-600">
+              <i class="fa-solid fa-file-lines text-[#0072bb]"></i>
+              <span>Autoría formal: <strong class="text-slate-800">Senadora Luz Llorens</strong></span>
+            </div>
+
+            <a 
+              href="https://drive.google.com/file/d/1JldnrNjZbZiHVOG7jDWkATWJ5ZHsdbot/view" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-sm text-xs font-bold uppercase tracking-wider bg-[#0a2540] hover:bg-[#0072bb] text-white shadow-xs transition-all border-l-4 border-[#c59b27]">
+              <i class="fa-solid fa-file-pdf text-[#c59b27] text-sm"></i>
+              <span>Ver Proyecto Completo (Documento Oficial)</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[10px] ml-1"></i>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           E) FORMULARIO INTEGRADO DE PROPUESTAS CIUDADANAS
+           ======================================================== -->
+      <section id="seccion-propuestas-ciudadanas" class="space-y-4">
+        <div class="border-l-4 border-[#0072bb] pl-3 py-0.5">
+          <span class="uppercase tracking-[0.16em] text-[10px] font-bold text-[#0072bb] block">Participación Democrática</span>
+          <h2 class="font-serif text-xl sm:text-2xl font-bold text-[#0a2540]">
+            Tu voz en el Senado de Mendoza
+          </h2>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-sm shadow-2xs p-6 sm:p-8">
+          <div class="border-b border-slate-200 pb-4 mb-6">
+            <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-sans">
+              Soy <strong>Luz Llorens</strong>, Senadora Provincial. Este espacio es para vos: quiero conocer tus ideas, inquietudes y proyectos para tu barrio o departamento. Llevemos juntos la voz del territorio al Senado Provincial. ¡Sumate!
+            </p>
+          </div>
+
+          <form id="citizen-proposal-form" class="space-y-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Correo electrónico -->
+              <div>
+                <label for="propuesta-email" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                  Correo electrónico <span class="text-rose-600">*</span>
+                </label>
+                <input 
+                  type="email" 
+                  id="propuesta-email" 
+                  required 
+                  placeholder="ejemplo@correo.com" 
+                  class="w-full bg-slate-50 border border-slate-300 rounded-sm px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:ring-1 focus:ring-[#0072bb] focus:border-[#0072bb] focus:outline-none transition-all">
+              </div>
+
+              <!-- Nombre y Apellido -->
+              <div>
+                <label for="propuesta-nombre" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                  Nombre y Apellido <span class="text-rose-600">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  id="propuesta-nombre" 
+                  required 
+                  placeholder="Ej: María Rodríguez" 
+                  class="w-full bg-slate-50 border border-slate-300 rounded-sm px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:ring-1 focus:ring-[#0072bb] focus:border-[#0072bb] focus:outline-none transition-all">
+              </div>
+
+              <!-- Teléfono de contacto -->
+              <div>
+                <label for="propuesta-telefono" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                  Teléfono de contacto <span class="text-rose-600">*</span>
+                </label>
+                <input 
+                  type="tel" 
+                  id="propuesta-telefono" 
+                  required 
+                  placeholder="Ej: 261 555-1234" 
+                  class="w-full bg-slate-50 border border-slate-300 rounded-sm px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:ring-1 focus:ring-[#0072bb] focus:border-[#0072bb] focus:outline-none transition-all">
+                <span class="text-[10px] text-slate-500 mt-1 block">
+                  Fundamental para mantener contacto directo desde el equipo legislativo.
+                </span>
+              </div>
+
+              <!-- Departamento de residencia (18 departamentos de Mendoza A-Z) -->
+              <div>
+                <label for="propuesta-departamento" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                  Departamento de residencia <span class="text-rose-600">*</span>
+                </label>
+                <div class="relative">
+                  <select 
+                    id="propuesta-departamento" 
+                    required 
+                    class="w-full bg-slate-50 border border-slate-300 rounded-sm px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:ring-1 focus:ring-[#0072bb] focus:border-[#0072bb] focus:outline-none appearance-none cursor-pointer">
+                    <option value="" disabled selected>Seleccioná tu departamento...</option>
+                    <option value="Capital">Capital</option>
+                    <option value="General Alvear">General Alvear</option>
+                    <option value="Godoy Cruz">Godoy Cruz</option>
+                    <option value="Guaymallén">Guaymallén</option>
+                    <option value="Junín">Junín</option>
+                    <option value="La Paz">La Paz</option>
+                    <option value="Las Heras">Las Heras</option>
+                    <option value="Lavalle">Lavalle</option>
+                    <option value="Luján de Cuyo">Luján de Cuyo</option>
+                    <option value="Maipú">Maipú</option>
+                    <option value="Malargüe">Malargüe</option>
+                    <option value="Rivadavia">Rivadavia</option>
+                    <option value="San Carlos">San Carlos</option>
+                    <option value="San Martín">San Martín</option>
+                    <option value="San Rafael">San Rafael</option>
+                    <option value="Santa Rosa">Santa Rosa</option>
+                    <option value="Tunuyán">Tunuyán</option>
+                    <option value="Tupungato">Tupungato</option>
+                  </select>
+                  <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+                    <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Propuesta -->
+            <div>
+              <label for="propuesta-texto" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                ¿Qué propuesta querés que trabajemos desde la Legislatura? <span class="text-rose-600">*</span>
+              </label>
+              <textarea 
+                id="propuesta-texto" 
+                rows="5" 
+                required 
+                placeholder="Detallá tu iniciativa, necesidad comunitaria o propuesta de ley para que el equipo técnico pueda evaluarla e impulsarla formalmente..." 
+                class="w-full bg-slate-50 border border-slate-300 rounded-sm p-3.5 text-xs text-slate-800 focus:bg-white focus:ring-1 focus:ring-[#0072bb] focus:border-[#0072bb] focus:outline-none transition-all"></textarea>
+            </div>
+
+            <!-- Archivo adjunto opcional -->
+            <div class="bg-slate-50 p-4 rounded-sm border border-slate-200">
+              <label for="propuesta-archivo" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                Si trabajaste en un documento, podés subirlo acá (Opcional)
+              </label>
+              <p class="text-[11px] text-slate-500 mb-2">
+                Sube 1 archivo compatible. El tamaño máximo es de 10 MB.
+              </p>
+              <input 
+                type="file" 
+                id="propuesta-archivo" 
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" 
+                class="block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-xs file:font-bold file:uppercase file:tracking-wider file:bg-[#0a2540] file:text-white hover:file:bg-[#0072bb] file:cursor-pointer">
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+              <button 
+                type="submit" 
+                class="w-full sm:w-auto px-6 py-3 rounded-sm text-xs font-bold uppercase tracking-wider bg-[#0a2540] hover:bg-[#0072bb] text-white transition-all shadow-xs border-l-4 border-[#c59b27] flex items-center justify-center gap-2">
+                <i class="fa-solid fa-paper-plane text-xs text-[#c59b27]"></i>
+                <span>Enviar Propuesta al Senado</span>
+              </button>
+
+              <button 
+                type="reset" 
+                class="w-full sm:w-auto px-4 py-2.5 rounded-sm text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all border border-slate-300">
+                Borrar formulario
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           BANNER DE ACCESO DIRECTO AL MAPA DE RECLAMOS VECINALES
+           ======================================================== -->
+      <section class="bg-[#0a2540] border-l-4 border-[#c59b27] rounded-sm p-6 sm:p-8 text-white shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="space-y-2 max-w-xl text-center md:text-left">
+          <span class="uppercase tracking-[0.16em] text-[10px] font-bold text-sky-300">Participación Territorial Activa</span>
+          <h3 class="font-serif text-lg sm:text-xl font-bold text-white">
+            ¿Tenés un reclamo específico en tu barrio de Guaymallén?
+          </h3>
+          <p class="text-xs text-slate-300 font-sans leading-relaxed">
+            Explorá el Mapa Interactivo de Reclamos Vecinales, conocé los problemas reportados en cada distrito y sumá tu reporte con geolocalización.
+          </p>
+        </div>
+
+        <button 
+          onclick="App.navigateToView('map')" 
+          class="shrink-0 px-6 py-3 rounded-sm text-xs font-bold uppercase tracking-wider bg-white text-[#0a2540] hover:bg-slate-100 shadow-xs transition-all flex items-center gap-2">
+          <i class="fa-solid fa-map-location-dot text-[#0072bb]"></i>
+          <span>Ir al Mapa de Reclamos</span>
+        </button>
+      </section>
+
+      <!-- Footer Institucional de Inicio -->
+      <footer class="pt-8 border-t border-slate-200 text-center text-xs text-slate-500">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-[#0a2540]">Pensando Guaymallén</span>
+            <span>•</span>
+            <span class="font-semibold text-[#0072bb]">Senadora Provincial Luz Llorens</span>
+          </div>
+          <p>© 2026 Plataforma Legislativa y de Participación Ciudadana • H. Senado de Mendoza.</p>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+
+  <!-- ========================================================
+       VISTA 2: MAPA DE RECLAMOS VECINALES (LEAFLET INTERACTIVO)
+       ======================================================== -->
+  <div id="view-map" class="app-view flex-1 flex flex-col overflow-hidden relative" style="display: none;">
 
     <!-- Mobile View Switcher (Barra bajo el Header) -->
     <div id="mobile-view-switcher" class="md:hidden relative bg-white border-b border-slate-200 py-1.5 px-3 shrink-0 z-20 shadow-2xs">
@@ -459,9 +1041,9 @@
             <!-- Acciones en Desktop -->
             <div class="hidden md:flex items-center gap-2 pt-0.5">
               <button 
-                onclick="App.navigateToView('propuestas')" 
+                onclick="App.navigateToView('inicio')" 
                 class="flex-1 py-1.5 px-2 rounded-sm text-[11px] font-bold uppercase tracking-wider bg-[#0a2540] hover:bg-[#0072bb] text-white transition-all text-center">
-                Propuestas
+                Sobre Luz
               </button>
               <a 
                 href="https://wa.me/5492615551234?text=Hola%20Senadora%20Luz%20Llorens,%20te%20escribo%20desde%20la%20plataforma%20Pensando%20Guaymall%C3%A9n"
@@ -660,9 +1242,9 @@
   </div>
 
   <!-- ========================================================
-       VISTA 2: CONOCÉ GUAYMALLÉN (PÁGINA COMPLETA)
+       VISTA 3: CONOCÉ GUAYMALLÉN (INFORMACIÓN Y DISTRITOS)
        ======================================================== -->
-  <div id="view-conoce" class="app-view w-full bg-white py-8">
+  <div id="view-conoce" class="app-view w-full bg-white py-8" style="display: none;">
     <div class="max-w-6xl mx-auto w-full p-4 sm:p-8 space-y-8">
       
       <!-- Cabecera de la sección -->
@@ -764,267 +1346,7 @@
     </div>
   </div>
 
-  <!-- ========================================================
-       VISTA 3: PROPUESTAS LEGISLATIVAS (PÁGINA COMPLETA)
-       ======================================================== -->
-  <div id="view-propuestas" class="app-view w-full bg-white py-8">
-    <div class="max-w-5xl mx-auto w-full p-4 sm:p-8 space-y-8">
-      
-      <!-- Header Propuestas -->
-      <div class="bg-[#0a2540] border-l-4 border-[#c59b27] rounded-sm p-6 sm:p-10 text-white shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
-        <div class="space-y-3 max-w-xl">
-          <div class="flex items-center gap-2">
-            <span class="w-1.5 h-1.5 bg-[#c59b27]"></span>
-            <span class="uppercase tracking-[0.15em] text-xs font-semibold text-slate-300">
-              Gestión Legislativa • Senado de Mendoza
-            </span>
-          </div>
-          <h1 class="font-serif text-2xl sm:text-4xl font-bold tracking-tight leading-tight text-white">
-            Nuestras Propuestas para Transformar Guaymallén
-          </h1>
-          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
-            Ejes estratégicos impulsados desde la Cámara de Senadores de Mendoza para mejorar la calidad de vida y dar respuesta a las demandas vecinales en cada uno de los 21 distritos.
-          </p>
-        </div>
-
-        <button 
-          onclick="App.navigateToView('map')" 
-          class="shrink-0 px-5 py-3 rounded-sm bg-white text-[#0a2540] hover:bg-slate-100 font-bold text-xs sm:text-sm tracking-wider uppercase transition-all flex items-center gap-2 shadow-xs border border-slate-200">
-          <i class="fa-solid fa-map-location-dot text-[#0072bb]"></i>
-          <span>Volver al Mapa</span>
-        </button>
-      </div>
-
-      <!-- 4 Ejes Legislativos -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        
-        <!-- Eje 1 -->
-        <div class="bg-white rounded-sm p-6 border border-slate-200 border-t-4 border-t-[#0a2540] shadow-2xs space-y-3 hover:border-slate-300 transition-all">
-          <div class="flex items-center justify-between">
-            <span class="font-serif font-black text-xs text-[#0072bb] tracking-widest uppercase">EJE 01</span>
-            <i class="fa-solid fa-lightbulb text-base text-[#0a2540]"></i>
-          </div>
-          <div>
-            <p class="uppercase tracking-[0.15em] text-[10px] font-bold text-slate-500 mb-1">Infraestructura y Seguridad</p>
-            <h3 class="font-serif font-bold text-base text-[#0a2540]">Red de Alumbrado LED y Corredores Seguros</h3>
-          </div>
-          <p class="text-xs text-slate-600 leading-relaxed">
-            Priorización de luminarias en paradas de colectivos, escuelas y corredores comerciales para prevención del delito.
-          </p>
-          <div class="pt-2 border-t border-slate-100 text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-            <i class="fa-solid fa-circle-check text-xs text-[#0072bb]"></i>
-            <span>Proyecto de Ley en tratamiento parlamentario</span>
-          </div>
-        </div>
-
-        <!-- Eje 2 -->
-        <div class="bg-white rounded-sm p-6 border border-slate-200 border-t-4 border-t-[#0a2540] shadow-2xs space-y-3 hover:border-slate-300 transition-all">
-          <div class="flex items-center justify-between">
-            <span class="font-serif font-black text-xs text-[#0072bb] tracking-widest uppercase">EJE 02</span>
-            <i class="fa-solid fa-road text-base text-[#0a2540]"></i>
-          </div>
-          <div>
-            <p class="uppercase tracking-[0.15em] text-[10px] font-bold text-slate-500 mb-1">Vialidad y Calles</p>
-            <h3 class="font-serif font-bold text-base text-[#0a2540]">Fondo de Reparación de Arterias Troncales</h3>
-          </div>
-          <p class="text-xs text-slate-600 leading-relaxed">
-            Exigencia de reencarpetado urgente y mantenimiento de accesos clave que conectan los distritos rurales y urbanos.
-          </p>
-          <div class="pt-2 border-t border-slate-100 text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-            <i class="fa-solid fa-circle-check text-xs text-[#0072bb]"></i>
-            <span>Pedidos de informe formales a Vialidad</span>
-          </div>
-        </div>
-
-        <!-- Eje 3 -->
-        <div class="bg-white rounded-sm p-6 border border-slate-200 border-t-4 border-t-[#0a2540] shadow-2xs space-y-3 hover:border-slate-300 transition-all">
-          <div class="flex items-center justify-between">
-            <span class="font-serif font-black text-xs text-[#0072bb] tracking-widest uppercase">EJE 03</span>
-            <i class="fa-solid fa-recycle text-base text-[#0a2540]"></i>
-          </div>
-          <div>
-            <p class="uppercase tracking-[0.15em] text-[10px] font-bold text-slate-500 mb-1">Medio Ambiente Urbano</p>
-            <h3 class="font-serif font-bold text-base text-[#0a2540]">Puntos Verdes y Erradicación de Basurales</h3>
-          </div>
-          <p class="text-xs text-slate-600 leading-relaxed">
-            Monitoreo activo para saneamiento de cauces, acequias y predios abandonados junto con reciclado en origen.
-          </p>
-          <div class="pt-2 border-t border-slate-100 text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-            <i class="fa-solid fa-circle-check text-xs text-[#0072bb]"></i>
-            <span>Recuperación de espacios verdes y forestación</span>
-          </div>
-        </div>
-
-        <!-- Eje 4 -->
-        <div class="bg-white rounded-sm p-6 border border-slate-200 border-t-4 border-t-[#0a2540] shadow-2xs space-y-3 hover:border-slate-300 transition-all">
-          <div class="flex items-center justify-between">
-            <span class="font-serif font-black text-xs text-[#0072bb] tracking-widest uppercase">EJE 04</span>
-            <i class="fa-solid fa-users-gear text-base text-[#0a2540]"></i>
-          </div>
-          <div>
-            <p class="uppercase tracking-[0.15em] text-[10px] font-bold text-slate-500 mb-1">Cercanía y Participación</p>
-            <h3 class="font-serif font-bold text-base text-[#0a2540]">Mesa de Enlace Legislativa con Vecinos</h3>
-          </div>
-          <p class="text-xs text-slate-600 leading-relaxed">
-            Audiencias públicas descentralizadas en uniones vecinales y clubes de barrio para legislar con base real.
-          </p>
-          <div class="pt-2 border-t border-slate-100 text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-            <i class="fa-solid fa-circle-check text-xs text-[#0072bb]"></i>
-            <span>La banca legislativa al servicio de cada barrio</span>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Formulario para proponer una idea -->
-      <div class="bg-white rounded-sm p-6 sm:p-8 border border-slate-200 shadow-2xs space-y-4">
-        <div class="border-b border-slate-200 pb-3">
-          <h3 class="font-serif text-lg font-bold text-[#0a2540]">
-            ¿Tenés una propuesta o iniciativa para tu distrito?
-          </h3>
-          <p class="text-xs text-slate-500 mt-1">
-            Enviasela directamente al equipo técnico y legislativo de la Senadora Luz Llorens
-          </p>
-        </div>
-
-        <form onsubmit="event.preventDefault(); App.showToast('¡Gracias! Tu propuesta fue enviada al equipo legislativo de Luz Llorens.', 'success'); this.reset();" class="space-y-4">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Tu Nombre y Apellido</label>
-              <input type="text" required placeholder="Ej: Juan Pérez" class="w-full bg-slate-50 border border-slate-300 rounded-sm px-3.5 py-2.5 text-xs text-slate-800 focus:ring-1 focus:ring-[#0072bb] focus:border-[#0072bb] focus:outline-none">
-            </div>
-            <div>
-              <label for="propuesta-district-select" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Distrito de Guaymallén *</label>
-              <select id="propuesta-district-select" name="district" required class="w-full bg-slate-50 border border-slate-300 rounded-sm px-3.5 py-2.5 text-xs text-slate-800 focus:ring-1 focus:ring-[#0072bb] focus:border-[#0072bb] focus:outline-none cursor-pointer">
-                <option value="" disabled selected>Seleccioná tu distrito...</option>
-              </select>
-            </div>
-          </div>
-          <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Tu Propuesta o Proyecto</label>
-            <textarea rows="4" required placeholder="Contanos tu proyecto, idea o necesidad barrial para que podamos redactar un proyecto formal..." class="w-full bg-slate-50 border border-slate-300 rounded-sm p-3.5 text-xs text-slate-800 focus:ring-1 focus:ring-[#0072bb] focus:border-[#0072bb] focus:outline-none"></textarea>
-          </div>
-          <button type="submit" class="px-6 py-2.5 rounded-sm text-xs font-bold tracking-wider uppercase bg-[#0a2540] hover:bg-[#0072bb] text-white transition-all shadow-xs border-l-2 border-[#c59b27]">
-            Enviar Propuesta a la Legislatura
-          </button>
-        </form>
-      </div>
-
-      <!-- Footer Institucional de Propuestas -->
-      <footer class="pt-8 border-t border-slate-200 text-center text-xs text-slate-500">
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div class="flex items-center gap-2">
-            <span class="font-bold text-[#0a2540]">Pensando Guaymallén</span>
-            <span>•</span>
-            <span class="font-semibold text-[#0072bb]">Senadora Provincial Luz Llorens</span>
-          </div>
-          <p>© 2026 Plataforma de Participación Ciudadana y Gestión Legislativa.</p>
-        </div>
-      </footer>
-
-    </div>
-  </div>
-
-  <!-- ========================================================
-       VISTA 4: CONTACTO (PÁGINA COMPLETA)
-       ======================================================== -->
-  <div id="view-contacto" class="app-view w-full bg-white py-8">
-    <div class="max-w-5xl mx-auto w-full p-4 sm:p-8 space-y-8">
-      
-      <div class="bg-[#0a2540] border-l-4 border-[#c59b27] rounded-sm p-6 sm:p-10 text-white shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
-        <div class="space-y-3 max-w-xl">
-          <div class="flex items-center gap-2">
-            <span class="w-1.5 h-1.5 bg-[#c59b27]"></span>
-            <span class="uppercase tracking-[0.15em] text-xs font-semibold text-slate-300">
-              Canales de Comunicación Institucional
-            </span>
-          </div>
-          <h1 class="font-serif text-2xl sm:text-4xl font-bold tracking-tight leading-tight text-white">
-            Contacto con la Senadora Luz Llorens
-          </h1>
-          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
-            Estamos a disposición de los vecinos de Guaymallén para canalizar reclamos, propuestas legislativas y proyectos comunitarios en la Legislatura de Mendoza.
-          </p>
-        </div>
-
-        <button 
-          onclick="App.navigateToView('map')" 
-          class="shrink-0 px-5 py-3 rounded-sm bg-white text-[#0a2540] hover:bg-slate-100 font-bold text-xs sm:text-sm tracking-wider uppercase transition-all flex items-center gap-2 shadow-xs border border-slate-200">
-          <i class="fa-solid fa-map-location-dot text-[#0072bb]"></i>
-          <span>Volver al Mapa</span>
-        </button>
-      </div>
-
-      <!-- Botones Principales de Contacto: WhatsApp y Correo -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        
-        <!-- WhatsApp Oficial -->
-        <a 
-          href="https://wa.me/5492615551234?text=Hola%20Senadora%20Luz%20Llorens,%20te%20escribo%20desde%20Pensando%20Guaymall%C3%A9n"
-          target="_blank"
-          class="bg-white p-6 sm:p-8 rounded-sm border border-slate-200 hover:border-slate-300 shadow-2xs transition-all flex flex-col items-center justify-between text-center gap-5 group">
-          <div class="space-y-3 flex flex-col items-center w-full min-w-0">
-            <div class="w-14 h-14 rounded-sm bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center text-2xl transition-transform shadow-xs">
-              <i class="fa-brands fa-whatsapp"></i>
-            </div>
-            <div>
-              <h3 class="font-serif font-bold text-base sm:text-lg text-[#0a2540]">WhatsApp de Gestión</h3>
-              <p class="text-xs sm:text-sm font-semibold text-slate-600 mt-0.5">+54 9 261 555-1234</p>
-              <p class="text-[11px] text-slate-400 mt-1">Atención directa para reclamos barriales</p>
-            </div>
-          </div>
-          <div class="w-full pt-1">
-            <span class="w-full py-2.5 sm:py-3 px-4 rounded-sm bg-[#0a2540] hover:bg-[#0072bb] text-white font-bold text-xs tracking-wider uppercase shadow-xs flex items-center justify-center gap-2 transition-all border-l-2 border-[#c59b27]">
-              <i class="fa-brands fa-whatsapp text-sm"></i>
-              <span>Iniciar Chat de WhatsApp</span>
-              <i class="fa-solid fa-arrow-right text-xs"></i>
-            </span>
-          </div>
-        </a>
-
-        <!-- Correo Electrónico Oficial -->
-        <a 
-          href="mailto:luz.llorens@legislaturamendoza.gov.ar"
-          class="bg-white p-6 sm:p-8 rounded-sm border border-slate-200 hover:border-slate-300 shadow-2xs transition-all flex flex-col items-center justify-between text-center gap-5 group">
-          <div class="space-y-3 flex flex-col items-center w-full min-w-0">
-            <div class="w-14 h-14 rounded-sm bg-slate-50 text-[#0072bb] border border-slate-200 flex items-center justify-center text-2xl transition-transform shadow-xs">
-              <i class="fa-regular fa-envelope"></i>
-            </div>
-            <div class="w-full min-w-0">
-              <h3 class="font-serif font-bold text-base sm:text-lg text-[#0a2540]">Correo Institucional</h3>
-              <p class="text-xs sm:text-sm font-semibold text-slate-700 mt-0.5 break-all sm:break-normal py-0.5 font-mono">
-                luz.llorens@legislaturamendoza.gov.ar
-              </p>
-              <p class="text-[11px] text-slate-400 mt-1">Canal formal para proyectos e informes</p>
-            </div>
-          </div>
-          <div class="w-full pt-1">
-            <span class="w-full py-2.5 sm:py-3 px-4 rounded-sm bg-[#0a2540] hover:bg-[#0072bb] text-white font-bold text-xs tracking-wider uppercase shadow-xs flex items-center justify-center gap-2 transition-all border-l-2 border-[#c59b27]">
-              <i class="fa-regular fa-envelope text-sm"></i>
-              <span>Enviar Correo Institucional</span>
-              <i class="fa-solid fa-arrow-right text-xs"></i>
-            </span>
-          </div>
-        </a>
-
-      </div>
-
-      <!-- Despacho Legislativo en el Senado -->
-      <div class="bg-white p-6 sm:p-7 rounded-sm border border-slate-200 border-l-4 border-l-[#0a2540] shadow-2xs flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
-        <div class="w-14 h-14 rounded-sm bg-slate-100 text-[#0a2540] flex items-center justify-center text-2xl shrink-0 border border-slate-200">
-          <i class="fa-solid fa-landmark"></i>
-        </div>
-        <div class="flex-1 space-y-1">
-          <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-            <h3 class="font-serif font-bold text-sm sm:text-base text-[#0a2540]">Despacho en el Senado Provincial</h3>
-            <span class="inline-block px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-[#005596] border border-slate-200 w-fit mx-auto sm:mx-0">Atención Vecinal</span>
-          </div>
-          <p class="text-xs sm:text-sm text-slate-600">Peatonal Sarmiento y Patricias Mendocinas, Ciudad de Mendoza • Honorable Cámara de Senadores</p>
-        </div>
-      </div>
-
-    </div>
-  </div>
+  <!-- Nota: Los contenidos de Propuestas Legislativas y Contacto Institucional se integraron formalmente en la Vista de Inicio (Home) -->
 
   <!-- ========================================================
        MODAL: REPORTAR PROBLEMA EN MI BARRIO (100% Mobile Fullscreen)

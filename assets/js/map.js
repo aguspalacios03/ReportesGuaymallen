@@ -37,12 +37,16 @@ class GuaymallenMap {
     const initialZoom = 12;
 
     try {
+      // Renderer vectorial con padding ampliado para evitar recortes al arrastrar en mobile
+      this.vectorRenderer = L.svg({ padding: 1.5 });
+
       // Inicializar mapa de Leaflet
       this.map = L.map(this.containerId, {
         center: guaymallenCenter,
         zoom: initialZoom,
         minZoom: 11,
         maxZoom: 18,
+        renderer: this.vectorRenderer,
         zoomControl: false // Ubicado en la esquina inferior derecha
       });
 
@@ -126,6 +130,7 @@ class GuaymallenMap {
         opacity: 0.85,
         fillColor: distColor,
         fillOpacity: 0.28,
+        renderer: this.vectorRenderer,
         className: `district-poly district-${dist.id}`
       });
 

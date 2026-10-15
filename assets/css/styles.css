@@ -91,6 +91,7 @@ header {
   height: auto !important;
   overflow: hidden !important;
 }
+#view-inicio.active,
 #view-conoce.active,
 #view-propuestas.active,
 #view-contacto.active {
