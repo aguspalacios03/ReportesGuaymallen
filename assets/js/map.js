@@ -276,8 +276,8 @@ class GuaymallenMap {
     // Si el puntero sale del contenedor (p. ej. arrastre hacia el header) se descarta
     container.addEventListener('lostpointercapture', (e) => this._activePointers.delete(e.pointerId), opts);
 
-    // Estado de navegación manual reportado por Leaflet
-    this.map.on('movestart dragstart', () => {
+    // Estado de navegación manual reportado por Leaflet (arrastres deliberados del usuario)
+    this.map.on('dragstart', () => {
       this._userNavigating = true;
       cancelGesture();
       if (this._cameraTransitioning) {
@@ -287,18 +287,21 @@ class GuaymallenMap {
       this.closeAllTooltips();
     });
     this.map.on('zoomstart', () => {
-      this._userNavigating = true;
       cancelGesture();
       this.resetDistrictHoverStyles();
       this.closeAllTooltips();
     });
-    this.map.on('move', () => {
+    this.map.on('drag', () => {
       this._lastMoveAt = Date.now();
       cancelGesture();
     });
-    this.map.on('moveend zoomend dragend', () => {
+    this.map.on('dragend', () => {
       this._userNavigating = false;
       this._lastUserNavEnd = Date.now();
+      this.resetDistrictHoverStyles();
+      this.closeAllTooltips();
+    });
+    this.map.on('moveend zoomend', () => {
       this.resetDistrictHoverStyles();
       this.closeAllTooltips();
     });
@@ -342,10 +345,18 @@ class GuaymallenMap {
       if (foundDist) distId = foundDist.id;
     }
 
-    // ÚNICAMENTE si el usuario tocó deliberadamente sobre un distrito, alternar su selección
     if (distId) {
+      // Tap sobre un distrito: alternar su selección (si ya estaba seleccionado, volver a 'all')
       const isAlreadySelected = (window.App.selectedDistrict === distId) || (this.activeDistrictId === distId);
       window.App.selectDistrict(isAlreadySelected ? 'all' : distId);
+    } else {
+      // Tap deliberado fuera de cualquier distrito (área vacía / mapa general):
+      // Si hay un distrito activo, deseleccionar y volver a la vista general de Guaymallén
+      const hasActiveSelection = (window.App.selectedDistrict && window.App.selectedDistrict !== 'all') ||
+                                 (this.activeDistrictId && this.activeDistrictId !== 'all');
+      if (hasActiveSelection) {
+        window.App.selectDistrict('all');
+      }
     }
   }
 
