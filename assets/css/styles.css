@@ -225,37 +225,43 @@ input[readonly].pointer-events-none:focus {
   caret-color: transparent !important;
 }
 
-/* Senator Floating Card on Map (Animación fluida sin deformación ni salto de línea) */
+/* Senator Floating Widget on Map (Botón Circular + Desplegable Compacto) */
 #senator-floating-card {
-  border-radius: 2px !important;
-  background-color: #ffffff !important;
-  background: #ffffff !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: 1px solid #cbd5e1 !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06) !important;
-  transition: box-shadow 0.2s ease;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
 }
 
-#senator-floating-card .senator-card-content {
-  max-width: 320px;
-  opacity: 1;
-  transform: scale(1) translateX(0);
-  pointer-events: auto;
-  transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.25s ease-out,
-              transform 0.25s ease-out;
+#senator-circle-trigger {
+  animation: senatorCircleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-#senator-floating-card.minimized .senator-card-content {
-  max-width: 0 !important;
-  opacity: 0 !important;
-  transform: scale(0.95) translateX(-8px) !important;
-  pointer-events: none !important;
+#senator-card-popup {
+  animation: senatorPopupIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-#senator-floating-card .senator-card-inner {
-  box-sizing: border-box;
+@keyframes senatorCircleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes senatorPopupIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* Legend Box */

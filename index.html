@@ -989,70 +989,83 @@
         <!-- Contenedor del mapa -->
         <div id="map-container" class="absolute inset-0 w-full h-full"></div>
 
-        <!-- Tarjeta Flotante Institucional de Luz Llorens (Top-Left en Mapa) -->
+        <!-- Widget Flotante de Luz Llorens (Top-Left en Mapa) -->
         <div 
           id="senator-floating-card" 
-          class="absolute top-2.5 left-2.5 md:top-4 md:left-4 z-[450] bg-white rounded-sm shadow-md border border-slate-300 pointer-events-auto">
+          class="absolute top-2.5 left-2.5 md:top-4 md:left-4 z-[450] pointer-events-auto select-none">
           
-          <div class="flex items-center p-1.5 sm:p-2">
-            <!-- Foto de Luz (Trigger siempre visible para abrir / cerrar) -->
-            <button 
-              type="button" 
-              onclick="App.toggleSenatorCard()" 
-              class="relative w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 rounded-none overflow-hidden shrink-0 border border-slate-300 shadow-2xs bg-white cursor-pointer"
-              title="Senadora Luz Llorens (Clic para abrir o cerrar)">
+          <!-- Estado Minimizado (Cerrado): Únicamente avatar/botón circular flotante -->
+          <div 
+            id="senator-circle-trigger" 
+            onclick="App.openSenatorCard(event)" 
+            class="relative w-14 h-14 rounded-full shadow-lg border-2 border-white bg-white cursor-pointer hover:scale-105 active:scale-95 transition-transform flex items-center justify-center p-0"
+            title="Senadora Luz Llorens - Canal de Difusión (Clic para abrir)">
+            <div class="w-full h-full rounded-full overflow-hidden">
               <img 
                 src="assets/img/luz_llorens.png" 
                 alt="Senadora Luz Llorens" 
-                class="w-full h-full object-cover">
-              <span class="absolute bottom-0 right-0 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-emerald-600 border border-white"></span>
-            </button>
+                class="w-full h-full object-cover object-center pointer-events-none">
+            </div>
+            <!-- Indicador verde de estado en línea -->
+            <span class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white shadow-xs"></span>
+          </div>
 
-            <!-- Contenedor Desplegable con overflow-hidden y ancho fijo interno para evitar deformación o saltos de línea -->
-            <div id="senator-card-content" class="senator-card-content overflow-hidden">
-              <div class="senator-card-inner w-[210px] sm:w-[230px] md:w-[250px] pl-2.5 pr-1 space-y-1.5">
-                <div class="flex items-center justify-between gap-1.5">
-                  <div class="min-w-0">
-                    <h3 class="font-serif font-bold text-xs sm:text-sm text-[#0a2540] leading-tight truncate">
-                      Luz Llorens
-                    </h3>
-                    <span class="inline-block text-[9px] font-bold uppercase tracking-wider text-[#0072bb] bg-sky-50 px-1.5 py-0.5 rounded-none border border-sky-200 mt-0.5 whitespace-nowrap">
-                      Senadora Provincial
-                    </span>
+          <!-- Estado Desplegado: Tarjeta compacta institucional sin espacios sobrantes -->
+          <div 
+            id="senator-card-popup" 
+            class="hidden bg-white rounded-sm shadow-xl border border-slate-300 p-3 w-[260px] sm:w-[280px]">
+            <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="relative w-10 h-10 rounded-full border border-slate-200 shrink-0 bg-white shadow-2xs">
+                  <div class="w-full h-full rounded-full overflow-hidden">
+                    <img 
+                      src="assets/img/luz_llorens.png" 
+                      alt="Senadora Luz Llorens" 
+                      class="w-full h-full object-cover">
                   </div>
-
-                  <!-- Botón minimizar / cerrar -->
-                  <button 
-                    type="button"
-                    onclick="App.toggleSenatorCard()"
-                    id="toggle-senator-card" 
-                    class="w-6 h-6 rounded-sm hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-colors shrink-0"
-                    title="Minimizar">
-                    <i class="fa-solid fa-chevron-left text-[10px]"></i>
-                  </button>
+                  <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border border-white"></span>
                 </div>
-
-                <!-- Botones de Acción: Sobre Luz + WhatsApp Oficial -->
-                <div class="flex items-center gap-1.5 pt-0.5 whitespace-nowrap">
-                  <button 
-                    type="button"
-                    onclick="App.navigateToView('inicio')" 
-                    class="flex-1 py-1 px-2 rounded-sm text-[10px] sm:text-[11px] font-bold uppercase tracking-wider bg-[#0a2540] hover:bg-[#0072bb] text-white transition-all text-center whitespace-nowrap">
-                    Sobre Luz
-                  </button>
-                  <a 
-                    href="https://wa.me/5492615551234?text=Hola%20Senadora%20Luz%20Llorens,%20te%20escribo%20desde%20la%20plataforma%20Pensando%20Guaymall%C3%A9n"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="h-7 px-2 rounded-sm bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-1 text-[10px] sm:text-[11px] font-bold transition-all shrink-0 shadow-2xs whitespace-nowrap"
-                    title="Escribile a Luz por WhatsApp">
-                    <i class="fa-brands fa-whatsapp text-xs"></i>
-                    <span>WhatsApp</span>
-                  </a>
+                <div class="min-w-0">
+                  <h3 class="font-serif font-bold text-xs sm:text-sm text-[#0a2540] leading-tight truncate">
+                    Luz Llorens
+                  </h3>
+                  <span class="inline-block text-[10px] font-bold text-[#0072bb] uppercase tracking-wider truncate">
+                    Canal de Difusión
+                  </span>
                 </div>
               </div>
+
+              <!-- Botón Minimizar / Cerrar -->
+              <button 
+                type="button" 
+                id="btn-close-senator-card"
+                onclick="App.closeSenatorCard(event)" 
+                class="w-6 h-6 rounded-sm bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+                title="Minimizar">
+                <i class="fa-solid fa-xmark text-xs pointer-events-none"></i>
+              </button>
+            </div>
+
+            <!-- Botones de Acción directos -->
+            <div class="grid grid-cols-2 gap-2 mt-2.5">
+              <button 
+                type="button"
+                onclick="App.navigateToView('inicio')" 
+                class="py-1.5 px-2 rounded-sm text-[11px] font-bold uppercase tracking-wider bg-slate-100 hover:bg-slate-200 text-slate-800 transition-all text-center truncate">
+                Sobre Luz
+              </button>
+              <a 
+                href="https://www.whatsapp.com/channel/0029Vb8NmuqLNSa0EXBYrZ1x" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                class="py-1.5 px-2 rounded-sm bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-1.5 text-[11px] font-bold transition-all shadow-2xs text-center truncate"
+                title="Unirse al Canal de WhatsApp">
+                <i class="fa-brands fa-whatsapp text-xs"></i>
+                <span>Canal WhatsApp</span>
+              </a>
             </div>
           </div>
+
         </div>
 
         <!-- Barra Superior Flotante: Confirmación de Ubicación en el Mapa -->

@@ -5,17 +5,29 @@
 
 class PensandoGuaymallenApp {
   constructor() {
+    // 1. Limpieza absoluta de almacenamiento previo del navegador (100% volátil en RAM)
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch (e) {}
+
     this.currentView = 'map'; // 'map' | 'conoce' | 'propuestas' | 'contacto'
     this.reports = this.loadReports();
     this.authMode = 'login'; // 'login' | 'register'
-    this.currentUser = this.loadCurrentUser(); // Usuario autenticado { id, name, email }
+    
+    // Almacenamiento 100% en memoria volátil de JavaScript (RAM)
+    // Se resetea automáticamente a cero al recargar la página con F5
+    this.registeredUsers = {}; // { [email]: { id, name, email, phone, password, registeredAt } }
+    this.currentUser = null;   // Usuario autenticado activo en RAM (inicia siempre en null)
+    this.proposals = [];       // Propuestas ciudadanas en memoria volátil
+
     this.reportScope = 'all'; // 'all' | 'mine'
     this.selectedDistrict = 'all';
     this.selectedCategory = 'all';
     this.searchQuery = '';
     this.activeReportId = null;
     this.mapInstance = null;
-    this.activeTab = 'map'; // for mobile view: 'map' | 'list' (en mobile arranca en 'map' como en el mockup)
+    this.activeTab = 'map'; // for mobile view: 'map' | 'list'
     this.isPickingLocation = false;
     this.pendingLocation = null;
 
@@ -23,60 +35,31 @@ class PensandoGuaymallenApp {
   }
 
   getRegisteredUsers() {
-    try {
-      return JSON.parse(localStorage.getItem('guaymallen_registered_users') || '{}');
-    } catch (e) {
-      return {};
-    }
+    return this.registeredUsers || {};
   }
 
   saveRegisteredUsers(users) {
-    try {
-      localStorage.setItem('guaymallen_registered_users', JSON.stringify(users));
-    } catch (e) {}
+    this.registeredUsers = users || {};
   }
 
   loadCurrentUser() {
-    try {
-      const saved = sessionStorage.getItem('pensando_guaymallen_user');
-      if (saved) {
-        const user = JSON.parse(saved);
-        if (user && user.email) {
-          const registeredUsers = this.getRegisteredUsers();
-          const registered = registeredUsers[user.email.toLowerCase()];
-          if (registered) {
-            return {
-              id: registered.id || user.id,
-              name: registered.name || user.name || user.email.split('@')[0],
-              email: registered.email || user.email,
-              phone: registered.phone || user.phone || ''
-            };
-          }
-        }
-        return user;
-      }
-    } catch (e) {}
     return null;
   }
 
   loadReports() {
-    // Modo de prueba interactivo: No se persiste en el almacenamiento permanente.
-    // Al recargar la página (F5), la plataforma vuelve automáticamente a 0 reclamos.
-    try {
-      localStorage.removeItem('pensando_guaymallen_reports');
-      localStorage.removeItem('pensando_guaymallen_reports_v2');
-      sessionStorage.removeItem('pensando_guaymallen_reports_v2');
-    } catch (e) {}
     return [];
   }
 
   saveReports() {
-    // No se guarda en localStorage: los reclamos solo viven mientras la pestaña esté abierta
+    // No se persiste: datos 100% volátiles en memoria RAM
   }
 
   init() {
     // Inicializar mapa de Guaymallén
     this.mapInstance = new GuaymallenMap('map-container');
+
+    // Deshabilitar propagación de clics sobre la tarjeta flotante de Luz Llorens
+    this.setupSenatorCardEvents();
 
     // Cargar selectores de distritos y categorías
     this.populateDistrictSelects();
@@ -443,13 +426,10 @@ class PensandoGuaymallenApp {
       createdAt: new Date().toISOString()
     };
 
-    try {
-      const saved = JSON.parse(localStorage.getItem('guaymallen_proposals') || '[]');
-      saved.unshift(proposal);
-      localStorage.setItem('guaymallen_proposals', JSON.stringify(saved));
-    } catch (err) {
-      console.warn('Error al guardar propuesta:', err);
+    if (!Array.isArray(this.proposals)) {
+      this.proposals = [];
     }
+    this.proposals.unshift(proposal);
 
     this.showToast('¡Propuesta enviada con éxito! Tu iniciativa ha sido ingresada al despacho de la Senadora Luz Llorens.', 'success', 5000);
     form.reset();
@@ -1733,7 +1713,7 @@ class PensandoGuaymallenApp {
     const registeredUsers = this.getRegisteredUsers();
 
     if (this.authMode === 'register') {
-      // Registrar usuario en colección permanente en localStorage
+      // Registrar usuario en memoria RAM volátil (se resetea con F5)
       const newUser = {
         id: `usr-${Date.now()}`,
         name: name,
@@ -1745,24 +1725,13 @@ class PensandoGuaymallenApp {
       registeredUsers[email] = newUser;
       this.saveRegisteredUsers(registeredUsers);
 
-      // Compatibilidad con cuentas previas
-      try {
-        const legacyAccounts = JSON.parse(localStorage.getItem('pensando_guaymallen_accounts') || '{}');
-        legacyAccounts[email] = pass;
-        localStorage.setItem('pensando_guaymallen_accounts', JSON.stringify(legacyAccounts));
-      } catch (err) {}
-
-      // Establecer sesión activa
+      // Establecer sesión activa en memoria RAM
       this.currentUser = {
         id: newUser.id,
         name: newUser.name,
         email: newUser.email,
         phone: newUser.phone
       };
-
-      try {
-        sessionStorage.setItem('pensando_guaymallen_user', JSON.stringify(this.currentUser));
-      } catch (err) {}
 
       this.closeAuthModal();
       this.renderUserHeader();
@@ -1771,12 +1740,8 @@ class PensandoGuaymallenApp {
       this.showToast(`¡Registro exitoso! Bienvenido/a ${this.currentUser.name}.`, 'success', 5000);
 
     } else {
-      // Iniciar sesión (Login pide ÚNICAMENTE correo y contraseña)
+      // Iniciar sesión (Login pide ÚNICAMENTE correo y contraseña desde memoria RAM)
       const user = registeredUsers[email];
-      let legacyAccounts = {};
-      try {
-        legacyAccounts = JSON.parse(localStorage.getItem('pensando_guaymallen_accounts') || '{}');
-      } catch (e) {}
 
       if (user) {
         if (user.password !== pass) {
@@ -1792,40 +1757,18 @@ class PensandoGuaymallenApp {
           return;
         }
 
-        // Recuperar Nombre Completo y Teléfono guardados previamente
+        // Recuperar Nombre Completo y Teléfono guardados previamente en memoria RAM
         this.currentUser = {
           id: user.id || `usr-${Date.now()}`,
           name: user.name || email.split('@')[0],
           email: user.email,
           phone: user.phone || ''
         };
-      } else if (legacyAccounts[email]) {
-        if (legacyAccounts[email] !== pass) {
-          if (passError) {
-            passError.classList.remove('hidden');
-            if (passErrorMsg) passErrorMsg.textContent = 'Contraseña incorrecta para este correo';
-          }
-          if (passInput) {
-            passInput.classList.add('border-rose-500', 'focus:ring-rose-500');
-            passInput.focus();
-          }
-          this.showToast('Contraseña incorrecta. Por favor revisá tus datos.', 'error', 4000);
-          return;
-        }
-
-        const alias = email.split('@')[0];
-        const formattedName = alias.charAt(0).toUpperCase() + alias.slice(1);
-        this.currentUser = {
-          id: `usr-${Date.now()}`,
-          name: formattedName,
-          email: email,
-          phone: ''
-        };
       } else {
         if (emailError) {
           emailError.classList.remove('hidden');
           const emailErrorMsg = document.getElementById('auth-email-error-msg');
-          if (emailErrorMsg) emailErrorMsg.textContent = 'No encontramos una cuenta con este correo. Por favor registrate.';
+          if (emailErrorMsg) emailErrorMsg.textContent = 'No encontramos una cuenta con este correo en esta sesión. Por favor registrate.';
         }
         if (emailInput) {
           emailInput.classList.add('border-rose-500', 'focus:ring-rose-500');
@@ -1834,10 +1777,6 @@ class PensandoGuaymallenApp {
         this.showToast('No encontramos una cuenta con este correo. Por favor hacé clic en "Registrarse".', 'warning', 4500);
         return;
       }
-
-      try {
-        sessionStorage.setItem('pensando_guaymallen_user', JSON.stringify(this.currentUser));
-      } catch (err) {}
 
       this.closeAuthModal();
       this.renderUserHeader();
@@ -1854,9 +1793,6 @@ class PensandoGuaymallenApp {
 
   handleLogout() {
     this.currentUser = null;
-    try {
-      sessionStorage.removeItem('pensando_guaymallen_user');
-    } catch (e) {}
     this.setFeedReportScope('all');
     this.renderUserHeader();
     this.syncFormUserSession();
@@ -2089,10 +2025,50 @@ class PensandoGuaymallenApp {
     }
   }
 
-  toggleSenatorCard() {
+  setupSenatorCardEvents() {
     const card = document.getElementById('senator-floating-card');
-    if (card) {
-      card.classList.toggle('minimized');
+    if (card && window.L && L.DomEvent) {
+      L.DomEvent.disableClickPropagation(card);
+      L.DomEvent.disableScrollPropagation(card);
+    }
+  }
+
+  openSenatorCard(e) {
+    if (e) {
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+    }
+    const trigger = document.getElementById('senator-circle-trigger');
+    const popup = document.getElementById('senator-card-popup');
+    if (trigger && popup) {
+      trigger.classList.add('hidden');
+      popup.classList.remove('hidden');
+    }
+  }
+
+  closeSenatorCard(e) {
+    if (e) {
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+    }
+    const trigger = document.getElementById('senator-circle-trigger');
+    const popup = document.getElementById('senator-card-popup');
+    if (trigger && popup) {
+      popup.classList.add('hidden');
+      trigger.classList.remove('hidden');
+    }
+  }
+
+  toggleSenatorCard(e) {
+    if (e) {
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+    }
+    const popup = document.getElementById('senator-card-popup');
+    if (popup && !popup.classList.contains('hidden')) {
+      this.closeSenatorCard(e);
+    } else {
+      this.openSenatorCard(e);
     }
   }
 
