@@ -17,6 +17,13 @@ class GuaymallenMap {
     this.activeReportId = null;
     this.activeDistrictId = 'all';
 
+    // Control de navegación libre: bloquea selección automática al arrastrar o hacer pan en mobile
+    this._isDraggingMap = false;
+    this._touchStartPos = null;
+    this._touchMovedDistance = 0;
+    this._lastDragTime = 0;
+    this._suppressClicksUntil = 0;
+
     this.init();
   }
 
@@ -47,7 +54,8 @@ class GuaymallenMap {
         minZoom: 11,
         maxZoom: 18,
         renderer: this.vectorRenderer,
-        zoomControl: false // Ubicado en la esquina inferior derecha
+        zoomControl: false, // Ubicado en la esquina superior derecha
+        tap: false          // Desactivar tap handler legado para evitar clics fantasma al soltar el arrastre en pantallas táctiles
       });
 
       // Control de zoom en top-right para desktop (en mobile se oculta por CSS para pantalla táctil)
@@ -70,10 +78,76 @@ class GuaymallenMap {
       this.renderDistricts();
       this.cacheDistrictBounds();
 
+      // Seguimiento táctil preciso en el contenedor para distinguir tap consciente de pan/arrastre
+      container.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches.length === 1) {
+          this._touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          this._touchMovedDistance = 0;
+        }
+      }, { passive: true });
+
+      container.addEventListener('touchmove', (e) => {
+        if (this._touchStartPos && e.touches && e.touches.length === 1) {
+          const dx = e.touches[0].clientX - this._touchStartPos.x;
+          const dy = e.touches[0].clientY - this._touchStartPos.y;
+          const dist = Math.hypot(dx, dy);
+          this._touchMovedDistance = Math.max(this._touchMovedDistance, dist);
+          if (dist > 7) {
+            this._isDraggingMap = true;
+            this._lastDragTime = Date.now();
+            container.classList.add('map-is-navigating');
+          }
+        }
+      }, { passive: true });
+
+      container.addEventListener('touchend', () => {
+        if (this._touchMovedDistance > 7 || this._isDraggingMap) {
+          this._lastDragTime = Date.now();
+          this._suppressClicksUntil = Date.now() + 350;
+          setTimeout(() => {
+            this._isDraggingMap = false;
+            container.classList.remove('map-is-navigating');
+          }, 250);
+        }
+        this._touchStartPos = null;
+      }, { passive: true });
+
+      container.addEventListener('touchcancel', () => {
+        this._isDraggingMap = false;
+        this._touchStartPos = null;
+        container.classList.remove('map-is-navigating');
+      }, { passive: true });
+
+      // Monitoreo de eventos de movimiento de Leaflet para garantizar bloqueo total durante la navegación
+      this.map.on('movestart dragstart zoomstart', () => {
+        this._isDraggingMap = true;
+        this._lastDragTime = Date.now();
+        container.classList.add('map-is-navigating');
+      });
+
+      this.map.on('move drag zoom', () => {
+        this._isDraggingMap = true;
+        this._lastDragTime = Date.now();
+      });
+
+      this.map.on('moveend dragend zoomend', () => {
+        this._lastDragTime = Date.now();
+        this._suppressClicksUntil = Date.now() + 350;
+        setTimeout(() => {
+          this._isDraggingMap = false;
+          container.classList.remove('map-is-navigating');
+        }, 250);
+      });
+
       // Clic en el mapa para fijar ubicación al reportar o deseleccionar distrito
       this.map.on('click', (e) => {
         if (this._ignoreNextMapClick) {
           this._ignoreNextMapClick = false;
+          return;
+        }
+
+        // Si el usuario estuvo navegando o arrastrando el mapa, bloquear clics accidentales
+        if (this._isDraggingMap || this._touchMovedDistance > 7 || Date.now() < this._suppressClicksUntil || (Date.now() - this._lastDragTime < 350)) {
           return;
         }
 
@@ -83,7 +157,7 @@ class GuaymallenMap {
           return;
         }
 
-        // Si se hace clic en cualquier área del mapa fuera de los polígonos y hay un distrito seleccionado
+        // Si se hace un clic deliberado en cualquier área del mapa fuera de los polígonos y hay un distrito seleccionado
         if (window.App && window.App.selectedDistrict && window.App.selectedDistrict !== 'all') {
           window.App.selectDistrict('all');
         }
@@ -92,6 +166,9 @@ class GuaymallenMap {
       // Listener de respaldo en el contenedor para clics en áreas vacías
       container.addEventListener('click', (ev) => {
         if (this._ignoreNextMapClick) return;
+        if (this._isDraggingMap || this._touchMovedDistance > 7 || Date.now() < this._suppressClicksUntil || (Date.now() - this._lastDragTime < 350)) {
+          return;
+        }
         if (ev.target.closest('button, a, select, input, .leaflet-control, #senator-floating-card, .custom-map-marker, .custom-leaflet-popup, .district-poly, #map-picker-banner')) {
           return;
         }
@@ -120,6 +197,7 @@ class GuaymallenMap {
     this.districtLayersMap.clear();
 
     const districts = APP_DATA.districts || [];
+    const isTouchDevice = window.matchMedia && window.matchMedia('(hover: none)').matches;
 
     districts.forEach(dist => {
       const distColor = dist.color || '#0284C7';
@@ -134,41 +212,53 @@ class GuaymallenMap {
         className: `district-poly district-${dist.id}`
       });
 
-      // Tooltip informativo al pasar el cursor
-      polygon.bindTooltip(`
-        <div class="px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2 shadow-sm rounded-sm bg-white/95 border border-slate-300">
-          <span class="w-2.5 h-2.5 rounded-none inline-block border border-white shrink-0" style="background-color: ${distColor};"></span>
-          <span>Distrito ${dist.name}</span>
-        </div>
-      `, {
-        permanent: false,
-        sticky: true,
-        className: 'custom-district-tooltip'
-      });
-
-      // Efecto hover
-      polygon.on('mouseover', () => {
-        polygon.setStyle({
-          weight: 3.5,
-          color: '#1A2B4C',
-          fillOpacity: 0.55
+      // Tooltip informativo: solo en dispositivos desktop con cursor (mouse)
+      // En dispositivos móviles táctiles se desactiva para evitar parpadeos y que siga al dedo
+      if (!isTouchDevice) {
+        polygon.bindTooltip(`
+          <div class="px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2 shadow-sm rounded-sm bg-white/95 border border-slate-300">
+            <span class="w-2.5 h-2.5 rounded-none inline-block border border-white shrink-0" style="background-color: ${distColor};"></span>
+            <span>Distrito ${dist.name}</span>
+          </div>
+        `, {
+          permanent: false,
+          sticky: true,
+          className: 'custom-district-tooltip'
         });
-        polygon.bringToFront();
-      });
 
-      polygon.on('mouseout', () => {
-        if (this.activeDistrictId !== dist.id) {
+        // Efecto hover solo en desktop con cursor (sin reordenar el DOM SVG para máxima fluidez)
+        polygon.on('mouseover', () => {
+          if (this._isDraggingMap) return;
           polygon.setStyle({
-            weight: 1.5,
-            color: distColor,
-            fillOpacity: 0.28
+            weight: 3,
+            color: '#1A2B4C',
+            fillOpacity: 0.5
           });
-        }
-      });
+        });
 
-      // Clic para filtrar distritos o deseleccionar si ya está activo
+        polygon.on('mouseout', () => {
+          if (this.activeDistrictId !== dist.id) {
+            polygon.setStyle({
+              weight: 1.5,
+              color: distColor,
+              fillOpacity: 0.28
+            });
+          }
+        });
+      }
+
+      // Toque deliberado (tap / click consciente) para seleccionar distrito
       polygon.on('click', (e) => {
         if (this.isPickLocationMode) return;
+
+        // VERIFICACIÓN ESTRICTA: La navegación libre (arrastrar, pan o zoom)
+        // NUNCA debe seleccionar ningún distrito bajo ninguna circunstancia.
+        if (this._isDraggingMap || 
+            this._touchMovedDistance > 7 || 
+            Date.now() < this._suppressClicksUntil || 
+            (Date.now() - this._lastDragTime < 350)) {
+          return;
+        }
 
         if (e) {
           if (e.originalEvent) {
@@ -178,7 +268,7 @@ class GuaymallenMap {
         }
 
         this._ignoreNextMapClick = true;
-        setTimeout(() => { this._ignoreNextMapClick = false; }, 150);
+        setTimeout(() => { this._ignoreNextMapClick = false; }, 200);
 
         if (window.App) {
           const isAlreadySelected = (window.App.selectedDistrict === dist.id) || (this.activeDistrictId === dist.id);
@@ -342,12 +432,20 @@ class GuaymallenMap {
       });
 
       marker.on('click', (e) => {
+        // Bloquear clic en marcador si el mapa se estaba arrastrando o navegando libremente
+        if (this._isDraggingMap || 
+            this._touchMovedDistance > 7 || 
+            Date.now() < this._suppressClicksUntil || 
+            (Date.now() - this._lastDragTime < 350)) {
+          return;
+        }
+
         if (e) {
           if (e.originalEvent) e.originalEvent.stopPropagation();
           L.DomEvent.stopPropagation(e);
         }
         this._ignoreNextMapClick = true;
-        setTimeout(() => { this._ignoreNextMapClick = false; }, 150);
+        setTimeout(() => { this._ignoreNextMapClick = false; }, 200);
 
         if (window.App) {
           window.App.onMarkerClick(report.id);

@@ -264,6 +264,21 @@ input[readonly].pointer-events-none:focus {
   }
 }
 
+/* Rendimiento y fluidez en polígonos vectoriales del mapa */
+.district-poly {
+  transition: fill-opacity 0.15s ease, stroke 0.15s ease, stroke-width 0.15s ease;
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Durante la navegación libre (pan / drag / zoom), desactivar eventos y transiciones para evitar saltos o parpadeos */
+#map-container.map-is-navigating .district-poly,
+.leaflet-drag-moving .district-poly,
+.leaflet-zooming .district-poly {
+  pointer-events: none !important;
+  transition: none !important;
+}
+
 /* Legend Box */
 #map-legend-box {
   transition: all 0.25s ease-in-out;
