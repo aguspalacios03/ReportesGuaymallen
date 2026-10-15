@@ -17,6 +17,10 @@ class GuaymallenMap {
     this.activeReportId = null;
     this.activeDistrictId = 'all';
 
+    // Control de transición de cámara para evitar desacople de polígonos durante zooms interrumpidos
+    this._cameraTransitioning = false;
+    this._cameraTransitionTimer = null;
+
     // Estado del reconocedor de gestos (tap consciente vs. arrastre / pan / pinch)
     this._gesture = null;            // gesto de un dedo en curso
     this._activePointers = new Set(); // punteros apoyados (para detectar pinch)
@@ -45,8 +49,8 @@ class GuaymallenMap {
     const initialZoom = 12;
 
     try {
-      // Renderer vectorial con padding ampliado para evitar recortes al arrastrar en mobile
-      this.vectorRenderer = L.svg({ padding: 1.5 });
+      // Renderer vectorial con padding controlado para sincronización perfecta de SVG con la capa de tiles
+      this.vectorRenderer = L.svg({ padding: 0.5 });
 
       // Inicializar mapa de Leaflet
       this.map = L.map(this.containerId, {
@@ -109,7 +113,11 @@ class GuaymallenMap {
     this.districtLayersMap.clear();
 
     const districts = APP_DATA.districts || [];
-    const isTouchDevice = window.matchMedia && window.matchMedia('(hover: none)').matches;
+    // Detección estricta y universal de pantalla táctil o móvil (Chrome Android, iOS Safari, etc.)
+    const isTouchOrSmallScreen = ('ontouchstart' in window) || 
+                                 (navigator.maxTouchPoints > 0) || 
+                                 (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
+                                 (window.innerWidth <= 1024);
 
     districts.forEach(dist => {
       const distColor = dist.color || '#0284C7';
@@ -124,9 +132,10 @@ class GuaymallenMap {
         className: `district-poly district-${dist.id}`
       });
 
-      // Tooltip informativo: solo en dispositivos desktop con cursor (mouse)
-      // En dispositivos móviles táctiles se desactiva para evitar parpadeos y que siga al dedo
-      if (!isTouchDevice) {
+      // Tooltip informativo y efecto hover: EXCLUSIVAMENTE en computadoras desktop con mouse físico real.
+      // En dispositivos móviles o táctiles queda 100% DESACTIVADO para erradicar cualquier selección fantasma,
+      // borde negro o tooltip pegado que aparezca al arrastrar o soltar el dedo en mobile.
+      if (!isTouchOrSmallScreen) {
         polygon.bindTooltip(`
           <div class="px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2 shadow-sm rounded-sm bg-white/95 border border-slate-300">
             <span class="w-2.5 h-2.5 rounded-none inline-block border border-white shrink-0" style="background-color: ${distColor};"></span>
@@ -138,10 +147,13 @@ class GuaymallenMap {
           className: 'custom-district-tooltip'
         });
 
-        // Efecto hover solo con mouse real (nunca con dedo: los navegadores táctiles
-        // emiten 'mouseover' de compatibilidad y dejaban el polígono resaltado)
-        polygon.on('mouseover', () => {
-          if (this._userNavigating || this._lastPointerType !== 'mouse') return;
+        // Efecto hover solo con mouse real (nunca con dedo ni eventos táctiles sintetizados)
+        polygon.on('mouseover', (e) => {
+          if (this._userNavigating || this._cameraTransitioning || this._lastPointerType !== 'mouse') return;
+          if (e && e.originalEvent) {
+            if (e.originalEvent.pointerType && e.originalEvent.pointerType !== 'mouse') return;
+            if (e.originalEvent.sourceCapabilities && e.originalEvent.sourceCapabilities.firesTouchEvents) return;
+          }
           polygon.setStyle({
             weight: 3,
             color: '#1A2B4C',
@@ -195,6 +207,16 @@ class GuaymallenMap {
     container.addEventListener('pointerdown', (e) => {
       this._lastPointerType = e.pointerType || 'mouse';
       if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+      // Si el mapa estaba en una transición o animación de zoom, detenerla inmediatamente
+      // para anclar los polígonos al mapa con escala 1 exacta y sin deformaciones
+      if (this._cameraTransitioning) {
+        this.stopCameraTransition();
+      }
+
+      // Erradicar tooltips y limpiar cualquier hover previo en polígonos
+      this.closeAllTooltips();
+      this.resetDistrictHoverStyles();
 
       this._activePointers.add(e.pointerId);
       if (this._activePointers.size > 1) {
@@ -258,10 +280,17 @@ class GuaymallenMap {
     this.map.on('movestart dragstart', () => {
       this._userNavigating = true;
       cancelGesture();
+      if (this._cameraTransitioning) {
+        this.stopCameraTransition();
+      }
+      this.resetDistrictHoverStyles();
+      this.closeAllTooltips();
     });
     this.map.on('zoomstart', () => {
       this._userNavigating = true;
       cancelGesture();
+      this.resetDistrictHoverStyles();
+      this.closeAllTooltips();
     });
     this.map.on('move', () => {
       this._lastMoveAt = Date.now();
@@ -270,6 +299,8 @@ class GuaymallenMap {
     this.map.on('moveend zoomend dragend', () => {
       this._userNavigating = false;
       this._lastUserNavEnd = Date.now();
+      this.resetDistrictHoverStyles();
+      this.closeAllTooltips();
     });
   }
 
@@ -318,12 +349,121 @@ class GuaymallenMap {
     }
   }
 
+  closeAllTooltips() {
+    if (!this.map || !this.districtLayersMap) return;
+    try {
+      this.districtLayersMap.forEach((layer) => {
+        if (layer && typeof layer.closeTooltip === 'function') {
+          layer.closeTooltip();
+        }
+      });
+    } catch (_) {}
+  }
+
+  resetDistrictHoverStyles() {
+    if (!this.districtLayersMap) return;
+    this.districtLayersMap.forEach((layer, id) => {
+      if (id !== this.activeDistrictId) {
+        const dist = APP_DATA.districts ? APP_DATA.districts.find(d => d.id === id) : null;
+        const baseColor = (dist && dist.color) ? dist.color : '#0284C7';
+        layer.setStyle({
+          weight: 1.5,
+          color: baseColor,
+          fillColor: baseColor,
+          fillOpacity: 0.28
+        });
+      }
+    });
+  }
+
+  stopCameraTransition() {
+    if (this._cameraTransitionTimer) {
+      clearTimeout(this._cameraTransitionTimer);
+      this._cameraTransitionTimer = null;
+    }
+    if (this.map) {
+      this.map.stop();
+      const currentZoom = this.map.getZoom();
+      const snappedZoom = Math.round(currentZoom);
+      // Forzar anclaje a zoom entero y escala 1 en el renderer para que los polígonos
+      // NUNCA queden estirados, agigantados o achicados respecto al mapa base
+      if (Math.abs(currentZoom - snappedZoom) > 0.001) {
+        this.map.setView(this.map.getCenter(), snappedZoom, { animate: false, reset: true });
+      }
+      if (this.map.dragging && !this.map.dragging.enabled()) {
+        this.map.dragging.enable();
+      }
+      if (this.vectorRenderer && typeof this.vectorRenderer._update === 'function') {
+        this.vectorRenderer._update();
+      }
+    }
+    this._cameraTransitioning = false;
+  }
+
+  animateCameraToBounds(bounds, options = {}) {
+    if (!this.map) return;
+    this.stopCameraTransition();
+
+    const isMobile = window.innerWidth <= 768;
+    const padding = options.padding || (isMobile ? [30, 30] : [60, 60]);
+    const maxZoom = options.maxZoom || (isMobile ? 13 : 13.5);
+    const duration = options.duration !== undefined ? options.duration : 0.35; // 350ms, super fluido
+
+    this._cameraTransitioning = true;
+    if (this.map.dragging) this.map.dragging.disable();
+
+    this.map.fitBounds(bounds, {
+      padding: padding,
+      maxZoom: maxZoom,
+      animate: true,
+      duration: duration
+    });
+
+    const finalize = () => {
+      if (this._cameraTransitionTimer) {
+        clearTimeout(this._cameraTransitionTimer);
+        this._cameraTransitionTimer = null;
+      }
+      this.map.off('moveend', finalize);
+      this.stopCameraTransition();
+    };
+
+    this.map.on('moveend', finalize);
+    this._cameraTransitionTimer = setTimeout(finalize, Math.round(duration * 1000) + 100);
+  }
+
+  animateCameraTo(latlng, zoom, duration = 0.35, onComplete = null) {
+    if (!this.map) return;
+    this.stopCameraTransition();
+
+    this._cameraTransitioning = true;
+    if (this.map.dragging) this.map.dragging.disable();
+
+    this.map.setView(latlng, zoom, {
+      animate: true,
+      duration: duration
+    });
+
+    const finalize = () => {
+      if (this._cameraTransitionTimer) {
+        clearTimeout(this._cameraTransitionTimer);
+        this._cameraTransitionTimer = null;
+      }
+      this.map.off('moveend', finalize);
+      this.stopCameraTransition();
+      if (typeof onComplete === 'function') onComplete();
+    };
+
+    this.map.on('moveend', finalize);
+    this._cameraTransitionTimer = setTimeout(finalize, Math.round(duration * 1000) + 100);
+  }
+
   highlightDistrict(districtId) {
     if (!this.map) return;
     this.activeDistrictId = districtId;
 
     this.districtLayersMap.forEach((layer, id) => {
-      const dist = APP_DATA.districts.find(d => d.id === id);
+      const dist = APP_DATA.districts ? APP_DATA.districts.find(d => d.id === id) : null;
       const baseColor = (dist && dist.color) ? dist.color : '#4338CA';
 
       if (id === districtId) {
@@ -335,7 +475,8 @@ class GuaymallenMap {
         });
         layer.bringToFront();
         if (dist) {
-          this.map.flyToBounds(layer.getBounds(), { padding: [60, 60], maxZoom: 13.5, duration: 1 });
+          const bounds = dist._bounds || layer.getBounds();
+          this.animateCameraToBounds(bounds, { duration: 0.35 });
         }
       } else {
         layer.setStyle({
@@ -491,20 +632,14 @@ class GuaymallenMap {
     const marker = this.markersMap.get(reportId);
     if (!marker || !this.map) return;
 
-    const latlng = marker.getLatLng();
-    this.map.flyTo(latlng, zoom, {
-      duration: 1.2,
-      easeLinearity: 0.25
-    });
-
-    setTimeout(() => {
+    this.animateCameraTo(marker.getLatLng(), zoom, 0.35, () => {
       marker.openPopup();
-    }, 800);
+    });
   }
 
   resetView() {
     if (!this.map) return;
-    this.map.flyTo([-32.8960, -68.7650], 12, { duration: 1 });
+    this.animateCameraTo([-32.8960, -68.7650], 12, 0.35);
   }
 
   createDraggableRedIcon() {
@@ -668,17 +803,16 @@ class GuaymallenMap {
     };
     this.map.on('click', this.pickerClickHandler);
 
-    // 5. Movimiento de cámara suave y sin bloqueos (1s)
+    // 5. Movimiento de cámara suave, rápido y sincronizado (350ms)
     this.map.setMaxBounds(null);
     if (dist._bounds) {
-      this.map.flyToBounds(dist._bounds, {
+      this.animateCameraToBounds(dist._bounds, {
         padding: [50, 50],
         maxZoom: 14,
-        duration: 1,
-        easeLinearity: 0.35
+        duration: 0.35
       });
     } else if (dist.center) {
-      this.map.flyTo(dist.center, 13.5, { duration: 1 });
+      this.animateCameraTo(dist.center, 13.5, 0.35);
     }
   }
 
