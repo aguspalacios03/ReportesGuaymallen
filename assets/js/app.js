@@ -2021,73 +2021,78 @@ class PensandoGuaymallenApp {
     }
   }
 
-  // Sincronización, autocompletado y bloqueo de campos con sesión de usuario activa
+  // Sincronización, autocompletado y bloqueo total de interacción/foco con sesión activa
   syncFormUserSession() {
     const propEmail = document.getElementById('propuesta-email');
     const propNombre = document.getElementById('propuesta-nombre');
     const propTel = document.getElementById('propuesta-telefono');
     const reportCitizen = document.querySelector('input[name="report-citizen"]');
 
-    const lockedClasses = ['bg-slate-100', 'text-slate-500', 'cursor-not-allowed', 'select-none'];
+    const inputs = [propEmail, propNombre, propTel, reportCitizen].filter(Boolean);
+
+    const lockedClasses = [
+      'input-locked',
+      'bg-slate-100',
+      'text-slate-500',
+      'border-slate-300',
+      'cursor-default',
+      'select-none',
+      'pointer-events-none'
+    ];
+    const editableClasses = [
+      'bg-slate-50',
+      'text-slate-800',
+      'border-slate-300',
+      'focus:bg-white',
+      'focus:ring-1',
+      'focus:ring-[#0072bb]',
+      'focus:border-[#0072bb]'
+    ];
 
     if (this.currentUser) {
-      // 1. Formulario de Propuestas Ciudadanas (Home)
+      // 1. Asignar valores
       if (propEmail) {
         propEmail.value = this.currentUser.email || '';
-        propEmail.readOnly = true;
-        propEmail.classList.add(...lockedClasses);
-        propEmail.classList.remove('bg-slate-50', 'text-slate-800', 'border-rose-500', 'focus:border-rose-500', 'focus:ring-rose-500');
         const emailErr = document.getElementById('propuesta-email-error');
         if (emailErr) emailErr.classList.add('hidden');
       }
       if (propNombre) {
         propNombre.value = this.currentUser.name || '';
-        propNombre.readOnly = true;
-        propNombre.classList.add(...lockedClasses);
-        propNombre.classList.remove('bg-slate-50', 'text-slate-800');
       }
       if (propTel) {
         propTel.value = this.currentUser.phone || '';
-        propTel.readOnly = true;
-        propTel.classList.add(...lockedClasses);
-        propTel.classList.remove('bg-slate-50', 'text-slate-800');
       }
-
-      // 2. Formulario de Reportes Vecinales (Modal Reclamos)
       if (reportCitizen) {
         reportCitizen.value = this.currentUser.name || '';
-        reportCitizen.readOnly = true;
-        reportCitizen.classList.add(...lockedClasses);
-        reportCitizen.classList.remove('bg-slate-50', 'text-slate-800');
       }
+
+      // 2. Bloqueo total: readOnly, tabIndex -1, onfocus blur, pointer-events-none, clases visuales
+      inputs.forEach(input => {
+        input.readOnly = true;
+        input.tabIndex = -1;
+        input.onfocus = (e) => e.target.blur();
+        input.classList.remove('border-rose-500', 'border-emerald-500', 'focus:border-rose-500', 'focus:ring-rose-500', ...editableClasses);
+        input.classList.add(...lockedClasses);
+      });
     } else {
       // Sesión inactiva o cerrada: limpiar y desbloquear campos para edición normal
-      if (propEmail) {
-        propEmail.readOnly = false;
-        propEmail.classList.remove(...lockedClasses, 'border-rose-500', 'border-emerald-500', 'focus:border-rose-500', 'focus:ring-rose-500');
-        propEmail.classList.add('bg-slate-50', 'text-slate-800');
-        propEmail.value = '';
-        const emailErr = document.getElementById('propuesta-email-error');
-        if (emailErr) emailErr.classList.add('hidden');
-      }
-      if (propNombre) {
-        propNombre.readOnly = false;
-        propNombre.classList.remove(...lockedClasses);
-        propNombre.classList.add('bg-slate-50', 'text-slate-800');
-        propNombre.value = '';
-      }
-      if (propTel) {
-        propTel.readOnly = false;
-        propTel.classList.remove(...lockedClasses);
-        propTel.classList.add('bg-slate-50', 'text-slate-800');
-        propTel.value = '';
-      }
-      if (reportCitizen) {
-        reportCitizen.readOnly = false;
-        reportCitizen.classList.remove(...lockedClasses);
-        reportCitizen.classList.add('bg-slate-50', 'text-slate-800');
-        reportCitizen.value = '';
-      }
+      inputs.forEach(input => {
+        input.readOnly = false;
+        input.tabIndex = 0;
+        input.onfocus = null;
+        input.value = '';
+        input.classList.remove(...lockedClasses, 'border-rose-500', 'border-emerald-500', 'focus:border-rose-500', 'focus:ring-rose-500');
+        input.classList.add(...editableClasses);
+      });
+      const emailErr = document.getElementById('propuesta-email-error');
+      if (emailErr) emailErr.classList.add('hidden');
+    }
+  }
+
+  toggleSenatorCard() {
+    const card = document.getElementById('senator-floating-card');
+    if (card) {
+      card.classList.toggle('minimized');
     }
   }
 

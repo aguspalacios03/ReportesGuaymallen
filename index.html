@@ -284,20 +284,20 @@
   <!-- ========================================================
        VISTA 1: INICIO (PORTAL INSTITUCIONAL SENADORA LUZ LLORENS)
        ======================================================== -->
-  <div id="view-inicio" class="app-view active w-full bg-white py-6 sm:py-10">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 sm:space-y-12">
+  <div id="view-inicio" class="app-view active w-full bg-white pt-4 pb-8 sm:py-10">
+    <div class="max-w-5xl mx-auto px-3.5 sm:px-6 lg:px-8 space-y-8 sm:space-y-12">
 
       <!-- ========================================================
            A) CABECERA / CARTA DE PRESENTACIÓN DE LUZ LLORENS
            ======================================================== -->
-      <section class="space-y-6">
+      <section class="space-y-4 sm:space-y-6">
         <!-- Banner Fotográfico Territorial -->
         <div class="w-full overflow-hidden rounded-sm border border-slate-300 shadow-xs relative bg-slate-100">
           <img 
             src="assets/img/luz_presentacion.png" 
             alt="Senadora Provincial Luz Llorens recorriendo Guaymallén con vecinos" 
-            class="w-full h-48 sm:h-64 md:h-80 object-cover object-[center_35%]">
-          <div class="absolute inset-0 bg-gradient-to-t from-[#0a2540]/85 via-[#0a2540]/30 to-transparent flex items-end p-4 sm:p-6">
+            class="w-full h-44 xs:h-52 sm:h-64 md:h-80 object-cover object-[center_35%]">
+          <div class="absolute inset-0 bg-gradient-to-t from-[#0a2540]/85 via-[#0a2540]/30 to-transparent flex items-end p-3.5 sm:p-6">
             <span class="text-white text-xs sm:text-sm font-semibold tracking-wide flex items-center gap-2">
               <i class="fa-solid fa-location-dot text-[#3898ec]"></i>
               Cercanía y gestión territorial en los distritos de Guaymallén
@@ -308,27 +308,25 @@
         <!-- Tarjeta Institucional de Presentación y Biografía -->
         <div class="bg-white border border-slate-200 rounded-sm shadow-2xs overflow-hidden">
           <!-- Cabecera Parlamentaria -->
-          <div class="bg-[#0a2540] border-l-4 border-[#c59b27] p-6 sm:p-8 text-white">
+          <div class="bg-[#0a2540] border-l-4 border-[#c59b27] p-4 xs:p-6 sm:p-8 text-white">
             <div class="flex items-center gap-2 mb-2">
               <span class="w-2 h-2 rounded-none bg-[#c59b27] inline-block"></span>
               <span class="uppercase tracking-[0.18em] text-[10px] sm:text-xs font-bold text-sky-200">
                 H. Cámara de Senadores de Mendoza • Legislatura Provincial
               </span>
             </div>
-            <h1 class="font-serif text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+            <h1 class="font-serif text-xl xs:text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight">
               Tu Voz en el Senado de Mendoza
             </h1>
             <div class="flex items-center gap-2 mt-2">
               <span class="font-sans font-bold text-xs sm:text-sm uppercase tracking-wider text-[#3898ec]">
                 Luz Llorens — Senadora Provincial (2026 - 2030)
               </span>
-              <span class="text-slate-400">•</span>
-              <span class="text-[11px] sm:text-xs text-slate-300">Segundo Distrito Electoral</span>
             </div>
           </div>
 
           <!-- Carta Biográfica Oficial -->
-          <div class="p-6 sm:p-8 space-y-4 text-slate-700 font-sans text-sm sm:text-base leading-relaxed border-t border-slate-100">
+          <div class="p-4 xs:p-6 sm:p-8 space-y-4 text-slate-700 font-sans text-sm sm:text-base leading-relaxed border-t border-slate-100">
             <p>
               Soy <strong>María Luz Llorens</strong>, tengo 36 años, vivo en Guaymallén, estoy casada con Gastón y soy mamá de Jazmín, Julia y Máximo, mi motor de cada día. Soy abogada y actualmente ejerzo como Senadora Provincial en la Legislatura de Mendoza, cargo que asumí el 1.° de mayo de 2026.
             </p>
@@ -340,11 +338,7 @@
               <div class="flex items-center gap-2">
                 <i class="fa-solid fa-signature text-[#0072bb] text-sm"></i>
                 <span class="font-serif font-bold text-slate-800">María Luz Llorens</span>
-                <span>— Senadora Provincial por Guaymallén</span>
-              </div>
-              <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-sky-50 text-[#0072bb] font-bold rounded-none border border-sky-200">
-                <i class="fa-solid fa-landmark text-[10px]"></i>
-                <span>Período Constitucional 2026-2030</span>
+                <span>— Senadora Provincial</span>
               </div>
             </div>
           </div>
@@ -465,12 +459,12 @@
         </div>
 
         <!-- Gráfico Donut Chart + Ejes Temáticos -->
-        <div class="bg-white border border-slate-200 rounded-sm shadow-2xs p-6 sm:p-8">
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <div class="bg-white border border-slate-200 rounded-sm shadow-2xs p-4 xs:p-6 sm:p-8">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center">
             
             <!-- Donut Chart SVG -->
             <div class="lg:col-span-5 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r border-slate-200 pb-6 lg:pb-0 lg:pr-8">
-              <div class="relative w-48 h-48 sm:w-56 sm:h-56">
+              <div class="relative w-44 h-44 xs:w-52 xs:h-52 sm:w-56 sm:h-56">
                 <svg viewBox="0 0 200 200" class="w-full h-full transform -rotate-90">
                   <!-- Círculo base gris muy tenue -->
                   <circle cx="100" cy="100" r="68" fill="none" stroke="#e2e8f0" stroke-width="22"></circle>
@@ -501,27 +495,27 @@
 
                 <!-- Centro del Donut -->
                 <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                  <span class="font-serif font-black text-3xl sm:text-4xl text-[#0a2540] leading-none">38</span>
-                  <span class="font-sans font-bold text-[10px] uppercase tracking-widest text-slate-500 mt-0.5">Proyectos</span>
+                  <span class="font-serif font-black text-2xl xs:text-3xl sm:text-4xl text-[#0a2540] leading-none">38</span>
+                  <span class="font-sans font-bold text-[9px] xs:text-[10px] uppercase tracking-widest text-slate-500 mt-0.5">Proyectos</span>
                   <span class="font-sans font-extrabold text-[8px] uppercase tracking-wider text-[#0072bb]">En 4 Meses</span>
                 </div>
               </div>
 
               <!-- Leyenda del Gráfico -->
-              <div class="mt-5 w-full space-y-2 max-w-xs">
+              <div class="mt-4 xs:mt-5 w-full space-y-2 max-w-xs">
                 <div class="flex items-center justify-between text-xs p-2 rounded-sm bg-slate-50 border border-slate-200">
                   <div class="flex items-center gap-2">
                     <span class="w-3 h-3 rounded-none bg-[#0a2540] inline-block shrink-0"></span>
-                    <span class="font-semibold text-slate-800">Proyectos propios</span>
+                    <span class="font-semibold text-slate-800 text-[11px] sm:text-xs">Proyectos propios</span>
                   </div>
-                  <span class="font-bold text-[#0a2540]">25 (69.8%)</span>
+                  <span class="font-bold text-[#0a2540] text-[11px] sm:text-xs">25 (69.8%)</span>
                 </div>
                 <div class="flex items-center justify-between text-xs p-2 rounded-sm bg-slate-50 border border-slate-200">
                   <div class="flex items-center gap-2">
                     <span class="w-3 h-3 rounded-none bg-[#0072bb] inline-block shrink-0"></span>
-                    <span class="font-semibold text-slate-800">Proyectos acompañados</span>
+                    <span class="font-semibold text-slate-800 text-[11px] sm:text-xs">Proyectos acompañados</span>
                   </div>
-                  <span class="font-bold text-[#0072bb]">13 (30.2%)</span>
+                  <span class="font-bold text-[#0072bb] text-[11px] sm:text-xs">13 (30.2%)</span>
                 </div>
               </div>
             </div>
@@ -585,33 +579,33 @@
               <span>Estado de los proyectos presentados</span>
             </h4>
 
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 xs:gap-3">
               <!-- KPI 1 -->
-              <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm text-center">
-                <span class="block font-serif font-black text-2xl sm:text-3xl text-emerald-800">68.2%</span>
-                <span class="block text-[11px] font-bold text-slate-700 uppercase tracking-wide mt-1">Proyectos Aprobados</span>
-                <span class="block text-[9px] text-slate-500 mt-0.5">Sancionados en el Senado</span>
+              <div class="p-2.5 xs:p-3 sm:p-3.5 bg-slate-50 border border-slate-200 rounded-sm text-center">
+                <span class="block font-serif font-black text-xl xs:text-2xl sm:text-3xl text-emerald-800">68.2%</span>
+                <span class="block text-[10px] xs:text-[11px] font-bold text-slate-700 uppercase tracking-wide mt-1">Proyectos Aprobados</span>
+                <span class="block text-[8px] xs:text-[9px] text-slate-500 mt-0.5">Sancionados en el Senado</span>
               </div>
 
               <!-- KPI 2 -->
-              <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm text-center">
-                <span class="block font-serif font-black text-2xl sm:text-3xl text-[#0072bb]">18.2%</span>
-                <span class="block text-[11px] font-bold text-slate-700 uppercase tracking-wide mt-1">En Comisión</span>
-                <span class="block text-[9px] text-slate-500 mt-0.5">En debate parlamentario</span>
+              <div class="p-2.5 xs:p-3 sm:p-3.5 bg-slate-50 border border-slate-200 rounded-sm text-center">
+                <span class="block font-serif font-black text-xl xs:text-2xl sm:text-3xl text-[#0072bb]">18.2%</span>
+                <span class="block text-[10px] xs:text-[11px] font-bold text-slate-700 uppercase tracking-wide mt-1">En Comisión</span>
+                <span class="block text-[8px] xs:text-[9px] text-slate-500 mt-0.5">En debate parlamentario</span>
               </div>
 
               <!-- KPI 3 -->
-              <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm text-center">
-                <span class="block font-serif font-black text-2xl sm:text-3xl text-rose-800">9.1%</span>
-                <span class="block text-[11px] font-bold text-slate-700 uppercase tracking-wide mt-1">Rechazados</span>
-                <span class="block text-[9px] text-slate-500 mt-0.5">Sin aval del oficialismo</span>
+              <div class="p-2.5 xs:p-3 sm:p-3.5 bg-slate-50 border border-slate-200 rounded-sm text-center">
+                <span class="block font-serif font-black text-xl xs:text-2xl sm:text-3xl text-rose-800">9.1%</span>
+                <span class="block text-[10px] xs:text-[11px] font-bold text-slate-700 uppercase tracking-wide mt-1">Rechazados</span>
+                <span class="block text-[8px] xs:text-[9px] text-slate-500 mt-0.5">Sin aval del oficialismo</span>
               </div>
 
               <!-- KPI 4 -->
-              <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm text-center">
-                <span class="block font-serif font-black text-2xl sm:text-3xl text-[#0a2540]">4.5%</span>
-                <span class="block text-[11px] font-bold text-slate-700 uppercase tracking-wide mt-1">Aprobados a Diputados</span>
-                <span class="block text-[9px] text-slate-500 mt-0.5">Con media sanción</span>
+              <div class="p-2.5 xs:p-3 sm:p-3.5 bg-slate-50 border border-slate-200 rounded-sm text-center">
+                <span class="block font-serif font-black text-xl xs:text-2xl sm:text-3xl text-[#0a2540]">4.5%</span>
+                <span class="block text-[10px] xs:text-[11px] font-bold text-slate-700 uppercase tracking-wide mt-1">Aprobados a Diputados</span>
+                <span class="block text-[8px] xs:text-[9px] text-slate-500 mt-0.5">Con media sanción</span>
               </div>
             </div>
 
@@ -637,7 +631,7 @@
           </h2>
         </div>
 
-        <div class="bg-white border-2 border-slate-300 rounded-sm shadow-xs p-6 sm:p-8 relative">
+        <div class="bg-white border-2 border-slate-300 rounded-sm shadow-xs p-4 xs:p-6 sm:p-8 relative">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
             <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-[#0a2540] text-[#c59b27] text-[11px] font-bold uppercase tracking-wider rounded-sm">
               <i class="fa-solid fa-star text-[10px]"></i>
@@ -687,7 +681,7 @@
           </h2>
         </div>
 
-        <div class="bg-white border border-slate-200 rounded-sm shadow-2xs p-6 sm:p-8">
+        <div class="bg-white border border-slate-200 rounded-sm shadow-2xs p-4 xs:p-6 sm:p-8">
           <div class="border-b border-slate-200 pb-4 mb-6">
             <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-sans">
               Soy <strong>Luz Llorens</strong>, Senadora Provincial. Este espacio es para vos: quiero conocer tus ideas, inquietudes y proyectos para tu barrio o departamento. Llevemos juntos la voz del territorio al Senado Provincial. ¡Sumate!
@@ -995,61 +989,68 @@
         <!-- Contenedor del mapa -->
         <div id="map-container" class="absolute inset-0 w-full h-full"></div>
 
-        <!-- Tarjeta Flotante Institucional de Luz Llorens (Top-Left) -->
+        <!-- Tarjeta Flotante Institucional de Luz Llorens (Top-Left en Mapa) -->
         <div 
           id="senator-floating-card" 
-          class="absolute top-2.5 left-2.5 md:top-4 md:left-4 z-[450] bg-white rounded-sm shadow-md border border-slate-300 p-1.5 sm:p-2.5 md:p-3.5 max-w-[165px] sm:max-w-[200px] md:max-w-[280px] pointer-events-auto transition-all">
+          class="absolute top-2.5 left-2.5 md:top-4 md:left-4 z-[450] bg-white rounded-sm shadow-md border border-slate-300 pointer-events-auto">
           
-          <div class="senator-card-expanded space-y-1 md:space-y-2">
-            <div class="flex items-center md:items-start justify-between gap-1.5 md:gap-2">
-              <div class="flex items-center gap-1.5 md:gap-2.5">
-                <div class="relative w-8 h-8 md:w-12 md:h-12 rounded-none overflow-hidden shrink-0 border border-slate-300 shadow-2xs bg-white">
-                  <img 
-                    src="assets/img/luz_llorens.png" 
-                    alt="Senadora Luz Llorens" 
-                    class="w-full h-full object-cover">
-                  <span class="absolute bottom-0 right-0 w-2 h-2 md:w-2.5 md:h-2.5 bg-emerald-600 border border-white"></span>
+          <div class="flex items-center p-1.5 sm:p-2">
+            <!-- Foto de Luz (Trigger siempre visible para abrir / cerrar) -->
+            <button 
+              type="button" 
+              onclick="App.toggleSenatorCard()" 
+              class="relative w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 rounded-none overflow-hidden shrink-0 border border-slate-300 shadow-2xs bg-white cursor-pointer"
+              title="Senadora Luz Llorens (Clic para abrir o cerrar)">
+              <img 
+                src="assets/img/luz_llorens.png" 
+                alt="Senadora Luz Llorens" 
+                class="w-full h-full object-cover">
+              <span class="absolute bottom-0 right-0 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-emerald-600 border border-white"></span>
+            </button>
+
+            <!-- Contenedor Desplegable con overflow-hidden y ancho fijo interno para evitar deformación o saltos de línea -->
+            <div id="senator-card-content" class="senator-card-content overflow-hidden">
+              <div class="senator-card-inner w-[210px] sm:w-[230px] md:w-[250px] pl-2.5 pr-1 space-y-1.5">
+                <div class="flex items-center justify-between gap-1.5">
+                  <div class="min-w-0">
+                    <h3 class="font-serif font-bold text-xs sm:text-sm text-[#0a2540] leading-tight truncate">
+                      Luz Llorens
+                    </h3>
+                    <span class="inline-block text-[9px] font-bold uppercase tracking-wider text-[#0072bb] bg-sky-50 px-1.5 py-0.5 rounded-none border border-sky-200 mt-0.5 whitespace-nowrap">
+                      Senadora Provincial
+                    </span>
+                  </div>
+
+                  <!-- Botón minimizar / cerrar -->
+                  <button 
+                    type="button"
+                    onclick="App.toggleSenatorCard()"
+                    id="toggle-senator-card" 
+                    class="w-6 h-6 rounded-sm hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-colors shrink-0"
+                    title="Minimizar">
+                    <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                  </button>
                 </div>
-                <div>
-                  <h3 class="font-serif font-bold text-xs md:text-sm text-[#0a2540] leading-tight">
-                    Luz Llorens
-                  </h3>
-                  <span class="hidden md:inline-block text-[9px] font-bold uppercase tracking-wider text-[#0072bb] bg-sky-50 px-1.5 py-0.5 rounded-none border border-sky-200 mt-0.5">
-                    Senadora Provincial
-                  </span>
+
+                <!-- Botones de Acción: Sobre Luz + WhatsApp Oficial -->
+                <div class="flex items-center gap-1.5 pt-0.5 whitespace-nowrap">
+                  <button 
+                    type="button"
+                    onclick="App.navigateToView('inicio')" 
+                    class="flex-1 py-1 px-2 rounded-sm text-[10px] sm:text-[11px] font-bold uppercase tracking-wider bg-[#0a2540] hover:bg-[#0072bb] text-white transition-all text-center whitespace-nowrap">
+                    Sobre Luz
+                  </button>
+                  <a 
+                    href="https://wa.me/5492615551234?text=Hola%20Senadora%20Luz%20Llorens,%20te%20escribo%20desde%20la%20plataforma%20Pensando%20Guaymall%C3%A9n"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="h-7 px-2 rounded-sm bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-1 text-[10px] sm:text-[11px] font-bold transition-all shrink-0 shadow-2xs whitespace-nowrap"
+                    title="Escribile a Luz por WhatsApp">
+                    <i class="fa-brands fa-whatsapp text-xs"></i>
+                    <span>WhatsApp</span>
+                  </a>
                 </div>
               </div>
-
-              <!-- Botón para minimizar (Desktop) -->
-              <button 
-                id="toggle-senator-card" 
-                class="hidden md:flex w-6 h-6 rounded-sm hover:bg-slate-100 text-slate-500 hover:text-slate-800 items-center justify-center transition-colors"
-                title="Minimizar tarjeta">
-                <i class="fa-solid fa-minus text-[10px]"></i>
-              </button>
-            </div>
-
-            <!-- Acciones en Desktop -->
-            <div class="hidden md:flex items-center gap-2 pt-0.5">
-              <button 
-                onclick="App.navigateToView('inicio')" 
-                class="flex-1 py-1.5 px-2 rounded-sm text-[11px] font-bold uppercase tracking-wider bg-[#0a2540] hover:bg-[#0072bb] text-white transition-all text-center">
-                Sobre Luz
-              </button>
-              <a 
-                href="https://wa.me/5492615551234?text=Hola%20Senadora%20Luz%20Llorens,%20te%20escribo%20desde%20la%20plataforma%20Pensando%20Guaymall%C3%A9n"
-                target="_blank"
-                class="w-7 h-7 rounded-sm bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center transition-all shrink-0 shadow-2xs"
-                title="Escribile a Luz por WhatsApp">
-                <i class="fa-brands fa-whatsapp text-xs"></i>
-              </a>
-            </div>
-          </div>
-
-          <!-- Modo minimizado -->
-          <div class="senator-card-minimized hidden items-center justify-center cursor-pointer" onclick="document.getElementById('senator-floating-card').classList.remove('minimized')">
-            <div class="relative w-8 h-8 md:w-10 md:h-10 rounded-none overflow-hidden border border-slate-300 shadow-xs" title="Luz Llorens (Clic para abrir)">
-              <img src="assets/img/luz_llorens.png" alt="Luz Llorens" class="w-full h-full object-cover">
             </div>
           </div>
         </div>

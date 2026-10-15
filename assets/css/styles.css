@@ -199,9 +199,34 @@ header {
   color: #0072bb !important;
 }
 
-/* Senator Floating Card on Map (Fondo Blanco Puro Institucional) */
+/* Bloqueo total de foco, caret e interacción para inputs bloqueados con sesión activa */
+input[readonly].input-locked,
+input.input-locked[readonly],
+input[readonly].pointer-events-none {
+  background-color: #f1f5f9 !important; /* bg-slate-100 */
+  color: #64748b !important;            /* text-slate-500 */
+  border-color: #cbd5e1 !important;     /* border-slate-300 */
+  cursor: default !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  pointer-events: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  caret-color: transparent !important;
+}
+
+input[readonly].input-locked:focus,
+input.input-locked[readonly]:focus,
+input[readonly].pointer-events-none:focus {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  caret-color: transparent !important;
+}
+
+/* Senator Floating Card on Map (Animación fluida sin deformación ni salto de línea) */
 #senator-floating-card {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 2px !important;
   background-color: #ffffff !important;
   background: #ffffff !important;
@@ -209,20 +234,28 @@ header {
   -webkit-backdrop-filter: none !important;
   border: 1px solid #cbd5e1 !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06) !important;
+  transition: box-shadow 0.2s ease;
 }
-#senator-floating-card.minimized {
-  width: auto !important;
-  max-width: 52px !important;
-  padding: 4px !important;
-  background-color: #ffffff !important;
-  background: #ffffff !important;
-  border-radius: 2px !important;
+
+#senator-floating-card .senator-card-content {
+  max-width: 320px;
+  opacity: 1;
+  transform: scale(1) translateX(0);
+  pointer-events: auto;
+  transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.25s ease-out,
+              transform 0.25s ease-out;
 }
-#senator-floating-card.minimized .senator-card-expanded {
-  display: none !important;
+
+#senator-floating-card.minimized .senator-card-content {
+  max-width: 0 !important;
+  opacity: 0 !important;
+  transform: scale(0.95) translateX(-8px) !important;
+  pointer-events: none !important;
 }
-#senator-floating-card.minimized .senator-card-minimized {
-  display: flex !important;
+
+#senator-floating-card .senator-card-inner {
+  box-sizing: border-box;
 }
 
 /* Legend Box */
