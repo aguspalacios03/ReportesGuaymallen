@@ -55,12 +55,12 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="assets/css/styles.css">
 </head>
-<body class="bg-white text-slate-800 flex flex-col min-h-screen antialiased select-none sm:select-auto">
+<body class="bg-white text-slate-800 flex flex-col min-h-[100dvh] antialiased select-none sm:select-auto">
 
   <!-- ========================================================
        1. HEADER / BARRA DE NAVEGACIÓN INSTITUCIONAL
        ======================================================== -->
-  <header class="sticky top-0 bg-white border-b-2 border-slate-200 shadow-xs z-50 shrink-0 pt-[env(safe-area-inset-top,0px)]">
+  <header id="main-header" class="fixed top-0 inset-x-0 w-full bg-white border-b-2 border-slate-200 shadow-xs z-[1000] shrink-0 pt-[env(safe-area-inset-top,0px)]">
     <div class="max-w-[1920px] mx-auto px-2 sm:px-4 lg:px-6 h-14 sm:h-16 flex items-center justify-between gap-1 sm:gap-4">
       
       <!-- Identidad Institucional Oficial -->
@@ -284,7 +284,7 @@
   <!-- ========================================================
        VISTA 1: INICIO (PORTAL INSTITUCIONAL SENADORA LUZ LLORENS)
        ======================================================== -->
-  <div id="view-inicio" class="app-view active w-full bg-white pt-4 pb-8 sm:py-10">
+  <div id="view-inicio" class="app-view active w-full bg-white pb-8 sm:py-10">
     <div class="max-w-5xl mx-auto px-3.5 sm:px-6 lg:px-8 space-y-8 sm:space-y-12">
 
       <!-- ========================================================
@@ -862,7 +862,7 @@
   <!-- ========================================================
        VISTA 2: MAPA DE RECLAMOS VECINALES (LEAFLET INTERACTIVO)
        ======================================================== -->
-  <div id="view-map" class="app-view flex-1 flex flex-col overflow-hidden relative" style="display: none;">
+  <div id="view-map" class="app-view flex flex-col overflow-hidden relative" style="display: none;">
 
     <!-- Mobile View Switcher (Barra bajo el Header) -->
     <div id="mobile-view-switcher" class="md:hidden relative bg-white border-b border-slate-200 py-1.5 px-3 shrink-0 z-20 shadow-2xs">
@@ -1249,7 +1249,7 @@
   <!-- ========================================================
        VISTA 3: CONOCÉ GUAYMALLÉN (INFORMACIÓN Y DISTRITOS)
        ======================================================== -->
-  <div id="view-conoce" class="app-view w-full bg-white py-8" style="display: none;">
+  <div id="view-conoce" class="app-view w-full bg-white pb-8" style="display: none;">
     <div class="max-w-6xl mx-auto w-full p-4 sm:p-8 space-y-8">
       
       <!-- Cabecera de la sección -->
@@ -1361,7 +1361,7 @@
        ======================================================== -->
   <div 
     id="modal-new-report" 
-    class="fixed inset-0 z-[1000] bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-0 md:p-4">
+    class="fixed inset-0 z-[2000] bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-0 md:p-4">
     
     <div class="bg-white w-full h-full md:h-auto md:max-h-[92vh] md:max-w-lg md:rounded-sm shadow-2xl flex flex-col overflow-hidden border-0 md:border md:border-slate-300">
       
@@ -1552,7 +1552,7 @@
        ======================================================== -->
   <div 
     id="modal-login" 
-    class="fixed inset-0 z-[1000] bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4">
+    class="fixed inset-0 z-[2000] bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4">
     
     <div class="bg-white rounded-sm shadow-2xl max-w-sm w-full overflow-hidden border border-slate-300">
       
@@ -1770,7 +1770,7 @@
        ======================================================== -->
   <div 
     id="modal-share" 
-    class="fixed inset-0 z-[1000] bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    class="fixed inset-0 z-[2000] bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
     
     <div class="bg-white rounded-sm shadow-2xl max-w-sm w-full overflow-hidden border border-slate-300">
       

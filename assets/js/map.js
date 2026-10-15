@@ -17,12 +17,14 @@ class GuaymallenMap {
     this.activeReportId = null;
     this.activeDistrictId = 'all';
 
-    // Control de navegación libre: bloquea selección automática al arrastrar o hacer pan en mobile
-    this._isDraggingMap = false;
-    this._touchStartPos = null;
-    this._touchMovedDistance = 0;
-    this._lastDragTime = 0;
-    this._suppressClicksUntil = 0;
+    // Control estricto de navegación libre (Tap consciente vs Drag/Pan/Zoom)
+    this._isValidTap = false;
+    this._tapStartPos = null;
+    this._tapStartTime = 0;
+    this._mapMovedSinceTapStart = false;
+    this._lastNavigationEndTime = 0;
+    this._validTapTimer = null;
+    this._ignoreNextMapClick = false;
 
     this.init();
   }
@@ -78,78 +80,124 @@ class GuaymallenMap {
       this.renderDistricts();
       this.cacheDistrictBounds();
 
-      // Seguimiento táctil preciso en el contenedor para distinguir tap consciente de pan/arrastre
-      container.addEventListener('touchstart', (e) => {
-        if (e.touches && e.touches.length === 1) {
-          this._touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-          this._touchMovedDistance = 0;
-        }
-      }, { passive: true });
+      // Control estricto de eventos de contacto (Pointer y Touch) en fase de captura (Capture Phase)
+      // Garantiza que el arrastre, desplazamiento o paneo libre NUNCA seleccione ningún distrito.
+      const recordDown = (clientX, clientY) => {
+        this._tapStartPos = { x: clientX, y: clientY };
+        this._tapStartTime = Date.now();
+        this._mapMovedSinceTapStart = false;
+        this._isValidTap = false;
+      };
 
-      container.addEventListener('touchmove', (e) => {
-        if (this._touchStartPos && e.touches && e.touches.length === 1) {
-          const dx = e.touches[0].clientX - this._touchStartPos.x;
-          const dy = e.touches[0].clientY - this._touchStartPos.y;
-          const dist = Math.hypot(dx, dy);
-          this._touchMovedDistance = Math.max(this._touchMovedDistance, dist);
-          if (dist > 7) {
-            this._isDraggingMap = true;
-            this._lastDragTime = Date.now();
-            container.classList.add('map-is-navigating');
+      const recordMove = (clientX, clientY) => {
+        if (this._tapStartPos) {
+          const dx = clientX - this._tapStartPos.x;
+          const dy = clientY - this._tapStartPos.y;
+          if (Math.hypot(dx, dy) > 6) {
+            this._mapMovedSinceTapStart = true;
+            this._isValidTap = false;
+            this._lastNavigationEndTime = Date.now();
           }
         }
-      }, { passive: true });
+      };
 
-      container.addEventListener('touchend', () => {
-        if (this._touchMovedDistance > 7 || this._isDraggingMap) {
-          this._lastDragTime = Date.now();
-          this._suppressClicksUntil = Date.now() + 350;
-          setTimeout(() => {
-            this._isDraggingMap = false;
-            container.classList.remove('map-is-navigating');
-          }, 250);
+      const recordUp = (clientX, clientY) => {
+        const duration = Date.now() - (this._tapStartTime || 0);
+        const dist = this._tapStartPos ? Math.hypot(clientX - this._tapStartPos.x, clientY - this._tapStartPos.y) : 999;
+        const timeSinceLastNav = Date.now() - (this._lastNavigationEndTime || 0);
+
+        // Criterio estricto de Tap Consciente:
+        // - Distancia <= 6px
+        // - Duración < 350ms
+        // - Ningún movimiento del mapa durante el contacto
+        // - Tiempo desde la última navegación / arrastre > 400ms
+        if (!this._mapMovedSinceTapStart && dist <= 6 && duration < 350 && timeSinceLastNav > 400) {
+          this._isValidTap = true;
+          clearTimeout(this._validTapTimer);
+          this._validTapTimer = setTimeout(() => {
+            this._isValidTap = false;
+          }, 350);
+        } else {
+          this._isValidTap = false;
+          this._lastNavigationEndTime = Date.now();
         }
-        this._touchStartPos = null;
-      }, { passive: true });
+        this._tapStartPos = null;
+      };
 
-      container.addEventListener('touchcancel', () => {
-        this._isDraggingMap = false;
-        this._touchStartPos = null;
-        container.classList.remove('map-is-navigating');
-      }, { passive: true });
+      const recordCancel = () => {
+        this._isValidTap = false;
+        this._tapStartPos = null;
+        this._mapMovedSinceTapStart = true;
+        this._lastNavigationEndTime = Date.now();
+      };
 
-      // Monitoreo de eventos de movimiento de Leaflet para garantizar bloqueo total durante la navegación
-      this.map.on('movestart dragstart zoomstart', () => {
-        this._isDraggingMap = true;
-        this._lastDragTime = Date.now();
-        container.classList.add('map-is-navigating');
-      });
+      // Pointer Events en fase de captura
+      container.addEventListener('pointerdown', (e) => {
+        recordDown(e.clientX, e.clientY);
+      }, { capture: true, passive: true });
 
-      this.map.on('move drag zoom', () => {
-        this._isDraggingMap = true;
-        this._lastDragTime = Date.now();
+      container.addEventListener('pointermove', (e) => {
+        recordMove(e.clientX, e.clientY);
+      }, { capture: true, passive: true });
+
+      container.addEventListener('pointerup', (e) => {
+        recordUp(e.clientX, e.clientY);
+      }, { capture: true, passive: true });
+
+      container.addEventListener('pointercancel', recordCancel, { capture: true, passive: true });
+
+      // Touch Events nativos como respaldo en fase de captura
+      container.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches.length === 1) {
+          recordDown(e.touches[0].clientX, e.touches[0].clientY);
+        } else {
+          recordCancel();
+        }
+      }, { capture: true, passive: true });
+
+      container.addEventListener('touchmove', (e) => {
+        if (e.touches && e.touches.length === 1) {
+          recordMove(e.touches[0].clientX, e.touches[0].clientY);
+        } else {
+          recordCancel();
+        }
+      }, { capture: true, passive: true });
+
+      container.addEventListener('touchend', (e) => {
+        if (e.changedTouches && e.changedTouches.length === 1) {
+          recordUp(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+        } else {
+          recordCancel();
+        }
+      }, { capture: true, passive: true });
+
+      container.addEventListener('touchcancel', recordCancel, { capture: true, passive: true });
+
+      // Monitoreo de eventos de movimiento de Leaflet para invalidar cualquier clic automático
+      this.map.on('movestart dragstart zoomstart move drag zoom', () => {
+        this._mapMovedSinceTapStart = true;
+        this._isValidTap = false;
+        this._lastNavigationEndTime = Date.now();
       });
 
       this.map.on('moveend dragend zoomend', () => {
-        this._lastDragTime = Date.now();
-        this._suppressClicksUntil = Date.now() + 350;
-        setTimeout(() => {
-          this._isDraggingMap = false;
-          container.classList.remove('map-is-navigating');
-        }, 250);
+        this._mapMovedSinceTapStart = true;
+        this._isValidTap = false;
+        this._lastNavigationEndTime = Date.now();
       });
 
-      // Clic en el mapa para fijar ubicación al reportar o deseleccionar distrito
+      // Clic consciente en el fondo del mapa (para deseleccionar distrito o fijar pin en modo reporte)
       this.map.on('click', (e) => {
         if (this._ignoreNextMapClick) {
           this._ignoreNextMapClick = false;
           return;
         }
 
-        // Si el usuario estuvo navegando o arrastrando el mapa, bloquear clics accidentales
-        if (this._isDraggingMap || this._touchMovedDistance > 7 || Date.now() < this._suppressClicksUntil || (Date.now() - this._lastDragTime < 350)) {
+        // Si fue un arrastre o movimiento de navegación, se descarta por completo
+        if (!this._isValidTap) {
           return;
         }
+        this._isValidTap = false;
 
         if (this.isPickLocationMode && typeof this.onLocationPicked === 'function') {
           this.onLocationPicked(e.latlng);
@@ -157,22 +205,7 @@ class GuaymallenMap {
           return;
         }
 
-        // Si se hace un clic deliberado en cualquier área del mapa fuera de los polígonos y hay un distrito seleccionado
-        if (window.App && window.App.selectedDistrict && window.App.selectedDistrict !== 'all') {
-          window.App.selectDistrict('all');
-        }
-      });
-
-      // Listener de respaldo en el contenedor para clics en áreas vacías
-      container.addEventListener('click', (ev) => {
-        if (this._ignoreNextMapClick) return;
-        if (this._isDraggingMap || this._touchMovedDistance > 7 || Date.now() < this._suppressClicksUntil || (Date.now() - this._lastDragTime < 350)) {
-          return;
-        }
-        if (ev.target.closest('button, a, select, input, .leaflet-control, #senator-floating-card, .custom-map-marker, .custom-leaflet-popup, .district-poly, #map-picker-banner')) {
-          return;
-        }
-        if (this.isPickLocationMode) return;
+        // Si se hace un clic deliberado en cualquier área vacía y hay un distrito seleccionado, deseleccionar
         if (window.App && window.App.selectedDistrict && window.App.selectedDistrict !== 'all') {
           window.App.selectDistrict('all');
         }
@@ -251,14 +284,12 @@ class GuaymallenMap {
       polygon.on('click', (e) => {
         if (this.isPickLocationMode) return;
 
-        // VERIFICACIÓN ESTRICTA: La navegación libre (arrastrar, pan o zoom)
-        // NUNCA debe seleccionar ningún distrito bajo ninguna circunstancia.
-        if (this._isDraggingMap || 
-            this._touchMovedDistance > 7 || 
-            Date.now() < this._suppressClicksUntil || 
-            (Date.now() - this._lastDragTime < 350)) {
+        // VERIFICACIÓN ESTRICTA: Solo permitir selección tras un tap/clic deliberado y consciente.
+        // Cualquier arrastre, paneo o navegación libre bloquea la selección.
+        if (!this._isValidTap) {
           return;
         }
+        this._isValidTap = false;
 
         if (e) {
           if (e.originalEvent) {
@@ -433,12 +464,10 @@ class GuaymallenMap {
 
       marker.on('click', (e) => {
         // Bloquear clic en marcador si el mapa se estaba arrastrando o navegando libremente
-        if (this._isDraggingMap || 
-            this._touchMovedDistance > 7 || 
-            Date.now() < this._suppressClicksUntil || 
-            (Date.now() - this._lastDragTime < 350)) {
+        if (!this._isValidTap) {
           return;
         }
+        this._isValidTap = false;
 
         if (e) {
           if (e.originalEvent) e.originalEvent.stopPropagation();
@@ -624,6 +653,9 @@ class GuaymallenMap {
     }
     this.pickerClickHandler = (e) => {
       if (this.isPickLocationMode && this.pickerMarker) {
+        if (!this._isValidTap) return;
+        this._isValidTap = false;
+
         if (dist && this.isPointInPolygon(e.latlng, dist.polygon)) {
           lastValidLatLng = e.latlng;
           this.pickerMarker.setLatLng(e.latlng);
