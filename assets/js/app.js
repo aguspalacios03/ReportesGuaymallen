@@ -5,49 +5,61 @@
 
 class PensandoGuaymallenApp {
   constructor() {
+    // 1. Limpieza absoluta de almacenamiento previo del navegador (100% volátil en RAM)
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch (e) {}
+
     this.currentView = 'map'; // 'map' | 'conoce' | 'propuestas' | 'contacto'
     this.reports = this.loadReports();
     this.authMode = 'login'; // 'login' | 'register'
-    this.currentUser = this.loadCurrentUser(); // Usuario autenticado { id, name, email }
+    
+    // Almacenamiento 100% en memoria volátil de JavaScript (RAM)
+    // Se resetea automáticamente a cero al recargar la página con F5
+    this.registeredUsers = {}; // { [email]: { id, name, email, phone, password, registeredAt } }
+    this.currentUser = null;   // Usuario autenticado activo en RAM (inicia siempre en null)
+    this.proposals = [];       // Propuestas ciudadanas en memoria volátil
+
     this.reportScope = 'all'; // 'all' | 'mine'
     this.selectedDistrict = 'all';
     this.selectedCategory = 'all';
     this.searchQuery = '';
     this.activeReportId = null;
     this.mapInstance = null;
-    this.activeTab = 'map'; // for mobile view: 'map' | 'list' (en mobile arranca en 'map' como en el mockup)
+    this.activeTab = 'map'; // for mobile view: 'map' | 'list'
     this.isPickingLocation = false;
     this.pendingLocation = null;
 
     this.init();
   }
 
+  getRegisteredUsers() {
+    return this.registeredUsers || {};
+  }
+
+  saveRegisteredUsers(users) {
+    this.registeredUsers = users || {};
+  }
+
   loadCurrentUser() {
-    try {
-      const saved = sessionStorage.getItem('pensando_guaymallen_user');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
     return null;
   }
 
   loadReports() {
-    // Modo de prueba interactivo: No se persiste en el almacenamiento permanente.
-    // Al recargar la página (F5), la plataforma vuelve automáticamente a 0 reclamos.
-    try {
-      localStorage.removeItem('pensando_guaymallen_reports');
-      localStorage.removeItem('pensando_guaymallen_reports_v2');
-      sessionStorage.removeItem('pensando_guaymallen_reports_v2');
-    } catch (e) {}
     return [];
   }
 
   saveReports() {
-    // No se guarda en localStorage: los reclamos solo viven mientras la pestaña esté abierta
+    // No se persiste: datos 100% volátiles en memoria RAM
   }
 
   init() {
     // Inicializar mapa de Guaymallén
     this.mapInstance = new GuaymallenMap('map-container');
+
+    // Deshabilitar propagación de clics sobre la tarjeta flotante de Luz Llorens
+    this.setupSenatorCardEvents();
 
     // Cargar selectores de distritos y categorías
     this.populateDistrictSelects();
@@ -58,6 +70,7 @@ class PensandoGuaymallenApp {
 
     // Renderizar estado de usuario en Header y Drawer
     this.renderUserHeader();
+    this.syncFormUserSession();
     this.updateScopeTabs();
 
     // Renderizar tarjetas de reportes
@@ -76,6 +89,12 @@ class PensandoGuaymallenApp {
 
     // Eventos
     this.attachEvents();
+
+    // Vista inicial (por defecto 'inicio', o hash '#map' / '#conoce' si viene con ancla)
+    const initialView = (window.location.hash === '#map' || window.location.hash === '#mapa') ? 'map'
+      : (window.location.hash === '#conoce') ? 'conoce'
+      : 'inicio';
+    this.navigateToView(initialView);
   }
 
   populateDistrictSelects() {
@@ -238,6 +257,21 @@ class PensandoGuaymallenApp {
       newReportForm.addEventListener('submit', (e) => this.handleNewReportSubmit(e));
     }
 
+    // Formulario de Propuestas Ciudadanas (Home)
+    const citizenProposalForm = document.getElementById('citizen-proposal-form');
+    if (citizenProposalForm) {
+      citizenProposalForm.addEventListener('submit', (e) => this.handleProposalSubmit(e));
+      citizenProposalForm.addEventListener('reset', () => {
+        setTimeout(() => this.syncFormUserSession(), 10);
+      });
+    }
+
+    const propEmail = document.getElementById('propuesta-email');
+    if (propEmail) {
+      propEmail.addEventListener('input', (e) => this.onPropuestaEmailInput(e));
+      propEmail.addEventListener('blur', (e) => this.onPropuestaEmailBlur(e));
+    }
+
     // Botón para fijar ubicación en el mapa
     const btnPickLocation = document.getElementById('btn-pick-map-location');
     if (btnPickLocation) {
@@ -270,6 +304,14 @@ class PensandoGuaymallenApp {
 
   // Navegación entre vistas completas (Salir completamente del mapa a otra página)
   navigateToView(viewName) {
+    // Normalizar aliases a las 3 vistas principales
+    if (viewName === 'propuestas' || viewName === 'contacto' || viewName === 'home') {
+      viewName = 'inicio';
+    }
+    if (viewName === 'mapa') {
+      viewName = 'map';
+    }
+
     this.currentView = viewName;
 
     const views = document.querySelectorAll('.app-view');
@@ -286,7 +328,7 @@ class PensandoGuaymallenApp {
 
     // Modo Pantalla Completa:
     // Si estamos en el mapa: html y body con h-screen y overflow-hidden para layout de app
-    // Si estamos en Conocé, Propuestas o Contacto: body con min-h-screen y overflow-y-auto para scroll web natural
+    // Si estamos en Inicio o Conocé: body con min-h-screen y overflow-y-auto para scroll web natural
     if (viewName === 'map') {
       document.documentElement.classList.add('h-screen', 'h-[100dvh]', 'overflow-hidden');
       document.body.classList.add('h-screen', 'h-[100dvh]', 'overflow-hidden');
@@ -295,11 +337,16 @@ class PensandoGuaymallenApp {
       window.scrollTo(0, 0);
 
       if (this.mapInstance && this.mapInstance.map) {
+        this.mapInstance.map.invalidateSize();
         setTimeout(() => {
-          this.mapInstance.map.invalidateSize();
+          if (this.mapInstance && this.mapInstance.map) {
+            this.mapInstance.map.invalidateSize();
+          }
         }, 100);
         setTimeout(() => {
-          this.mapInstance.map.invalidateSize();
+          if (this.mapInstance && this.mapInstance.map) {
+            this.mapInstance.map.invalidateSize();
+          }
         }, 300);
       }
     } else {
@@ -310,18 +357,83 @@ class PensandoGuaymallenApp {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Actualizar botones de navegación en el header
+    // Actualizar botones de navegación en el header (Desktop)
     const navButtons = document.querySelectorAll('.nav-tab-btn');
     navButtons.forEach(btn => {
       const targetView = btn.getAttribute('data-nav-view');
       if (targetView === viewName) {
-        btn.classList.add('text-sky-950', 'border-sky-600', 'bg-sky-50');
-        btn.classList.remove('text-slate-600');
+        btn.classList.add('text-[#0a2540]', 'border-[#0072bb]', 'bg-sky-50', 'font-bold');
+        btn.classList.remove('text-slate-700', 'border-transparent', 'hover:bg-slate-50', 'font-semibold');
       } else {
-        btn.classList.remove('text-sky-950', 'border-sky-600', 'bg-sky-50');
-        btn.classList.add('text-slate-600');
+        btn.classList.remove('text-[#0a2540]', 'border-[#0072bb]', 'bg-sky-50', 'font-bold');
+        btn.classList.add('text-slate-700', 'border-transparent', 'hover:bg-slate-50', 'font-semibold');
       }
     });
+
+    // Actualizar botones de navegación en el menú móvil (Drawer)
+    const drawerButtons = document.querySelectorAll('[data-nav-drawer-view]');
+    drawerButtons.forEach(btn => {
+      const targetView = btn.getAttribute('data-nav-drawer-view');
+      if (targetView === viewName) {
+        btn.classList.add('text-[#0a2540]', 'bg-sky-50', 'border-[#0072bb]', 'font-bold');
+        btn.classList.remove('text-slate-700', 'border-transparent', 'font-semibold');
+      } else {
+        btn.classList.remove('text-[#0a2540]', 'bg-sky-50', 'border-[#0072bb]', 'font-bold');
+        btn.classList.add('text-slate-700', 'border-transparent', 'font-semibold');
+      }
+    });
+  }
+
+  // Manejo del envío del formulario de propuestas ciudadanas en Inicio
+  handleProposalSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const email = document.getElementById('propuesta-email')?.value.trim() || '';
+    const nombre = document.getElementById('propuesta-nombre')?.value.trim() || '';
+    const telefono = document.getElementById('propuesta-telefono')?.value.trim() || '';
+    const departamento = document.getElementById('propuesta-departamento')?.value || '';
+    const texto = document.getElementById('propuesta-texto')?.value.trim() || '';
+    const archivoInput = document.getElementById('propuesta-archivo');
+    const archivo = archivoInput?.files?.[0]?.name || null;
+
+    if (!email || !nombre || !telefono || !departamento || !texto) {
+      this.showToast('Por favor, completá todos los campos obligatorios (*).', 'error');
+      return;
+    }
+
+    // Validar formato de correo electrónico
+    if (!this.validateEmailFormat(email)) {
+      const emailInput = document.getElementById('propuesta-email');
+      const emailError = document.getElementById('propuesta-email-error');
+      if (emailError) emailError.classList.remove('hidden');
+      if (emailInput) {
+        emailInput.classList.remove('border-emerald-500');
+        emailInput.classList.add('border-rose-500', 'focus:border-rose-500', 'focus:ring-rose-500');
+        emailInput.focus();
+      }
+      this.showToast('Por favor, ingresá un formato de correo válido (ej: nombre@correo.com).', 'warning', 4000);
+      return;
+    }
+
+    const proposal = {
+      id: 'prop-' + Date.now(),
+      email,
+      nombre,
+      telefono,
+      departamento,
+      texto,
+      archivo,
+      createdAt: new Date().toISOString()
+    };
+
+    if (!Array.isArray(this.proposals)) {
+      this.proposals = [];
+    }
+    this.proposals.unshift(proposal);
+
+    this.showToast('¡Propuesta enviada con éxito! Tu iniciativa ha sido ingresada al despacho de la Senadora Luz Llorens.', 'success', 5000);
+    form.reset();
+    this.syncFormUserSession();
   }
 
   // Manejo del menú desplegable móvil
@@ -911,10 +1023,7 @@ class PensandoGuaymallenApp {
     modal.classList.add('flex');
     document.body.classList.add('overflow-hidden');
 
-    const citizenInput = document.querySelector('input[name="report-citizen"]');
-    if (citizenInput && this.currentUser && !citizenInput.value) {
-      citizenInput.value = this.currentUser.email;
-    }
+    this.syncFormUserSession();
   }
 
   closeReportModal() {
@@ -1072,7 +1181,7 @@ class PensandoGuaymallenApp {
     const category = form['report-category'].value;
     const address = form['report-address'].value.trim();
     const description = form['report-description'].value.trim();
-    const citizen = form['report-citizen'].value.trim() || (this.currentUser ? this.currentUser.email : 'Vecino de Guaymallén');
+    const citizen = form['report-citizen'].value.trim() || (this.currentUser ? this.currentUser.name : 'Vecino de Guaymallén');
     const districtId = this.pickerDistrictId || 'dorrego';
 
     // Validación estricta: UBICACIÓN OBLIGATORIA EN EL MAPA
@@ -1115,6 +1224,7 @@ class PensandoGuaymallenApp {
     // Limpiar estado temporal de ubicación
     this.pendingLocation = null;
     form.reset();
+    this.syncFormUserSession();
 
     this.closeReportModal();
     this.renderReports();
@@ -1138,11 +1248,11 @@ class PensandoGuaymallenApp {
     if (!email || typeof email !== 'string') return false;
     const clean = email.trim();
     if (/\s/.test(clean)) return false;
-    // Formato estándar usuario@dominio.extension
-    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(clean);
+    // Formato con '@' y al menos un '.' posterior
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean);
   }
 
-  // Validación de correo en tiempo real optimizada (sin retrasos ni bloqueos al escribir)
+  // Validación de correo en tiempo real en Modal de Autenticación
   onEmailInput(e) {
     if (this._emailDebounceTimer) {
       clearTimeout(this._emailDebounceTimer);
@@ -1157,20 +1267,20 @@ class PensandoGuaymallenApp {
     if (!email) {
       if (errorEl) errorEl.classList.add('hidden');
       if (validIcon) validIcon.classList.add('hidden');
-      input.classList.remove('border-rose-400', 'border-emerald-500', 'focus:ring-rose-400', 'focus:ring-emerald-400');
+      input.classList.remove('border-rose-500', 'border-emerald-500', 'focus:ring-rose-500', 'focus:ring-emerald-400');
       return;
     }
 
-    // Si ya completó un formato válido, marcar verde al instante sin demoras
+    // Si ya completó un formato válido, marcar verde al instante sin alterar el texto
     if (this.validateEmailFormat(email)) {
       if (errorEl) errorEl.classList.add('hidden');
       if (validIcon) validIcon.classList.remove('hidden');
-      input.classList.remove('border-rose-400', 'focus:ring-rose-400');
+      input.classList.remove('border-rose-500', 'focus:ring-rose-500');
       input.classList.add('border-emerald-500', 'focus:ring-emerald-400');
       return;
     }
 
-    // Si aún está escribiendo, esperar 350ms tras la última tecla para no interrumpir la escritura con parpadeos
+    // Si aún está escribiendo, esperar 350ms tras la última tecla para no interrumpir
     this._emailDebounceTimer = setTimeout(() => {
       const current = input.value.trim();
       if (!current) return;
@@ -1178,7 +1288,7 @@ class PensandoGuaymallenApp {
         if (errorEl) errorEl.classList.remove('hidden');
         if (validIcon) validIcon.classList.add('hidden');
         input.classList.remove('border-emerald-500', 'focus:ring-emerald-400');
-        input.classList.add('border-rose-400', 'focus:ring-rose-400');
+        input.classList.add('border-rose-500', 'focus:ring-rose-500');
       }
     }, 350);
   }
@@ -1195,20 +1305,78 @@ class PensandoGuaymallenApp {
     if (!email) {
       if (errorEl) errorEl.classList.add('hidden');
       if (validIcon) validIcon.classList.add('hidden');
-      input.classList.remove('border-rose-400', 'border-emerald-500', 'focus:ring-rose-400', 'focus:ring-emerald-400');
+      input.classList.remove('border-rose-500', 'border-emerald-500', 'focus:ring-rose-500', 'focus:ring-emerald-400');
       return;
     }
 
     if (this.validateEmailFormat(email)) {
       if (errorEl) errorEl.classList.add('hidden');
       if (validIcon) validIcon.classList.remove('hidden');
-      input.classList.remove('border-rose-400', 'focus:ring-rose-400');
+      input.classList.remove('border-rose-500', 'focus:ring-rose-500');
       input.classList.add('border-emerald-500', 'focus:ring-emerald-400');
     } else {
       if (errorEl) errorEl.classList.remove('hidden');
       if (validIcon) validIcon.classList.add('hidden');
       input.classList.remove('border-emerald-500', 'focus:ring-emerald-400');
-      input.classList.add('border-rose-400', 'focus:ring-rose-400');
+      input.classList.add('border-rose-500', 'focus:ring-rose-500');
+    }
+  }
+
+  // Validación de correo en tiempo real en Formulario de Propuestas Ciudadanas
+  onPropuestaEmailInput(e) {
+    if (this._propEmailDebounceTimer) {
+      clearTimeout(this._propEmailDebounceTimer);
+    }
+    const input = e.target;
+    const email = input.value.trim();
+    const errorEl = document.getElementById('propuesta-email-error');
+
+    if (!email) {
+      if (errorEl) errorEl.classList.add('hidden');
+      input.classList.remove('border-rose-500', 'border-emerald-500', 'focus:border-rose-500', 'focus:ring-rose-500');
+      return;
+    }
+
+    if (this.validateEmailFormat(email)) {
+      if (errorEl) errorEl.classList.add('hidden');
+      input.classList.remove('border-rose-500', 'focus:border-rose-500', 'focus:ring-rose-500');
+      input.classList.add('border-emerald-500');
+      return;
+    }
+
+    this._propEmailDebounceTimer = setTimeout(() => {
+      const current = input.value.trim();
+      if (!current) return;
+      if (!this.validateEmailFormat(current)) {
+        if (errorEl) errorEl.classList.remove('hidden');
+        input.classList.remove('border-emerald-500');
+        input.classList.add('border-rose-500', 'focus:border-rose-500', 'focus:ring-rose-500');
+      }
+    }, 350);
+  }
+
+  onPropuestaEmailBlur(e) {
+    if (this._propEmailDebounceTimer) {
+      clearTimeout(this._propEmailDebounceTimer);
+    }
+    const input = e.target;
+    const email = input.value.trim();
+    const errorEl = document.getElementById('propuesta-email-error');
+
+    if (!email) {
+      if (errorEl) errorEl.classList.add('hidden');
+      input.classList.remove('border-rose-500', 'border-emerald-500', 'focus:border-rose-500', 'focus:ring-rose-500');
+      return;
+    }
+
+    if (this.validateEmailFormat(email)) {
+      if (errorEl) errorEl.classList.add('hidden');
+      input.classList.remove('border-rose-500', 'focus:border-rose-500', 'focus:ring-rose-500');
+      input.classList.add('border-emerald-500');
+    } else {
+      if (errorEl) errorEl.classList.remove('hidden');
+      input.classList.remove('border-emerald-500');
+      input.classList.add('border-rose-500', 'focus:border-rose-500', 'focus:ring-rose-500');
     }
   }
 
@@ -1220,7 +1388,7 @@ class PensandoGuaymallenApp {
 
     if (passError && pass.length > 0) {
       passError.classList.add('hidden');
-      if (passInput) passInput.classList.remove('border-rose-400', 'focus:ring-rose-400');
+      if (passInput) passInput.classList.remove('border-rose-500', 'focus:ring-rose-500');
     }
 
     if (this.authMode === 'register') {
@@ -1232,7 +1400,7 @@ class PensandoGuaymallenApp {
       if (!confirmPass) {
         if (confirmError) confirmError.classList.add('hidden');
         if (confirmSuccess) confirmSuccess.classList.add('hidden');
-        if (confirmInput) confirmInput.classList.remove('border-rose-400', 'border-emerald-500');
+        if (confirmInput) confirmInput.classList.remove('border-rose-500', 'border-emerald-500');
         return;
       }
 
@@ -1240,7 +1408,7 @@ class PensandoGuaymallenApp {
         if (confirmError) confirmError.classList.add('hidden');
         if (confirmSuccess) confirmSuccess.classList.remove('hidden');
         if (confirmInput) {
-          confirmInput.classList.remove('border-rose-400');
+          confirmInput.classList.remove('border-rose-500');
           confirmInput.classList.add('border-emerald-500');
         }
       } else {
@@ -1248,7 +1416,7 @@ class PensandoGuaymallenApp {
         if (confirmError) confirmError.classList.remove('hidden');
         if (confirmInput) {
           confirmInput.classList.remove('border-emerald-500');
-          confirmInput.classList.add('border-rose-400');
+          confirmInput.classList.add('border-rose-500');
         }
       }
     }
@@ -1278,23 +1446,38 @@ class PensandoGuaymallenApp {
     const modal = document.getElementById('modal-login');
     if (modal) {
       this.switchAuthMode(mode);
+      const nameInput = document.getElementById('auth-input-name');
       const emailInput = document.getElementById('auth-input-email');
+      const phoneInput = document.getElementById('auth-input-phone');
       const passInput = document.getElementById('auth-input-password');
       const confirmInput = document.getElementById('auth-input-password-confirm');
+
+      const nameError = document.getElementById('auth-name-error');
       const emailError = document.getElementById('auth-email-error');
+      const phoneError = document.getElementById('auth-phone-error');
       const validIcon = document.getElementById('auth-email-valid-icon');
       const passError = document.getElementById('auth-password-error');
       const confirmError = document.getElementById('auth-confirm-error');
       const confirmSuccess = document.getElementById('auth-confirm-success');
 
+      if (nameError) nameError.classList.add('hidden');
       if (emailError) emailError.classList.add('hidden');
+      if (phoneError) phoneError.classList.add('hidden');
       if (validIcon) validIcon.classList.add('hidden');
       if (passError) passError.classList.add('hidden');
       if (confirmError) confirmError.classList.add('hidden');
       if (confirmSuccess) confirmSuccess.classList.add('hidden');
 
+      if (nameInput) {
+        nameInput.classList.remove('border-rose-500', 'focus:ring-rose-500');
+        nameInput.value = '';
+      }
+      if (phoneInput) {
+        phoneInput.classList.remove('border-rose-500', 'focus:ring-rose-500');
+        phoneInput.value = '';
+      }
       if (emailInput) {
-        emailInput.classList.remove('border-rose-400', 'border-emerald-500', 'focus:ring-rose-400', 'focus:ring-emerald-400');
+        emailInput.classList.remove('border-rose-500', 'border-emerald-500', 'focus:ring-rose-500', 'focus:ring-emerald-400');
         if (this.currentUser) {
           emailInput.value = this.currentUser.email;
           if (validIcon) validIcon.classList.remove('hidden');
@@ -1304,18 +1487,20 @@ class PensandoGuaymallenApp {
         }
       }
       if (passInput) {
-        passInput.classList.remove('border-rose-400', 'focus:ring-rose-400');
+        passInput.classList.remove('border-rose-500', 'focus:ring-rose-500');
         passInput.value = '';
       }
       if (confirmInput) {
-        confirmInput.classList.remove('border-rose-400', 'border-emerald-500');
+        confirmInput.classList.remove('border-rose-500', 'border-emerald-500');
         confirmInput.value = '';
       }
 
       modal.classList.remove('hidden');
       modal.classList.add('flex');
       setTimeout(() => {
-        if (emailInput && !emailInput.value) {
+        if (this.authMode === 'register' && nameInput) {
+          nameInput.focus();
+        } else if (emailInput && !emailInput.value) {
           emailInput.focus();
         } else if (passInput) {
           passInput.focus();
@@ -1335,8 +1520,12 @@ class PensandoGuaymallenApp {
       modal.classList.add('hidden');
       modal.classList.remove('flex');
     }
+    const nameError = document.getElementById('auth-name-error');
+    if (nameError) nameError.classList.add('hidden');
     const emailError = document.getElementById('auth-email-error');
     if (emailError) emailError.classList.add('hidden');
+    const phoneError = document.getElementById('auth-phone-error');
+    if (phoneError) phoneError.classList.add('hidden');
     const passError = document.getElementById('auth-password-error');
     if (passError) passError.classList.add('hidden');
     const confirmError = document.getElementById('auth-confirm-error');
@@ -1358,11 +1547,29 @@ class PensandoGuaymallenApp {
     const submitBtnText = document.getElementById('auth-submit-text');
     const submitIcon = document.getElementById('auth-submit-icon');
     const switchPrompt = document.getElementById('auth-switch-prompt');
+
+    const nameContainer = document.getElementById('auth-name-container');
+    const nameInput = document.getElementById('auth-input-name');
+    const nameError = document.getElementById('auth-name-error');
+
+    const phoneContainer = document.getElementById('auth-phone-container');
+    const phoneInput = document.getElementById('auth-input-phone');
+    const phoneError = document.getElementById('auth-phone-error');
+
     const confirmContainer = document.getElementById('auth-confirm-container');
     const confirmInput = document.getElementById('auth-input-password-confirm');
+    const confirmError = document.getElementById('auth-confirm-error');
+    const confirmSuccess = document.getElementById('auth-confirm-success');
+
+    const emailError = document.getElementById('auth-email-error');
     const passError = document.getElementById('auth-password-error');
 
+    if (nameError) nameError.classList.add('hidden');
+    if (emailError) emailError.classList.add('hidden');
+    if (phoneError) phoneError.classList.add('hidden');
     if (passError) passError.classList.add('hidden');
+    if (confirmError) confirmError.classList.add('hidden');
+    if (confirmSuccess) confirmSuccess.classList.add('hidden');
 
     if (this.authMode === 'register') {
       if (tabLogin) {
@@ -1372,12 +1579,16 @@ class PensandoGuaymallenApp {
         tabRegister.className = "flex-1 py-2 px-2 sm:px-3 rounded-sm text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 bg-white text-[#0a2540] border-b-2 border-b-[#0072bb] shadow-2xs transition-colors";
       }
       if (modalTitle) modalTitle.textContent = "Registrá tu Cuenta Vecinal";
-      if (modalDesc) modalDesc.textContent = "Sumate al portal con tu correo y contraseña para gestionar tus reclamos.";
+      if (modalDesc) modalDesc.textContent = "Completá tus datos para acceder y gestionar tus propuestas y reclamos.";
       if (submitBtnText) submitBtnText.textContent = "Registrarme y Acceder";
       if (submitIcon) submitIcon.className = "fa-solid fa-user-plus text-[#c59b27]";
       if (switchPrompt) {
         switchPrompt.innerHTML = `¿Ya tenés una cuenta registrada? <button type="button" onclick="App.switchAuthMode('login')" class="text-[#0072bb] font-bold hover:underline ml-1">Iniciá sesión acá</button>`;
       }
+      if (nameContainer) nameContainer.classList.remove('hidden');
+      if (nameInput) nameInput.required = true;
+      if (phoneContainer) phoneContainer.classList.remove('hidden');
+      if (phoneInput) phoneInput.required = true;
       if (confirmContainer) confirmContainer.classList.remove('hidden');
       if (confirmInput) confirmInput.required = true;
     } else {
@@ -1392,68 +1603,106 @@ class PensandoGuaymallenApp {
       if (submitBtnText) submitBtnText.textContent = "Iniciar Sesión y Acceder";
       if (submitIcon) submitIcon.className = "fa-solid fa-right-to-bracket text-[#c59b27]";
       if (switchPrompt) {
-        switchPrompt.innerHTML = `¿No registraste tu correo aún? <button type="button" onclick="App.switchAuthMode('register')" class="text-[#0072bb] font-bold hover:underline ml-1">Registrate acá</button>`;
+        switchPrompt.innerHTML = `¿No registraste tu cuenta aún? <button type="button" onclick="App.switchAuthMode('register')" class="text-[#0072bb] font-bold hover:underline ml-1">Registrate acá</button>`;
+      }
+      if (nameContainer) nameContainer.classList.add('hidden');
+      if (nameInput) {
+        nameInput.required = false;
+        nameInput.value = '';
+      }
+      if (phoneContainer) phoneContainer.classList.add('hidden');
+      if (phoneInput) {
+        phoneInput.required = false;
+        phoneInput.value = '';
       }
       if (confirmContainer) confirmContainer.classList.add('hidden');
       if (confirmInput) {
         confirmInput.required = false;
         confirmInput.value = '';
       }
-      const confirmError = document.getElementById('auth-confirm-error');
-      const confirmSuccess = document.getElementById('auth-confirm-success');
-      if (confirmError) confirmError.classList.add('hidden');
-      if (confirmSuccess) confirmSuccess.classList.add('hidden');
     }
   }
 
   handleAuthSubmit(e) {
     if (e && e.preventDefault) e.preventDefault();
 
+    const nameInput = document.getElementById('auth-input-name');
     const emailInput = document.getElementById('auth-input-email');
+    const phoneInput = document.getElementById('auth-input-phone');
     const passInput = document.getElementById('auth-input-password');
     const confirmInput = document.getElementById('auth-input-password-confirm');
 
+    const name = nameInput ? nameInput.value.trim() : '';
     const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+    const phone = phoneInput ? phoneInput.value.trim() : '';
     const pass = passInput ? passInput.value : '';
     const confirmPass = confirmInput ? confirmInput.value : '';
 
+    const nameError = document.getElementById('auth-name-error');
     const emailError = document.getElementById('auth-email-error');
+    const phoneError = document.getElementById('auth-phone-error');
     const passError = document.getElementById('auth-password-error');
     const passErrorMsg = document.getElementById('auth-password-error-msg');
     const confirmError = document.getElementById('auth-confirm-error');
 
-    // 1. Validar formato de correo electrónico
+    // 1. Si es Registro: validar Nombre Completo
+    if (this.authMode === 'register') {
+      if (!name) {
+        if (nameError) nameError.classList.remove('hidden');
+        if (nameInput) {
+          nameInput.classList.add('border-rose-500', 'focus:ring-rose-500');
+          nameInput.focus();
+        }
+        this.showToast('Por favor ingresá tu nombre completo.', 'warning', 4000);
+        return;
+      }
+    }
+
+    // 2. Validar formato de correo electrónico
     if (!this.validateEmailFormat(email)) {
       if (emailError) emailError.classList.remove('hidden');
       if (emailInput) {
         emailInput.classList.remove('border-emerald-500');
-        emailInput.classList.add('border-rose-400', 'focus:ring-rose-400');
+        emailInput.classList.add('border-rose-500', 'focus:ring-rose-500');
         emailInput.focus();
       }
       this.showToast('Por favor ingresá un formato de correo válido (ej: nombre@correo.com)', 'warning', 4000);
       return;
     }
 
-    // 2. Validar contraseña
+    // 3. Si es Registro: validar Teléfono
+    if (this.authMode === 'register') {
+      if (!phone) {
+        if (phoneError) phoneError.classList.remove('hidden');
+        if (phoneInput) {
+          phoneInput.classList.add('border-rose-500', 'focus:ring-rose-500');
+          phoneInput.focus();
+        }
+        this.showToast('Por favor ingresá tu número de teléfono.', 'warning', 4000);
+        return;
+      }
+    }
+
+    // 4. Validar contraseña
     if (!pass || pass.length < 4) {
       if (passError) {
         passError.classList.remove('hidden');
         if (passErrorMsg) passErrorMsg.textContent = pass.length === 0 ? 'Ingresá tu contraseña' : 'La contraseña debe tener al menos 4 caracteres';
       }
       if (passInput) {
-        passInput.classList.add('border-rose-400', 'focus:ring-rose-400');
+        passInput.classList.add('border-rose-500', 'focus:ring-rose-500');
         passInput.focus();
       }
       this.showToast('Por favor completá tu contraseña (mínimo 4 caracteres)', 'warning', 3500);
       return;
     }
 
-    // 3. Si es Registro: validar que confirmación sea exactamente igual
+    // 5. Si es Registro: validar que confirmación sea exactamente igual
     if (this.authMode === 'register') {
       if (pass !== confirmPass) {
         if (confirmError) confirmError.classList.remove('hidden');
         if (confirmInput) {
-          confirmInput.classList.add('border-rose-400', 'focus:ring-rose-400');
+          confirmInput.classList.add('border-rose-500', 'focus:ring-rose-500');
           confirmInput.focus();
         }
         this.showToast('Las contraseñas no coinciden. Deben ser exactamente iguales.', 'error', 4000);
@@ -1461,56 +1710,79 @@ class PensandoGuaymallenApp {
       }
     }
 
-    // Guardado y verificación de credenciales de usuario
-    let accounts = {};
-    try {
-      accounts = JSON.parse(localStorage.getItem('pensando_guaymallen_accounts') || '{}');
-    } catch (err) {
-      accounts = {};
-    }
-
-    // Si es Iniciar Sesión y el usuario ya estaba registrado con contraseña: verificar coincidencia
-    if (this.authMode === 'login' && accounts[email]) {
-      if (accounts[email] !== pass) {
-        if (passError) {
-          passError.classList.remove('hidden');
-          if (passErrorMsg) passErrorMsg.textContent = 'Contraseña incorrecta para este correo';
-        }
-        if (passInput) {
-          passInput.classList.add('border-rose-400', 'focus:ring-rose-400');
-          passInput.focus();
-        }
-        this.showToast('Contraseña incorrecta. Por favor revisá tus datos.', 'error', 4000);
-        return;
-      }
-    }
-
-    // Guardar / actualizar credencial de la cuenta
-    accounts[email] = pass;
-    try {
-      localStorage.setItem('pensando_guaymallen_accounts', JSON.stringify(accounts));
-    } catch (err) {}
-
-    // Iniciar sesión activa
-    const userAlias = email.split('@')[0];
-    this.currentUser = {
-      id: `usr-${userAlias.replace(/[^a-z0-9]/g, '-')}`,
-      email: email,
-      name: userAlias
-    };
-
-    try {
-      sessionStorage.setItem('pensando_guaymallen_user', JSON.stringify(this.currentUser));
-    } catch (err) {}
-
-    this.closeAuthModal();
-    this.setFeedReportScope('mine');
-    this.renderUserHeader();
+    const registeredUsers = this.getRegisteredUsers();
 
     if (this.authMode === 'register') {
-      this.showToast(`¡Registro exitoso! Sesión iniciada con ${email}. Ya podés gestionar tus reclamos.`, 'success', 5000);
+      // Registrar usuario en memoria RAM volátil (se resetea con F5)
+      const newUser = {
+        id: `usr-${Date.now()}`,
+        name: name,
+        email: email,
+        phone: phone,
+        password: pass,
+        registeredAt: new Date().toISOString()
+      };
+      registeredUsers[email] = newUser;
+      this.saveRegisteredUsers(registeredUsers);
+
+      // Establecer sesión activa en memoria RAM
+      this.currentUser = {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        phone: newUser.phone
+      };
+
+      this.closeAuthModal();
+      this.renderUserHeader();
+      this.syncFormUserSession();
+      this.setFeedReportScope('mine');
+      this.showToast(`¡Registro exitoso! Bienvenido/a ${this.currentUser.name}.`, 'success', 5000);
+
     } else {
-      this.showToast(`¡Bienvenido! Sesión iniciada con ${email}.`, 'success', 4500);
+      // Iniciar sesión (Login pide ÚNICAMENTE correo y contraseña desde memoria RAM)
+      const user = registeredUsers[email];
+
+      if (user) {
+        if (user.password !== pass) {
+          if (passError) {
+            passError.classList.remove('hidden');
+            if (passErrorMsg) passErrorMsg.textContent = 'Contraseña incorrecta para este correo';
+          }
+          if (passInput) {
+            passInput.classList.add('border-rose-500', 'focus:ring-rose-500');
+            passInput.focus();
+          }
+          this.showToast('Contraseña incorrecta. Por favor revisá tus datos.', 'error', 4000);
+          return;
+        }
+
+        // Recuperar Nombre Completo y Teléfono guardados previamente en memoria RAM
+        this.currentUser = {
+          id: user.id || `usr-${Date.now()}`,
+          name: user.name || email.split('@')[0],
+          email: user.email,
+          phone: user.phone || ''
+        };
+      } else {
+        if (emailError) {
+          emailError.classList.remove('hidden');
+          const emailErrorMsg = document.getElementById('auth-email-error-msg');
+          if (emailErrorMsg) emailErrorMsg.textContent = 'No encontramos una cuenta con este correo en esta sesión. Por favor registrate.';
+        }
+        if (emailInput) {
+          emailInput.classList.add('border-rose-500', 'focus:ring-rose-500');
+          emailInput.focus();
+        }
+        this.showToast('No encontramos una cuenta con este correo. Por favor hacé clic en "Registrarse".', 'warning', 4500);
+        return;
+      }
+
+      this.closeAuthModal();
+      this.renderUserHeader();
+      this.syncFormUserSession();
+      this.setFeedReportScope('mine');
+      this.showToast(`¡Hola de nuevo, ${this.currentUser.name}! Sesión iniciada correctamente.`, 'success', 4500);
     }
   }
 
@@ -1521,14 +1793,13 @@ class PensandoGuaymallenApp {
 
   handleLogout() {
     this.currentUser = null;
-    try {
-      sessionStorage.removeItem('pensando_guaymallen_user');
-    } catch (e) {}
     this.setFeedReportScope('all');
     this.renderUserHeader();
+    this.syncFormUserSession();
     this.showToast('Sesión cerrada correctamente.', 'info');
   }
 
+  // Renderizar estado de usuario en Header (siempre muestra Nombre, NUNCA el email)
   renderUserHeader() {
     const headerContainer = document.getElementById('header-user-container');
     const drawerContainer = document.getElementById('drawer-user-container');
@@ -1568,14 +1839,15 @@ class PensandoGuaymallenApp {
         `;
       } else {
         const myCount = this.getMyReports().length;
+        const displayName = this.currentUser.name || 'Vecino/a';
         headerContainer.innerHTML = `
           <div class="relative">
             <button 
               type="button"
               onclick="App.toggleUserDropdown()"
-              class="px-2 py-1 rounded-sm text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-white text-[#0a2540] border border-slate-300 hover:bg-slate-50 shadow-2xs transition-all flex items-center gap-1 shrink-0">
-              <span class="w-1.5 h-1.5 rounded-none bg-emerald-600 shrink-0"></span>
-              <span class="max-w-[70px] sm:max-w-[150px] truncate" title="${this.currentUser.email}">${this.currentUser.email}</span>
+              class="px-2.5 py-1.5 rounded-sm text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-white text-[#0a2540] border border-slate-300 hover:bg-slate-50 shadow-2xs transition-all flex items-center gap-1.5 shrink-0">
+              <span class="w-2 h-2 rounded-none bg-emerald-600 shrink-0"></span>
+              <span class="max-w-[90px] sm:max-w-[170px] truncate" title="${displayName}">${displayName}</span>
               <i class="fa-solid fa-chevron-down text-[8px] sm:text-[9px] text-slate-400 shrink-0"></i>
             </button>
 
@@ -1587,10 +1859,10 @@ class PensandoGuaymallenApp {
               <div class="p-2.5 bg-slate-50 rounded-sm border border-slate-200 mb-1">
                 <div class="flex items-center gap-2">
                   <div class="w-8 h-8 rounded-sm bg-[#0a2540] text-white font-bold text-xs flex items-center justify-center shrink-0">
-                    <i class="fa-solid fa-envelope text-xs text-[#c59b27]"></i>
+                    <i class="fa-solid fa-user text-xs text-[#c59b27]"></i>
                   </div>
                   <div class="min-w-0">
-                    <p class="font-bold text-xs text-[#0a2540] truncate" title="${this.currentUser.email}">${this.currentUser.email}</p>
+                    <p class="font-bold text-xs text-[#0a2540] truncate" title="${displayName}">${displayName}</p>
                     <p class="text-[10px] text-emerald-800 font-bold uppercase tracking-wider flex items-center gap-1">
                       <span class="w-1.5 h-1.5 rounded-none bg-emerald-600"></span>
                       Vecino Conectado
@@ -1656,12 +1928,13 @@ class PensandoGuaymallenApp {
         `;
       } else {
         const myCount = this.getMyReports().length;
+        const displayName = this.currentUser.name || 'Vecino/a';
         drawerContainer.innerHTML = `
           <div class="p-3 bg-slate-50 rounded-sm border border-slate-200 space-y-2">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2 min-w-0">
                 <span class="w-2 h-2 rounded-none bg-emerald-600 shrink-0"></span>
-                <span class="text-xs font-bold text-[#0a2540] truncate uppercase tracking-wider" title="${this.currentUser.email}">${this.currentUser.email}</span>
+                <span class="text-xs font-bold text-[#0a2540] truncate uppercase tracking-wider" title="${displayName}">${displayName}</span>
               </div>
               <span class="text-[10px] font-bold text-slate-700 bg-white px-2 py-0.5 rounded-none border border-slate-200 shrink-0">${myCount} reclamos</span>
             </div>
@@ -1681,6 +1954,121 @@ class PensandoGuaymallenApp {
           </div>
         `;
       }
+    }
+  }
+
+  // Sincronización, autocompletado y bloqueo total de interacción/foco con sesión activa
+  syncFormUserSession() {
+    const propEmail = document.getElementById('propuesta-email');
+    const propNombre = document.getElementById('propuesta-nombre');
+    const propTel = document.getElementById('propuesta-telefono');
+    const reportCitizen = document.querySelector('input[name="report-citizen"]');
+
+    const inputs = [propEmail, propNombre, propTel, reportCitizen].filter(Boolean);
+
+    const lockedClasses = [
+      'input-locked',
+      'bg-slate-100',
+      'text-slate-500',
+      'border-slate-300',
+      'cursor-default',
+      'select-none',
+      'pointer-events-none'
+    ];
+    const editableClasses = [
+      'bg-slate-50',
+      'text-slate-800',
+      'border-slate-300',
+      'focus:bg-white',
+      'focus:ring-1',
+      'focus:ring-[#0072bb]',
+      'focus:border-[#0072bb]'
+    ];
+
+    if (this.currentUser) {
+      // 1. Asignar valores
+      if (propEmail) {
+        propEmail.value = this.currentUser.email || '';
+        const emailErr = document.getElementById('propuesta-email-error');
+        if (emailErr) emailErr.classList.add('hidden');
+      }
+      if (propNombre) {
+        propNombre.value = this.currentUser.name || '';
+      }
+      if (propTel) {
+        propTel.value = this.currentUser.phone || '';
+      }
+      if (reportCitizen) {
+        reportCitizen.value = this.currentUser.name || '';
+      }
+
+      // 2. Bloqueo total: readOnly, tabIndex -1, onfocus blur, pointer-events-none, clases visuales
+      inputs.forEach(input => {
+        input.readOnly = true;
+        input.tabIndex = -1;
+        input.onfocus = (e) => e.target.blur();
+        input.classList.remove('border-rose-500', 'border-emerald-500', 'focus:border-rose-500', 'focus:ring-rose-500', ...editableClasses);
+        input.classList.add(...lockedClasses);
+      });
+    } else {
+      // Sesión inactiva o cerrada: limpiar y desbloquear campos para edición normal
+      inputs.forEach(input => {
+        input.readOnly = false;
+        input.tabIndex = 0;
+        input.onfocus = null;
+        input.value = '';
+        input.classList.remove(...lockedClasses, 'border-rose-500', 'border-emerald-500', 'focus:border-rose-500', 'focus:ring-rose-500');
+        input.classList.add(...editableClasses);
+      });
+      const emailErr = document.getElementById('propuesta-email-error');
+      if (emailErr) emailErr.classList.add('hidden');
+    }
+  }
+
+  setupSenatorCardEvents() {
+    const card = document.getElementById('senator-floating-card');
+    if (card && window.L && L.DomEvent) {
+      L.DomEvent.disableClickPropagation(card);
+      L.DomEvent.disableScrollPropagation(card);
+    }
+  }
+
+  openSenatorCard(e) {
+    if (e) {
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+    }
+    const trigger = document.getElementById('senator-circle-trigger');
+    const popup = document.getElementById('senator-card-popup');
+    if (trigger && popup) {
+      trigger.classList.add('hidden');
+      popup.classList.remove('hidden');
+    }
+  }
+
+  closeSenatorCard(e) {
+    if (e) {
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+    }
+    const trigger = document.getElementById('senator-circle-trigger');
+    const popup = document.getElementById('senator-card-popup');
+    if (trigger && popup) {
+      popup.classList.add('hidden');
+      trigger.classList.remove('hidden');
+    }
+  }
+
+  toggleSenatorCard(e) {
+    if (e) {
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+    }
+    const popup = document.getElementById('senator-card-popup');
+    if (popup && !popup.classList.contains('hidden')) {
+      this.closeSenatorCard(e);
+    } else {
+      this.openSenatorCard(e);
     }
   }
 
